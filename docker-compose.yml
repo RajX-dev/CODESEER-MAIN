@@ -34,6 +34,14 @@ services:
       - postgres
       - elasticsearch
 
+  indexer:
+    build: ./indexer
+    container_name: codeseer-indexer
+    depends_on:
+      - postgres
+      - elasticsearch
+
+
 volumes:
   postgres_data:
   es_data:
