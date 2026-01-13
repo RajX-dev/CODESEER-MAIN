@@ -2,17 +2,18 @@ import time
 import psycopg2
 from elasticsearch import Elasticsearch
 
+import os
+
 DB_CONFIG = {
-    "host": "codeseer-postgres",
-    "port": 5432,
-    "dbname": "codeseer",
-    "user": "codeseer",
-    "password": "codeseer",
+    "host": os.getenv("POSTGRES_HOST"),
+    "port": int(os.getenv("POSTGRES_PORT", 5432)),
+    "dbname": os.getenv("POSTGRES_DB"),
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
 }
 
-ES_HOST = "http://codeseer-es:9200"
+ES_HOST = os.getenv("ELASTICSEARCH_HOST")
 ES_INDEX = "files"
-
 
 def wait_for_elasticsearch(es, retries=60, delay=2):
     for i in range(retries):

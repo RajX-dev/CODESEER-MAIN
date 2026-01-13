@@ -5,13 +5,16 @@ services:
     image: postgres:15
     container_name: codeseer-postgres
     environment:
+      POSTGRES_DB: codeseer
       POSTGRES_USER: codeseer
       POSTGRES_PASSWORD: codeseer
-      POSTGRES_DB: codeseer
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codeseer -d codeseer"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
@@ -24,6 +27,11 @@ services:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   api:
     build: ./api
@@ -33,6 +41,8 @@ services:
     depends_on:
       - postgres
       - elasticsearch
+    env_file:
+      - .env
 
   indexer:
     build: ./indexer
@@ -40,6 +50,24 @@ services:
     depends_on:
       - postgres
       - elasticsearch
+    env_file:
+      - .env
+
+  db-init:
+    image: postgres:15
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./db:/schema
+    environment:
+      PGPASSWORD: codeseer
+    entrypoint: >
+      bash -c "
+      echo 'Applying schema...' &&
+      ls -l /schema &&
+      psql -h postgres -U codeseer -d codeseer -f /schema/schema.sql
+      "
 
 
 volumes:
