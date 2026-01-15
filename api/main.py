@@ -2,10 +2,13 @@ from fastapi import FastAPI
 import psycopg2
 import psycopg2.extras
 from elasticsearch import Elasticsearch
+from config import DEBUG
+
 
 
 app = FastAPI()
 es = Elasticsearch("http://codeseer-es:9200")
+
 
 
 
