@@ -10,3 +10,26 @@ __pycache__/
 
 # local volumes
 data/
+
+
+# C++ build artifacts
+analysis-cpp/build/
+analysis-cpp/**/build/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Object / binary files
+*.o
+*.obj
+*.a
+*.so
+*.exe
+
+# Editor / OS noise
+.vscode/
+.DS_Store
+
