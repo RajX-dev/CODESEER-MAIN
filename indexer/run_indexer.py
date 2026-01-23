@@ -6,6 +6,8 @@ from indexer.chunk import (
     chunk_config,
     chunk_python,
 )
+from indexer.chunk_store import insert_chunks
+
 
 # ---- CONFIG ----
 POSTGRES_DSN = "dbname=codeseer user=codeseer password=codeseer host=localhost port=5432"
@@ -60,25 +62,20 @@ def run_indexing():
     rows = pg_cursor.fetchall()
     print(f"Indexing {len(rows)} files")
 
-    # ---- PHASE 3: CHUNK COLLECTION ----
-    chunk_index = []
-
-    # ---- INDEX INTO ELASTICSEARCH ----
+    # ---- INDEX + CHUNK PIPELINE ----
     for file_id, path, language, size_bytes in rows:
-        # ---- File-level indexing (Phase 2, unchanged) ----
-        doc = {
-            "path": path,
-            "language": language,
-            "size_bytes": size_bytes,
-        }
-
+        # ---- Phase 2: File-level indexing (unchanged) ----
         es.index(
             index=ES_INDEX,
-            id=str(file_id),   # stable ID
-            document=doc
+            id=str(file_id),
+            document={
+                "path": path,
+                "language": language,
+                "size_bytes": size_bytes,
+            }
         )
 
-        # ---- Phase 3: Load content and generate chunks ----
+        # ---- Phase 3: Load content ----
         try:
             with open(path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
@@ -86,10 +83,10 @@ def run_indexing():
             print(f"Skipping content for {path}: {e}")
             continue
 
+        # ---- Phase 3: Generate + Persist Chunks (Day 12) ----
         chunks = generate_chunks(path, content, language)
-        chunk_index.extend(chunks)
+        insert_chunks(pg_conn, chunks)
 
-    print(f"Generated {len(chunk_index)} chunks total")
     print("Indexing complete")
 
     pg_cursor.close()
