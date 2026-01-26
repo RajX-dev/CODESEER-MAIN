@@ -72,6 +72,12 @@ Project
 
 ## Current Capabilities
 
+<<<<<<< HEAD
+* **Core Backend:** Python 3.9+ (FastAPI)
+* **Performance Module:** C++ 17 (CMake)
+* **Infrastructure:** Docker, Docker Compose
+* **Data:** PostgreSQL (Metadata), Elasticsearch (Search), [OPTIONAL] FAISS
+=======
 ### ✅ Repository Crawling
 - Recursive project tree traversal
 - Source file identification and normalization
@@ -90,6 +96,7 @@ Project
 - Designed for CI/CD integration
 - UI layer to be added in later phases
 
+>>>>>>> 77ab5fcbb295106a05b0f2e8a179ee3dfa8a8f08
 ---
 
 ## What CodeSeer Is *Not*
