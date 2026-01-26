@@ -1,15 +1,17 @@
--- ================================
--- Projects (Repo Boundary)
--- ================================
+-- =========================================================
+-- CodeSeer Schema v2 (Day 15)
+-- Supports: Hierarchy (Parent/Child) & Robust Identity
+-- =========================================================
+
+-- 1. Projects (Repo Boundary)
 CREATE TABLE IF NOT EXISTS projects (
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
-    repo_url TEXT
+    repo_url TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- ================================
--- Symbols (Graph Nodes)
--- ================================
+-- 2. Symbols (The Knowledge Graph Nodes)
 CREATE TABLE IF NOT EXISTS symbols (
     id UUID PRIMARY KEY,
 
@@ -17,61 +19,54 @@ CREATE TABLE IF NOT EXISTS symbols (
         REFERENCES projects(id)
         ON DELETE CASCADE,
 
-    -- Ingestion lookup identity
+    -- HIERARCHY (The Critical Fix)
+    -- This allows Class -> Method -> Variable nesting
+    parent_id UUID
+        REFERENCES symbols(id)
+        ON DELETE CASCADE,
+
+    -- Identity & Metadata
     file_path TEXT NOT NULL,
     name TEXT NOT NULL,
-    kind TEXT NOT NULL,        -- FUNCTION | CLASS | VARIABLE | etc.
-    signature TEXT NOT NULL,
+    kind TEXT NOT NULL,         -- FUNCTION, CLASS, MODULE, VARIABLE
+    
+    -- Signature is now just data, NOT part of the unique identity
+    signature TEXT NOT NULL, 
 
-    -- Precise location (IDE-grade)
+    -- Location Pointers
     start_line INT,
     end_line INT,
     start_col INT,
     end_col INT,
 
-    -- Change detection / re-indexing
+    -- Change Detection
     content_hash TEXT,
 
-    -- Prevent duplicate symbols on re-index
-    CONSTRAINT uq_symbol_identity
-        UNIQUE (project_id, file_path, name, kind, signature)
+    -- CONSTRAINT: Unique Identity
+    -- A symbol is defined by WHERE it is (Project + File + Parent) and WHAT it is called (Name).
+    -- "NULLS NOT DISTINCT" treats NULL parent (top-level functions) as equal for uniqueness checks.
+    CONSTRAINT uq_symbol_identity 
+        UNIQUE NULLS NOT DISTINCT (project_id, file_path, parent_id, name)
 );
 
--- Fast symbol lookup (scanner + queries)
-CREATE INDEX IF NOT EXISTS idx_symbol_lookup
-    ON symbols (project_id, name, kind);
+-- 3. Fast Lookups
+CREATE INDEX IF NOT EXISTS idx_symbol_lookup 
+    ON symbols (project_id, file_path, name);
 
--- ================================
--- Relations (Graph Edges)
--- ================================
+CREATE INDEX IF NOT EXISTS idx_symbol_parent 
+    ON symbols (parent_id);
+
+-- 4. Relations (The Graph Edges - To be populated in Phase 2)
 CREATE TABLE IF NOT EXISTS relations (
     id UUID PRIMARY KEY,
 
-    source_id UUID NOT NULL
-        REFERENCES symbols(id)
-        ON DELETE CASCADE,
+    source_id UUID NOT NULL REFERENCES symbols(id) ON DELETE CASCADE,
+    target_id UUID NOT NULL REFERENCES symbols(id) ON DELETE CASCADE,
 
-    target_id UUID NOT NULL
-        REFERENCES symbols(id)
-        ON DELETE CASCADE,
+    relation_type TEXT NOT NULL,    -- CALLS, IMPORTS, INHERITS
 
-    relation_type TEXT NOT NULL,    -- CALLS | USES | INHERITS | etc.
-
-    -- Resolution metadata
-    status TEXT NOT NULL CHECK (
-        status IN ('RESOLVED', 'HEURISTIC', 'UNRESOLVED')
-    ),
-    confidence FLOAT NOT NULL DEFAULT 1.0,
-
-    -- Prevent duplicate edges
-    CONSTRAINT uq_relation_edge
+    status TEXT NOT NULL CHECK (status IN ('RESOLVED', 'HEURISTIC')),
+    
+    CONSTRAINT uq_relation_edge 
         UNIQUE (source_id, target_id, relation_type)
 );
-
--- Outgoing traversal (what does X call/use?)
-CREATE INDEX IF NOT EXISTS idx_relations_source
-    ON relations (source_id);
-
--- Incoming traversal (who calls/uses X?)
-CREATE INDEX IF NOT EXISTS idx_relations_target
-    ON relations (target_id);
