@@ -77,3 +77,40 @@ def upsert_symbol(project_id, symbol_data):
         raise e
     finally:
         conn.close()
+        
+# ... (Keep existing imports and functions: get_connection, ensure_project, upsert_symbol)
+
+# --- ADD THIS FUNCTION AT THE BOTTOM ---
+def upsert_import(project_id, import_data):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            query = """
+            INSERT INTO imports 
+                (id, project_id, file_path, module, name, alias)
+            VALUES 
+                (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (project_id, file_path, module, name) 
+            DO NOTHING
+            RETURNING id;
+            """
+            
+            cur.execute(query, (
+                import_data["id"],
+                project_id,
+                import_data["file_path"],
+                import_data["module"],
+                import_data["name"],
+                import_data["alias"]
+            ))
+            
+            conn.commit()
+            result = cur.fetchone()
+            return result[0] if result else None
+            
+    except Exception as e:
+        conn.rollback()
+        print(f"⚠️ Error inserting import {import_data['module']}: {e}")
+        return None
+    finally:
+        conn.close()

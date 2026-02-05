@@ -1,50 +1,35 @@
-from symbol_extractor import extract_symbols
+from symbol_extractor import extract_symbols_and_imports
 import json
 
-def test_mapper():
-    print("--- 1. LOADING CODE ---")
+def test_imports():
+    print("--- 1. PARSING IMPORTS ---")
     
-    # A complex example with Hierarchy
-    code_to_parse = """
-class Database:
-    def connect(self):
-        print("Connecting...")
-        
-    def disconnect(self):
-        print("Bye.")
-
-def main():
-    db = Database()
-    db.connect()
+    code = """
+import os
+import numpy as np
+from utils import helper, Database
+from ..libs import config
 """
-    print(code_to_parse)
+    print(code)
 
-    print("\n--- 2. EXTRACTING SYMBOLS ---")
-    # Pass raw bytes to our new extractor
-    symbols = extract_symbols(bytes(code_to_parse, "utf8"), "test_file.py")
+    print("\n--- 2. EXTRACTING ---")
+    symbols, imports = extract_symbols_and_imports(bytes(code, "utf8"), "test.py")
 
-    print("\n--- 3. VERIFYING HIERARCHY ---")
+    print(json.dumps(imports, indent=2))
     
-    # Let's see the JSON output
-    print(json.dumps(symbols, indent=2))
-    
-    # Verification Tests
-    class_sym = next((s for s in symbols if s["name"] == "Database"), None)
-    func_sym = next((s for s in symbols if s["name"] == "connect"), None)
-    
-    if not class_sym:
-        print(" FAILED: Could not find 'Database' class.")
-        return
+    # Verification
+    helper_import = next((i for i in imports if i["name"] == "helper"), None)
+    numpy_import = next((i for i in imports if i["module"] == "numpy"), None)
 
-    if not func_sym:
-        print(" FAILED: Could not find 'connect' function.")
-        return
-
-    # THE BIG TEST: Does 'connect' know that 'Database' is its father?
-    if func_sym["parent_id"] == class_sym["id"]:
-        print("\n SUCCESS: The Child (connect) is correctly linked to the Parent (Database)!")
+    if helper_import and helper_import["module"] == "utils":
+        print("✅ Success: Found 'from utils import helper'")
     else:
-        print(f"\n FAILURE: Parent ID Mismatch. Expected {class_sym['id']}, got {func_sym['parent_id']}")
+        print("❌ Failed: 'helper' import not found correctly.")
+
+    if numpy_import and numpy_import["alias"] == "np":
+        print("✅ Success: Found 'import numpy as np'")
+    else:
+        print("❌ Failed: 'numpy' alias not found.")
 
 if __name__ == "__main__":
-    test_mapper()
+    test_imports()
