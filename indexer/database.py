@@ -114,3 +114,27 @@ def upsert_import(project_id, import_data):
         return None
     finally:
         conn.close()
+
+def upsert_call(project_id, call_data):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            query = """
+            INSERT INTO calls 
+                (id, project_id, source_symbol_id, call_name, line_number)
+            VALUES 
+                (%s, %s, %s, %s, %s)
+            """
+            cur.execute(query, (
+                call_data["id"],
+                project_id,
+                call_data["source_symbol_id"],
+                call_data["call_name"],
+                call_data["line_number"]
+            ))
+            conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"⚠️ Call insert error: {e}")
+    finally:
+        conn.close()
