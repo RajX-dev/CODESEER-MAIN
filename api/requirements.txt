@@ -1,5 +1,0 @@
-fastapi
-uvicorn[standard]
-psycopg2-binary
-elasticsearch>=8.0.0,<9.0.0
-
