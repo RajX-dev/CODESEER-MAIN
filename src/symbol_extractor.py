@@ -5,6 +5,21 @@ import uuid
 PY_LANGUAGE = Language(tspython.language())
 parser = Parser(PY_LANGUAGE)
 
+# --- ADAPTER (Connects your logic to the runner) ---
+def extract_symbols(file_path):
+    """
+    Reads the file and calls your logic.
+    """
+    try:
+        with open(file_path, "rb") as f:
+            code_bytes = f.read()
+        return extract_symbols_imports_calls(code_bytes, file_path)
+    except Exception as e:
+        print(f"⚠️ Error reading {file_path}: {e}")
+        return [], [], []
+
+# --- YOUR ORIGINAL LOGIC START ---
+
 def extract_symbols_imports_calls(code_bytes, file_path="unknown"):
     """
     Returns: (symbols, imports, calls)
@@ -46,16 +61,15 @@ def _visit_definitions_and_calls(node, current_scope_id, symbols, calls, file_pa
             "name": name,
             "kind": kind,
             "file_path": file_path,
-            "start_line": node.start_point[0],
-            "end_line": node.end_point[0],
+            "start_line": node.start_point[0] + 1, # Tree-sitter is 0-indexed
+            "end_line": node.end_point[0] + 1,
             "signature": f"{kind.lower()} {name}..."
         }
         symbols.append(symbol_data)
         new_scope_id = symbol_id
 
-    # --- B. DETECT CALLS (FIXED NODE NAME) ---
+    # --- B. DETECT CALLS ---
     elif node_type == "call": 
-        # The field name for the function being called is still "function"
         func_node = node.child_by_field_name("function")
         if func_node:
             call_text = func_node.text.decode("utf8")
@@ -66,7 +80,7 @@ def _visit_definitions_and_calls(node, current_scope_id, symbols, calls, file_pa
                     "id": str(uuid.uuid4()),
                     "source_symbol_id": current_scope_id,
                     "call_name": call_text,
-                    "line_number": node.start_point[0]
+                    "line_number": node.start_point[0] + 1
                 })
 
     # Recurse
@@ -74,7 +88,6 @@ def _visit_definitions_and_calls(node, current_scope_id, symbols, calls, file_pa
         _visit_definitions_and_calls(child, new_scope_id, symbols, calls, file_path)
 
 def _visit_imports(node, imports_list, file_path):
-    # (Same standard logic as before)
     if node.type == "import_statement":
         for child in node.children:
             if child.type == "dotted_name":

@@ -1,0 +1,148 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>CodeSeer Impact: _visit_imports</title>
+        <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --bg-color: #0d1117;
+                --text-primary: #e6edf3;
+                --text-secondary: #8b949e;
+                --danger-color: #ff4d4d;
+                --warn-color: #ffbd2e;
+                --info-color: #58a6ff;
+                --border-color: #30363d;
+            }
+            body { 
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+                background: var(--bg-color); 
+                color: var(--text-primary); 
+                margin: 0; 
+                overflow: hidden; 
+            }
+            #mynetwork { 
+                width: 100vw; 
+                height: 100vh; 
+                background: radial-gradient(circle at center, #161b22 0%, #0d1117 100%);
+            }
+            .legend { 
+                position: absolute; 
+                top: 24px; 
+                left: 24px; 
+                background: rgba(22, 27, 34, 0.75); 
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                padding: 20px; 
+                border-radius: 12px; 
+                border: 1px solid var(--border-color);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4); 
+                z-index: 1000;
+                min-width: 260px;
+                animation: fadeIn 0.5s ease-out;
+            }
+            h3 { 
+                margin: 0 0 16px 0; 
+                font-size: 16px; 
+                font-weight: 600; 
+                color: var(--text-primary);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .item { 
+                display: flex; 
+                align-items: center; 
+                margin-bottom: 12px; 
+                font-size: 13px; 
+                color: var(--text-secondary);
+                font-family: 'JetBrains Mono', monospace;
+            }
+            .item:last-child { margin-bottom: 0; }
+            .dot { 
+                width: 10px; 
+                height: 10px; 
+                border-radius: 50%; 
+                margin-right: 12px; 
+                display: inline-block; 
+                box-shadow: 0 0 8px currentColor;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="legend">
+            <h3>🔮 Blast Radius Analysis</h3>
+            <div class="item" style="color: #ffaaaa"><span class="dot" style="background:var(--danger-color); color:var(--danger-color)"></span>_visit_imports (Target)</div>
+            <div class="item"><span class="dot" style="background:var(--warn-color); color:var(--warn-color)"></span>Direct Callers</div>
+            <div class="item"><span class="dot" style="background:var(--info-color); color:var(--info-color)"></span>Ripple Effect</div>
+        </div>
+        <div id="mynetwork"></div>
+        <script type="text/javascript">
+            var nodes = new vis.DataSet([{"id": "ingest_repo", "label": "ingest_repo", "group": 2}, {"id": "process_file", "label": "process_file", "group": 2}, {"id": "_visit_imports", "label": "_visit_imports", "group": 0}, {"id": "extract_symbols_imports_calls", "label": "extract_symbols_imports_calls", "group": 1}]);
+            var edges = new vis.DataSet([{"from": "_visit_imports", "to": "_visit_imports"}, {"from": "extract_symbols_imports_calls", "to": "_visit_imports"}, {"from": "process_file", "to": "extract_symbols_imports_calls"}, {"from": "ingest_repo", "to": "process_file"}]);
+            var container = document.getElementById('mynetwork');
+            var data = { nodes: nodes, edges: edges };
+            var options = {
+                nodes: {
+                    shape: 'dot',
+                    font: { 
+                        size: 14, 
+                        color: '#e6edf3', 
+                        face: 'Inter',
+                        strokeWidth: 4, 
+                        strokeColor: '#0d1117'
+                    },
+                    borderWidth: 2,
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x: 5, y: 5 }
+                },
+                groups: {
+                    0: { 
+                        color: { background: '#ff4d4d', border: '#ff4d4d' }, 
+                        size: 30,
+                        font: { size: 18, color: '#ffaaaa' }
+                    }, 
+                    1: { 
+                        color: { background: '#ffbd2e', border: '#ffbd2e' }, 
+                        size: 15 
+                    }, 
+                    2: { 
+                        color: { background: '#58a6ff', border: '#58a6ff' }, 
+                        size: 10 
+                    }  
+                },
+                edges: {
+                    width: 1,
+                    color: { color: '#30363d', highlight: '#58a6ff', opacity: 0.6 },
+                    arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+                    smooth: { type: 'continuous', roundness: 0 }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 200,
+                    hideEdgesOnDrag: true
+                },
+                physics: {
+                    stabilization: false,
+                    forceAtlas2Based: {
+                        gravitationalConstant: -50,
+                        centralGravity: 0.005,
+                        springLength: 200,
+                        springConstant: 0.08
+                    },
+                    maxVelocity: 50,
+                    solver: 'forceAtlas2Based',
+                    timestep: 0.35,
+                    adaptiveTimestep: true
+                }
+            };
+            var network = new vis.Network(container, data, options);
+        </script>
+    </body>
+    </html>
+    
