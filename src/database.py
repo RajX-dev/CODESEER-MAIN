@@ -2,29 +2,41 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 import uuid
+import time
 
 # 1. Database Connection Config
 def get_connection():
-    return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "postgres"),
-        database=os.getenv("POSTGRES_DB", "codeseer"),
-        user=os.getenv("POSTGRES_USER", "codeseer"),
-        password=os.getenv("POSTGRES_PASSWORD", "codeseer")
-    )
+    """
+    Establishes a connection to the PostgreSQL database.
+    Retries up to 5 times if the database is not ready.
+    """
+    max_retries = 5  # <--- FIXED (Was "5a")
+    for i in range(max_retries):
+        try:
+            return psycopg2.connect(
+                host=os.getenv("POSTGRES_HOST", "postgres"),
+                database=os.getenv("POSTGRES_DB", "n3mo"),
+                user=os.getenv("POSTGRES_USER", "n3mo"),
+                password=os.getenv("POSTGRES_PASSWORD", "n3mo")
+            )
+        except psycopg2.OperationalError:
+            if i < max_retries - 1:
+                time.sleep(2)
+                continue
+            else:
+                raise
 
-# 2. Ensure Project Exists (We need a Project ID before we can add symbols)
+# 2. Ensure Project Exists
 def ensure_project(name, repo_url):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Try to find existing project
             cur.execute("SELECT id FROM projects WHERE repo_url = %s", (repo_url,))
             result = cur.fetchone()
             
             if result:
-                return result[0] # Return existing UUID
+                return result[0]
             
-            # If not found, create new one
             new_id = str(uuid.uuid4())
             cur.execute(
                 "INSERT INTO projects (id, name, repo_url) VALUES (%s, %s, %s) RETURNING id",
@@ -33,16 +45,13 @@ def ensure_project(name, repo_url):
             conn.commit()
             return new_id
     finally:
-        conn.close()
+        if conn: conn.close()
 
-# 3. Upsert Symbol (The Magic Function)
+# 3. Upsert Symbol
 def upsert_symbol(project_id, symbol_data):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # We use ON CONFLICT to handle duplicates gracefully
-            # Note: We rely on the unique constraint (project_id, file_path, parent_id, name)
-            
             query = """
             INSERT INTO symbols 
                 (id, project_id, parent_id, file_path, name, kind, signature, start_line, end_line)
@@ -57,7 +66,7 @@ def upsert_symbol(project_id, symbol_data):
             """
             
             cur.execute(query, (
-                symbol_data["id"],          # We generated this in extraction, but might ignore it if updating
+                symbol_data["id"],
                 project_id,
                 symbol_data["parent_id"],
                 symbol_data["file_path"],
@@ -69,18 +78,18 @@ def upsert_symbol(project_id, symbol_data):
             ))
             
             conn.commit()
-            return cur.fetchone()[0] # Return the UUID (either new or existing)
+            result = cur.fetchone()
+            return result[0] if result else None
             
     except Exception as e:
         conn.rollback()
-        print(f"❌ Error inserting {symbol_data['name']}: {e}")
+        if "duplicate key" not in str(e):
+            print(f"❌ Error inserting {symbol_data['name']}: {e}")
         raise e
     finally:
-        conn.close()
-        
-# ... (Keep existing imports and functions: get_connection, ensure_project, upsert_symbol)
+        if conn: conn.close()
 
-# --- ADD THIS FUNCTION AT THE BOTTOM ---
+# 4. Upsert Import
 def upsert_import(project_id, import_data):
     conn = get_connection()
     try:
@@ -113,8 +122,9 @@ def upsert_import(project_id, import_data):
         print(f"⚠️ Error inserting import {import_data['module']}: {e}")
         return None
     finally:
-        conn.close()
+        if conn: conn.close()
 
+# 5. Upsert Call
 def upsert_call(project_id, call_data):
     conn = get_connection()
     try:
@@ -135,6 +145,5 @@ def upsert_call(project_id, call_data):
             conn.commit()
     except Exception as e:
         conn.rollback()
-        print(f"⚠️ Call insert error: {e}")
     finally:
-        conn.close()
+        if conn: conn.close()

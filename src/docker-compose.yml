@@ -35,7 +35,7 @@ services:
 
   indexer:
     build: 
-      context: .           # <--- CHANGED: Build from the root now
+      context: ./src
     container_name: n3mo-indexer
     depends_on:
       - postgres
@@ -43,10 +43,9 @@ services:
     env_file:
       - .env
     ports:
-      - "8000:8000"        # <--- VITAL: Keeps the Graph Server accessible!
+    - "8000:8000"
     volumes:
-      - ./src:/app/src:ro  # Maps the local source code
-      # This defaults to scanning the current folder (.) unless you set TARGET_CODE_DIR
+      - ./src:/app/src:ro
       - ${TARGET_CODE_DIR:-.}:/app/target_code
 
   db-init:
@@ -55,7 +54,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./db:/schema       # Maps the db folder from the root
+      - ./db:/schema
     environment:
       PGPASSWORD: n3mo
     entrypoint: >

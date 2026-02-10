@@ -1,0 +1,2 @@
+[console_scripts]
+n3mo = n3mo.wrapper:main

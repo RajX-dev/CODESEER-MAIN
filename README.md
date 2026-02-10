@@ -1,8 +1,8 @@
-# 🔍 CodeSeer
+# 🔍 N3MO
 
 <div align="center">
 
-![CodeSeer Banner](https://img.shields.io/badge/CodeSeer-Blast%20Radius%20Detector-blue?style=for-the-badge)
+![N3MO Banner](https://img.shields.io/badge/N3MO-Blast%20Radius%20Detector-blue?style=for-the-badge)
 [![License: AGPL v3.0](https://img.shields.io/badge/license-AGPL%20v3.0-green?style=for-the-badge)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue?style=for-the-badge&logo=python)](https://www.python.org)
 [![Docker](https://img.shields.io/badge/docker-required-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
@@ -19,18 +19,18 @@
 
 ---
 
-## 🎯 What is CodeSeer?
+## 🎯 What is N3MO?
 
-CodeSeer addresses a fundamental challenge in software engineering: **understanding large codebases**. Unlike simple code search tools that rely on text matching, CodeSeer models code structure first—capturing symbols, their relationships, and their semantics.
+N3MO addresses a fundamental challenge in software engineering: **understanding large codebases**. Unlike simple code search tools that rely on text matching, N3MO models code structure first—capturing symbols, their relationships, and their semantics.
 
 ### The Problem It Solves
 
 ```
 ❌ Traditional grep/search: "Where does 'login' appear?"
-✅ CodeSeer: "What will break if I change the login function?"
+✅ N3MO: "What will break if I change the login function?"
 ```
 
-**Critical Questions CodeSeer Answers:**
+**Critical Questions N3MO Answers:**
 - 🔎 What functions exist in this repository?
 - 🎯 Where is this class being used?
 - 💥 What will break if I modify this function? **(Blast Radius)**
@@ -42,7 +42,7 @@ CodeSeer addresses a fundamental challenge in software engineering: **understand
 
 ### Knowledge Graph Model
 
-CodeSeer builds a **symbol-centric knowledge graph** stored in PostgreSQL:
+N3MO builds a **symbol-centric knowledge graph** stored in PostgreSQL:
 
 ```mermaid
 graph TB
@@ -104,7 +104,7 @@ sequenceDiagram
     participant DB as PostgreSQL
     participant Viz as Visualizer
 
-    User->>CLI: codeseer index
+    User->>CLI: n3mo index
     CLI->>Docker: Start containers
     Docker->>Parser: Mount repository
     Parser->>Parser: Walk file tree
@@ -112,7 +112,7 @@ sequenceDiagram
     Parser->>DB: Store symbols & relations
     DB-->>Parser: Confirm storage
     
-    User->>CLI: codeseer impact "function_name"
+    User->>CLI: n3mo impact "function_name"
     CLI->>DB: Query call graph
     DB->>DB: Recursive CTE traversal
     DB-->>Viz: Return dependency tree
@@ -170,38 +170,38 @@ erDiagram
 ![Docker](https://img.shields.io/badge/Docker-Required-2496ED?logo=docker)
 ![Git](https://img.shields.io/badge/Git-Required-F05032?logo=git)
 
-> **Note:** The `codeseer` wrapper is currently in development (Phase 1). Commands below reflect the target interface we're building.
+> **Note:** The `n3mo` wrapper is currently in development (Phase 1). Commands below reflect the target interface we're building.
 
 ### Quick Start
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/RajX-dev/CODESEER-MAIN.git
-cd CODESEER-MAIN
+git clone https://github.com/RajX-dev/N3MO.git
+cd N3MO
 
 # 2. Install the wrapper (development mode)
 pip install -e .
 
 # 3. Start infrastructure & index (automatic via wrapper)
-codeseer index
+n3mo index
 
 # 4. Verify installation
-codeseer query --stats
+n3mo query --stats
 ```
 
 ### Verify Installation
 
 ```bash
 # Check indexed symbols
-codeseer query --list
+n3mo query --list
 
 # View database stats
-codeseer query --stats
+n3mo query --stats
 ```
 
 **Expected Output:**
 ```
-📊 CodeSeer Statistics
+📊 N3MO Statistics
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total Symbols: 247
 Functions: 156
@@ -226,7 +226,7 @@ Recent Symbols:
 cd /path/to/your/project
 
 # Run indexer (scans current directory)
-codeseer index
+n3mo index
 ```
 
 **What Gets Indexed:**
@@ -239,23 +239,23 @@ codeseer index
 
 ```bash
 # Find all callers of a function (direct + indirect)
-codeseer impact "authenticate_user" --graph
+n3mo impact "authenticate_user" --graph
 
 # CI/CD mode (exit code 1 if impact > threshold)
-codeseer impact "core_function" --ci --threshold 20
+n3mo impact "core_function" --ci --threshold 20
 ```
 
 ### Query Examples
 
 ```bash
 # List all functions in a file
-codeseer query --file "auth.py" --kind function
+n3mo query --file "auth.py" --kind function
 
 # Find class hierarchy
-codeseer hierarchy "UserModel"
+n3mo hierarchy "UserModel"
 
 # Export dependency graph
-codeseer export --format dot > deps.dot
+n3mo export --format dot > deps.dot
 ```
 
 ---
@@ -371,7 +371,7 @@ graph LR
 ### Blast Radius Report
 
 ```bash
-$ codeseer impact "authenticate_user"
+$ n3mo impact "authenticate_user"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  BLAST RADIUS ANALYSIS
@@ -498,6 +498,6 @@ Delhi Technological University
 
 *Building tools for understanding code at scale*
 
-![Visitors](https://visitor-badge.laobi.icu/badge?page_id=RajX-dev.CODESEER-MAIN)
+![Visitors](https://visitor-badge.laobi.icu/badge?page_id=RajX-dev.N3MO)
 
 </div>
