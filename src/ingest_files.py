@@ -1,4 +1,4 @@
-# CodeSeer 
+# N3MO 
 # Copyright (C) 2026 Raj Shekhar
 #
 # This program is free software: you can redistribute it and/or modify
@@ -122,4 +122,4 @@ def process_file(full_path, rel_path, project_id):
 
 if __name__ == "__main__":
     # Standard local run
-    ingest_repo(".", "CodeSeer-Indexer", "http://internal/codeseer")
+    ingest_repo(".", "N3MO-Indexer", "http://internal/N3MO")
