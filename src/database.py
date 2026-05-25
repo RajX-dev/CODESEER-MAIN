@@ -1,5 +1,5 @@
 import psycopg2
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import RealDictCursor, execute_values
 from psycopg2 import pool
 import os
 import uuid
@@ -94,6 +94,48 @@ def upsert_symbol(project_id, symbol_data):
         if "duplicate key" not in str(e):
             print(f"❌ Error inserting {symbol_data['name']}: {e}")
         raise e
+    finally:
+        release_connection(conn)
+def batch_upsert_symbols(project_id, symbols):
+    """Insert all symbols for a file in one transaction."""
+    if not symbols:
+        return {}
+    
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            values = [
+                (
+                    sym["id"],
+                    project_id,
+                    sym["parent_id"],
+                    sym["file_path"],
+                    sym["name"],
+                    sym["kind"],
+                    sym["signature"],
+                    sym["start_line"],
+                    sym["end_line"]
+                )
+                for sym in symbols
+            ]
+            
+            execute_values(cur, """
+                INSERT INTO symbols 
+                    (id, project_id, parent_id, file_path, name, kind, signature, start_line, end_line)
+                VALUES %s
+                ON CONFLICT (project_id, file_path, parent_id, name)
+                DO UPDATE SET
+                    file_path = EXCLUDED.file_path,
+                    signature = EXCLUDED.signature,
+                    start_line = EXCLUDED.start_line,
+                    end_line = EXCLUDED.end_line
+                RETURNING id, name
+            """, values)
+            
+            rows = cur.fetchall()
+            conn.commit()
+            
+            return {row[1]: row[0] for row in rows}
     finally:
         release_connection(conn)
 
