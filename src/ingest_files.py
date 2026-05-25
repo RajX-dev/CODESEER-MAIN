@@ -20,10 +20,10 @@ import os
 from pathlib import Path
 
 # 1. Imports
-from symbol_extractor import extract_symbols_imports_calls
-from database import ensure_project, upsert_symbol, upsert_import, upsert_call
-from resolve_imports import resolve_project_imports
-from resolve_calls import resolve_project_calls
+from src.symbol_extractor import extract_symbols_imports_calls
+from src.database import ensure_project, upsert_symbol, upsert_import, upsert_call, batch_upsert_symbols
+from src.resolve_imports import resolve_project_imports
+from src.resolve_calls import resolve_project_calls
 
 # ==========================================
 # 🛑 IGNORE LIST (The Speed Boost)
@@ -37,6 +37,7 @@ IGNORE_DIRS = {
 }
 
 def ingest_repo(repo_path, project_name, repo_url):
+    repo_path = os.path.abspath(repo_path)
     print(f"\n🚀 STARTING INGESTION: {project_name}")
     print(f"📂 Scanning: {repo_path}")
 
@@ -95,7 +96,7 @@ def process_file(full_path, rel_path, project_id):
 
     # Extract EVERYTHING
     try:
-        symbols, imports, calls = extract_symbols_imports_calls(code_bytes, str(rel_path))
+       symbols, imports, calls = extract_symbols_imports_calls(code_bytes, str(full_path.resolve()))
     except Exception as e:
         print(f"⚠️ Parse Error in {rel_path}: {e}")
         return
@@ -105,14 +106,25 @@ def process_file(full_path, rel_path, project_id):
         upsert_import(project_id, imp)
 
     # Save Symbols
-    temp_to_real_id = {}
-    for sym in symbols:
-        # Resolve parent ID if needed
-        if sym["parent_id"] and sym["parent_id"] in temp_to_real_id:
-            sym["parent_id"] = temp_to_real_id[sym["parent_id"]]
-            
-        real_id = upsert_symbol(project_id, sym)
-        temp_to_real_id[sym["id"]] = real_id
+# Save Symbols - batch insert classes first, then functions
+temp_to_real_id = {}
+
+# Split by kind
+classes = [sym for sym in symbols if sym["kind"] == "CLASS"]
+functions = [sym for sym in symbols if sym["kind"] == "FUNCTION"]
+
+# Insert classes first - get real IDs back
+class_id_map = batch_upsert_symbols(project_id, classes)
+temp_to_real_id.update({sym["id"]: class_id_map.get(sym["name"]) for sym in classes})
+
+# Update parent IDs for functions
+for sym in functions:
+    if sym["parent_id"] and sym["parent_id"] in temp_to_real_id:
+        sym["parent_id"] = temp_to_real_id[sym["parent_id"]]
+
+# Insert functions with correct parent IDs
+func_id_map = batch_upsert_symbols(project_id, functions)
+temp_to_real_id.update({sym["id"]: func_id_map.get(sym["name"]) for sym in functions})
 
     # Save Calls
     for call in calls:
@@ -123,3 +135,4 @@ def process_file(full_path, rel_path, project_id):
 if __name__ == "__main__":
     # Standard local run
     ingest_repo(".", "N3MO-Indexer", "http://internal/N3MO")
+
