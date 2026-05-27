@@ -105,27 +105,25 @@ def process_file(full_path, rel_path, project_id):
     for imp in imports:
         upsert_import(project_id, imp)
 
-    # Save Symbols
-# Save Symbols - batch insert classes first, then functions
-temp_to_real_id = {}
+    # Save Symbols - batch insert classes first, then functions
+    temp_to_real_id = {}
 
-# Split by kind
-classes = [sym for sym in symbols if sym["kind"] == "CLASS"]
-functions = [sym for sym in symbols if sym["kind"] == "FUNCTION"]
+    # Split by kind
+    classes = [sym for sym in symbols if sym["kind"] == "CLASS"]
+    functions = [sym for sym in symbols if sym["kind"] == "FUNCTION"]
 
-# Insert classes first - get real IDs back
-class_id_map = batch_upsert_symbols(project_id, classes)
-temp_to_real_id.update({sym["id"]: class_id_map.get(sym["name"]) for sym in classes})
+    # Insert classes first - get real IDs back
+    class_id_map = batch_upsert_symbols(project_id, classes)
+    temp_to_real_id.update({sym["id"]: class_id_map.get(sym["name"]) for sym in classes})
 
-# Update parent IDs for functions
-for sym in functions:
-    if sym["parent_id"] and sym["parent_id"] in temp_to_real_id:
-        sym["parent_id"] = temp_to_real_id[sym["parent_id"]]
+    # Update parent IDs for functions
+    for sym in functions:
+        if sym["parent_id"] and sym["parent_id"] in temp_to_real_id:
+            sym["parent_id"] = temp_to_real_id[sym["parent_id"]]
 
-# Insert functions with correct parent IDs
-func_id_map = batch_upsert_symbols(project_id, functions)
-temp_to_real_id.update({sym["id"]: func_id_map.get(sym["name"]) for sym in functions})
-
+    # Insert functions with correct parent IDs
+    func_id_map = batch_upsert_symbols(project_id, functions)
+    temp_to_real_id.update({sym["id"]: func_id_map.get(sym["name"]) for sym in functions})
     # Save Calls
     for call in calls:
         if call["source_symbol_id"] in temp_to_real_id:
