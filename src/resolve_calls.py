@@ -40,4 +40,4 @@ def resolve_call_links(project_id):
     except Exception as e:
         print(f"❌ Linking failed: {e}")
     finally:
-        release_connection(conn)
+        release_connection(conn) 

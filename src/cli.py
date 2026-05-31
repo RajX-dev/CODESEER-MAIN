@@ -805,10 +805,15 @@ def cmd_impact(args):
 
     conn = get_connection()
     symbol_name = args.symbol
+    file_filter = args.file if hasattr(args, 'file') else None
     filename = None
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s LIMIT 1", (symbol_name,))
+            if file_filter:
+                cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s AND file_path LIKE %s LIMIT 1", 
+                            (symbol_name, f"%{file_filter}%"))
+            else:
+                cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s LIMIT 1", (symbol_name,))
             target = cur.fetchone()
             if not target:
                 print(f"\n  {RED}✗{R} Symbol {WHITE}'{symbol_name}'{R} not found in index.\n")
@@ -911,6 +916,7 @@ def main():
     parser_impact = subparsers.add_parser('impact')
     parser_impact.add_argument('symbol')
     parser_impact.add_argument('--graph', action='store_true')
+    parser_impact.add_argument('--file', help="Filter by file path", default=None)
     parser_impact.add_argument('--root', help="Absolute Windows path to project root for VS Code links", default="")
     parser_impact.set_defaults(func=cmd_impact)
     parser_index = subparsers.add_parser('index')
