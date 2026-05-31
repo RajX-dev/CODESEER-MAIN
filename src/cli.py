@@ -835,12 +835,12 @@ def cmd_impact(args):
                 JOIN symbols current_target ON current_target.name = ic.source
                 JOIN calls c ON c.resolved_symbol_id = current_target.id
                 JOIN symbols s ON c.source_symbol_id = s.id
-                WHERE ic.depth < 5
+                WHERE ic.depth < %s
             )
             SELECT DISTINCT source, file_path, line_number, depth, target
             FROM impact_chain ORDER BY depth ASC, file_path;
             """
-            cur.execute(query, (target_id,))
+            cur.execute(query, (target_id, args.depth))
             results = cur.fetchall()
             if not results:
                 print(f"  {CYAN}✓{R}  Safe to change — no dependencies found.\n")
@@ -917,6 +917,7 @@ def main():
     parser_impact.add_argument('symbol')
     parser_impact.add_argument('--graph', action='store_true')
     parser_impact.add_argument('--file', help="Filter by file path", default=None)
+    parser_impact.add_argument('--depth', type=int, default=3, help="Blast radius depth (default: 3, max recommended: 5)")
     parser_impact.add_argument('--root', help="Absolute Windows path to project root for VS Code links", default="")
     parser_impact.set_defaults(func=cmd_impact)
     parser_index = subparsers.add_parser('index')
