@@ -4,11 +4,13 @@ import argparse
 import json
 import http.server
 import socketserver
-from database import get_connection
+from src.database import get_connection
+import webbrowser
+import threading
 
 # Try to import the indexer logic
 try:
-    from run_indexer import main as run_indexer_logic
+    from src.run_indexer import main as run_indexer_logic
 except ImportError:
     run_indexer_logic = None
 
@@ -87,8 +89,8 @@ def print_ascii_tree(results, target_name):
 # 📊 GRAPH VISUALIZER (HTML Generator)
 # ==========================================
 
-def generate_graph_html(nodes, edges, target_name):
-    nodes_list = [{"id": n, "label": n, "group": g} for n, g in nodes]
+def generate_graph_html(nodes, edges, target_name, max_depth=3):
+    nodes_list = [{"id": n, "label": n, "group": d["group"], "path": d.get("path", ""), "line": d.get("line", 0)} for n, d in nodes]
     edges_list = [{"from": u, "to": v} for u, v in edges]
     
     nodes_json = json.dumps(nodes_list)
@@ -499,6 +501,11 @@ def generate_graph_html(nodes, edges, target_name):
         <button class="control-btn" id="btn-fit" title="Fit to view">⊡</button>
         <button class="control-btn" id="btn-zoom-in" title="Zoom in">+</button>
         <button class="control-btn" id="btn-zoom-out" title="Zoom out">−</button>
+        <div style="display:flex; align-items:center; gap:6px; padding: 4px 8px;">
+          <span style="font-size:11px; color:#8b949e;">Depth</span>
+          <input type="range" id="depth-slider" min="1" max="5" value="{max_depth}" style="width:80px; accent-color:#2f81f7;">
+          <span id="depth-label" style="font-size:11px; color:#e6edf3; min-width:8px;">{max_depth}</span>
+        </div>
       </div>
 
       <!-- Legend -->
@@ -548,21 +555,17 @@ def generate_graph_html(nodes, edges, target_name):
     </div>
   </div>
 
-  <script>
+<script>
     const nodesData = {nodes_json};
     const edgesData = {edges_json};
 
-    // Calculate stats
-    const directCount = nodesData.filter(n => n.group === 1).length;
-    const totalCount = nodesData.filter(n => n.group > 0).length;
-    document.getElementById('stat-direct').textContent = directCount;
-    document.getElementById('stat-total').textContent = totalCount;
-
-    // Setup network
-    const nodes = new vis.DataSet(nodesData.map(n => ({{
+    // 1. Pre-calculate formatted nodes with all styling applied
+    const formattedNodes = nodesData.map(n => ({{
       id: n.id,
       label: n.label,
       group: n.group,
+      path: n.path,
+      line: n.line,
       font: {{ 
         face: 'JetBrains Mono', 
         color: '#e6edf3',
@@ -579,16 +582,27 @@ def generate_graph_html(nodes, edges, target_name):
           border: '#fff' 
         }}
       }}
-    }})));
+    }}));
 
-    const edges = new vis.DataSet(edgesData.map(e => ({{
+    // 2. Pre-calculate formatted edges with all styling applied
+    const formattedEdges = edgesData.map(e => ({{
       from: e.from, 
       to: e.to,
       arrows: {{ to: {{ enabled: true, scaleFactor: 0.5 }} }},
       color: {{ color: '#30363d', highlight: '#8b949e' }},
       width: 1,
       smooth: {{ type: 'curvedCW', roundness: 0.1 }}
-    }})));
+    }}));
+
+    // Calculate stats
+    const directCount = nodesData.filter(n => n.group === 1).length;
+    const totalCount = nodesData.filter(n => n.group > 0).length;
+    document.getElementById('stat-direct').textContent = directCount;
+    document.getElementById('stat-total').textContent = totalCount;
+
+    // 3. Setup network using the formatted arrays instead of mapping inline
+    const nodes = new vis.DataSet(formattedNodes);
+    const edges = new vis.DataSet(formattedEdges);
 
     const container = document.getElementById('mynetwork');
     const network = new vis.Network(container, {{ nodes, edges }}, {{
@@ -600,7 +614,8 @@ def generate_graph_html(nodes, edges, target_name):
           damping: 0.4
         }},
         solver: 'forceAtlas2Based',
-        stabilization: {{ iterations: 150 }}
+        stabilization: {{ iterations: 150, fit: true }},
+        adaptiveTimestep: true
       }},
       interaction: {{
         hover: true,
@@ -638,8 +653,8 @@ def generate_graph_html(nodes, edges, target_name):
             <div class="card-label">Call Site Preview</div>
             <div class="code-preview">
               <div class="code-header">
-                <span class="code-file">example.py</span>
-                <span class="code-line-badge">Line 42</span>
+                <span class="code-file">${{node.path}}</span>
+                <span class="code-line-badge">Line ${{node.line}}</span>
               </div>
               <div class="code-content">
                 <div class="code-line">
@@ -662,7 +677,7 @@ def generate_graph_html(nodes, edges, target_name):
             </div>
           </div>
 
-          <a href="vscode://file/${{node.id}}" class="btn">Open in Editor</a>
+          <a href="vscode://file/${{node.path}}:${{node.line}}" class="btn">Open in Editor</a>
           <button class="btn btn-secondary" onclick="network.focus('${{node.id}}', {{ scale: 1.5, animation: true }})">Focus Node</button>
         `;
         
@@ -682,6 +697,24 @@ def generate_graph_html(nodes, edges, target_name):
     document.getElementById('btn-zoom-out').addEventListener('click', () => {{
       network.moveTo({{ scale: network.getScale() * 0.8 }});
     }});
+    
+    // Depth slider
+    document.getElementById('depth-slider').addEventListener('input', function() {{
+        const depth = parseInt(this.value);
+        document.getElementById('depth-label').textContent = depth;
+
+        // 4. Filter against the fully styled arrays
+        const filteredNodes = formattedNodes.filter(n => n.group <= depth);
+        const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+        const filteredEdges = formattedEdges.filter(e => 
+            filteredNodeIds.has(e.from) && filteredNodeIds.has(e.to)
+        );
+
+        nodes.clear();
+        edges.clear();
+        nodes.add(filteredNodes);
+        edges.add(filteredEdges);
+    }});
 
     // Auto-fit after stabilization
     network.once('stabilizationIterationsDone', () => {{
@@ -700,6 +733,100 @@ def generate_graph_html(nodes, edges, target_name):
 # 🚀 COMMAND: IMPACT
 # ==========================================
 
+# def cmd_impact(args):
+#     W = 64
+#     print()
+#     print(f"{BG_DARK}{CYAN}{BOLD}  N3MO  {R}{GRAY}  ◈  impact tracker{R}")
+#     print(f"{GRAY}  {'─' * W}{R}")
+
+#     conn = get_connection()
+#     symbol_name = args.symbol
+#     filename = None
+#     try:
+#         with conn.cursor() as cur:
+#             cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s LIMIT 1", (symbol_name,))
+#             target = cur.fetchone()
+#             if not target:
+#                 print(f"\n  {RED}✗{R} Symbol {WHITE}'{symbol_name}'{R} not found in index.\n")
+#                 return
+#             target_id, real_name, target_file = target
+#             print(f"\n  {DIM}Analyzing{R}  {AMBER}{BOLD}{real_name}{R}")
+#             print(f"  {GRAY}Location: {DIM}{target_file}{R}\n")
+
+#             query = """
+#             WITH RECURSIVE impact_chain AS (
+#                 SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target
+#                 FROM calls c
+#                 JOIN symbols s ON c.source_symbol_id = s.id
+#                 JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
+#                 WHERE c.resolved_symbol_id = %s
+#                 UNION ALL
+#                 SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source
+#                 FROM impact_chain ic
+#                 JOIN symbols current_target ON current_target.name = ic.source
+#                 JOIN calls c ON c.resolved_symbol_id = current_target.id
+#                 JOIN symbols s ON c.source_symbol_id = s.id
+#                 WHERE ic.depth < 5
+#             )
+#             SELECT DISTINCT source, file_path, line_number, depth, target
+#             FROM impact_chain ORDER BY depth ASC, file_path;
+#             """
+#             cur.execute(query, (target_id,))
+#             results = cur.fetchall()
+#             if not results:
+#                 print(f"  {CYAN}✓{R}  Safe to change — no dependencies found.\n")
+#                 return
+#             print_ascii_tree(results, real_name)
+
+#             if args.graph:
+#                 nodes_map = {real_name: {"group": 0, "path": "", "line": 0}}
+#                 edges = set()
+#                 for source, path, line, depth, target in results:
+#                     s_group = 1 if depth == 1 else 2
+#                     t_group = 1 if depth == 2 else 2
+#                     if target == real_name: t_group = 0
+#                     if source not in nodes_map or s_group < nodes_map[source]["group"]:
+#                        nodes_map[source] = {"group": s_group, "path": path, "line": line}
+#                     if target not in nodes_map or t_group < nodes_map[target]["group"]:
+#                        nodes_map[target] = {"group": t_group, "path": path, "line": line}
+#                     edges.add((source, target))
+
+#                 nodes_set = list(nodes_map.items())
+#                 filename = generate_graph_html(nodes_set, edges, real_name)
+#                 abs_filename = os.path.abspath(filename)
+#                 serve_dir = os.path.dirname(abs_filename)
+#                 serve_file = os.path.basename(abs_filename)
+#                 url = f"http://localhost:8080/{serve_file}"
+                
+#                 print(f"  {CYAN}◈{R}  Graph ready")
+#                 print(f"  {BOLD}{WHITE}Server:{R}  {BLUE}\033[4m{url}\033[0m{R}")
+#                 print(f"  {CYAN}◈{R}  Opening in browser... Ctrl+C to stop server")
+                
+#                 import subprocess
+#                 server = subprocess.Popen(
+#                     ["python", "-m", "http.server", "8080"],
+#                     cwd=serve_dir
+#                 )
+#                 threading.Timer(2.0, lambda: webbrowser.open(url)).start()
+#                 try:
+#                     server.wait()
+#                 except KeyboardInterrupt:
+#                     server.terminate()
+#                     print(f"\n  {CYAN}◈{R}  Server stopped.")
+                
+#     except KeyboardInterrupt:
+#         print(f"\n  {GRAY}Shutting down…{R}\n")
+#     except Exception as e:
+#         print(f"\n  {RED}✗  Error:{R} {e}\n")
+#     finally:
+#         if conn: conn.close()
+#         if filename and os.path.exists(filename):
+#             os.remove(filename)
+
+# ==========================================
+# COMMAND: IMPACT
+# ====================================================================================
+
 def cmd_impact(args):
     W = 64
     print()
@@ -708,10 +835,15 @@ def cmd_impact(args):
 
     conn = get_connection()
     symbol_name = args.symbol
+    file_filter = args.file if hasattr(args, 'file') else None
     filename = None
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s LIMIT 1", (symbol_name,))
+            if file_filter:
+                cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s AND file_path LIKE %s LIMIT 1", 
+                            (symbol_name, f"%{file_filter}%"))
+            else:
+                cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s LIMIT 1", (symbol_name,))
             target = cur.fetchone()
             if not target:
                 print(f"\n  {RED}✗{R} Symbol {WHITE}'{symbol_name}'{R} not found in index.\n")
@@ -733,12 +865,12 @@ def cmd_impact(args):
                 JOIN symbols current_target ON current_target.name = ic.source
                 JOIN calls c ON c.resolved_symbol_id = current_target.id
                 JOIN symbols s ON c.source_symbol_id = s.id
-                WHERE ic.depth < 5
+                WHERE ic.depth < %s
             )
             SELECT DISTINCT source, file_path, line_number, depth, target
             FROM impact_chain ORDER BY depth ASC, file_path;
             """
-            cur.execute(query, (target_id,))
+            cur.execute(query, (target_id, args.depth))
             results = cur.fetchall()
             if not results:
                 print(f"  {CYAN}✓{R}  Safe to change — no dependencies found.\n")
@@ -746,37 +878,66 @@ def cmd_impact(args):
             print_ascii_tree(results, real_name)
 
             if args.graph:
-                nodes_map = {real_name: 0}
+                nodes_map = {real_name: {"group": 0, "path": "", "line": 0}}
                 edges = set()
+                
+                # Auto-detect terminal directory so VS Code links work perfectly
+                base_dir = os.getcwd()
+
                 for source, path, line, depth, target in results:
                     s_group = 1 if depth == 1 else 2
                     t_group = 1 if depth == 2 else 2
                     if target == real_name: t_group = 0
-                    if source not in nodes_map or s_group < nodes_map[source]: nodes_map[source] = s_group
-                    if target not in nodes_map or t_group < nodes_map[target]: nodes_map[target] = t_group
+                    
+                    full_path = ""
+                    if path:
+                        full_path = f"{base_dir}/{path}".replace("\\", "/")
+
+                    if source not in nodes_map or s_group < nodes_map[source]["group"]:
+                       nodes_map[source] = {"group": s_group, "path": full_path, "line": line}
+                    if target not in nodes_map or t_group < nodes_map[target]["group"]:
+                       nodes_map[target] = {"group": t_group, "path": full_path, "line": line}
                     edges.add((source, target))
 
-                nodes_set = set(nodes_map.items())
-                filename = generate_graph_html(nodes_set, edges, real_name)
-
-                PORT = 8000
-                Handler = http.server.SimpleHTTPRequestHandler
-                socketserver.TCPServer.allow_reuse_address = True
+                nodes_set = list(nodes_map.items())
+                filename = generate_graph_html(nodes_set, edges, real_name, args.depth)
+                abs_filename = os.path.abspath(filename)
+                serve_dir = os.path.dirname(abs_filename)
+                serve_file = os.path.basename(abs_filename)
+                url = f"http://127.0.0.1:8080/{serve_file}"
+                
                 print(f"  {CYAN}◈{R}  Graph ready")
-                print(f"  {GRAY}{'─' * W}{R}")
-                with socketserver.TCPServer(("0.0.0.0", PORT), Handler) as httpd:
-                    print(f"  {BOLD}{WHITE}Server:{R}  {BLUE}\033[4mhttp://localhost:{PORT}/{filename}\033[0m{R}")
-                    print(f"  {GRAY}Press Ctrl+C to exit{R}\n")
-                    httpd.serve_forever()
+                print(f"  {BOLD}{WHITE}Server:{R}  {BLUE}\033[4m{url}\033[0m{R}")
+                print(f"  {CYAN}◈{R}  Opening browser automatically... Press Ctrl+C to stop server")
+                
+                import subprocess
+                import threading
+                import webbrowser
 
+                # Bind to 127.0.0.1 to avoid Windows Firewall popups
+                server = subprocess.Popen(
+                    ["python", "-m", "http.server", "8080", "--bind", "127.0.0.1"],
+                    cwd=serve_dir
+                )
+                
+                # Wait 1.5s for the server to boot, then pop the browser
+                threading.Timer(1.5, lambda: webbrowser.open(url)).start()
+                
+                try:
+                    server.wait()
+                except KeyboardInterrupt:
+                    server.terminate()
+                    print(f"\n  {CYAN}◈{R}  Server stopped.")
+                
     except KeyboardInterrupt:
         print(f"\n  {GRAY}Shutting down…{R}\n")
     except Exception as e:
         print(f"\n  {RED}✗  Error:{R} {e}\n")
     finally:
         if conn: conn.close()
-        if filename and os.path.exists(filename):
-            os.remove(filename)
+        # Keep the file so the server can actually serve it!
+        # if filename and os.path.exists(filename):
+        #     os.remove(filename)
 
 
 def main():
@@ -785,6 +946,9 @@ def main():
     parser_impact = subparsers.add_parser('impact')
     parser_impact.add_argument('symbol')
     parser_impact.add_argument('--graph', action='store_true')
+    parser_impact.add_argument('--file', help="Filter by file path", default=None)
+    parser_impact.add_argument('--depth', type=int, default=3, help="Blast radius depth (default: 3, max recommended: 5)")
+    parser_impact.add_argument('--root', help="Absolute Windows path to project root for VS Code links", default="")
     parser_impact.set_defaults(func=cmd_impact)
     parser_index = subparsers.add_parser('index')
     parser_index.set_defaults(func=lambda args: run_indexer_logic())
