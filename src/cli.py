@@ -89,7 +89,7 @@ def print_ascii_tree(results, target_name):
 # 📊 GRAPH VISUALIZER (HTML Generator)
 # ==========================================
 
-def generate_graph_html(nodes, edges, target_name):
+def generate_graph_html(nodes, edges, target_name, max_depth=3):
     nodes_list = [{"id": n, "label": n, "group": d["group"], "path": d.get("path", ""), "line": d.get("line", 0)} for n, d in nodes]
     edges_list = [{"from": u, "to": v} for u, v in edges]
     
@@ -501,6 +501,11 @@ def generate_graph_html(nodes, edges, target_name):
         <button class="control-btn" id="btn-fit" title="Fit to view">⊡</button>
         <button class="control-btn" id="btn-zoom-in" title="Zoom in">+</button>
         <button class="control-btn" id="btn-zoom-out" title="Zoom out">−</button>
+        <div style="display:flex; align-items:center; gap:6px; padding: 4px 8px;">
+          <span style="font-size:11px; color:#8b949e;">Depth</span>
+          <input type="range" id="depth-slider" min="1" max="5" value="{max_depth}" style="width:80px; accent-color:#2f81f7;">
+          <span id="depth-label" style="font-size:11px; color:#e6edf3; min-width:8px;">{max_depth}</span>
+        </div>
       </div>
 
       <!-- Legend -->
@@ -550,21 +555,17 @@ def generate_graph_html(nodes, edges, target_name):
     </div>
   </div>
 
-  <script>
+<script>
     const nodesData = {nodes_json};
     const edgesData = {edges_json};
 
-    // Calculate stats
-    const directCount = nodesData.filter(n => n.group === 1).length;
-    const totalCount = nodesData.filter(n => n.group > 0).length;
-    document.getElementById('stat-direct').textContent = directCount;
-    document.getElementById('stat-total').textContent = totalCount;
-
-    // Setup network
-    const nodes = new vis.DataSet(nodesData.map(n => ({{
+    // 1. Pre-calculate formatted nodes with all styling applied
+    const formattedNodes = nodesData.map(n => ({{
       id: n.id,
       label: n.label,
       group: n.group,
+      path: n.path,
+      line: n.line,
       font: {{ 
         face: 'JetBrains Mono', 
         color: '#e6edf3',
@@ -581,16 +582,27 @@ def generate_graph_html(nodes, edges, target_name):
           border: '#fff' 
         }}
       }}
-    }})));
+    }}));
 
-    const edges = new vis.DataSet(edgesData.map(e => ({{
+    // 2. Pre-calculate formatted edges with all styling applied
+    const formattedEdges = edgesData.map(e => ({{
       from: e.from, 
       to: e.to,
       arrows: {{ to: {{ enabled: true, scaleFactor: 0.5 }} }},
       color: {{ color: '#30363d', highlight: '#8b949e' }},
       width: 1,
       smooth: {{ type: 'curvedCW', roundness: 0.1 }}
-    }})));
+    }}));
+
+    // Calculate stats
+    const directCount = nodesData.filter(n => n.group === 1).length;
+    const totalCount = nodesData.filter(n => n.group > 0).length;
+    document.getElementById('stat-direct').textContent = directCount;
+    document.getElementById('stat-total').textContent = totalCount;
+
+    // 3. Setup network using the formatted arrays instead of mapping inline
+    const nodes = new vis.DataSet(formattedNodes);
+    const edges = new vis.DataSet(formattedEdges);
 
     const container = document.getElementById('mynetwork');
     const network = new vis.Network(container, {{ nodes, edges }}, {{
@@ -684,6 +696,24 @@ def generate_graph_html(nodes, edges, target_name):
 
     document.getElementById('btn-zoom-out').addEventListener('click', () => {{
       network.moveTo({{ scale: network.getScale() * 0.8 }});
+    }});
+    
+    // Depth slider
+    document.getElementById('depth-slider').addEventListener('input', function() {{
+        const depth = parseInt(this.value);
+        document.getElementById('depth-label').textContent = depth;
+
+        // 4. Filter against the fully styled arrays
+        const filteredNodes = formattedNodes.filter(n => n.group <= depth);
+        const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+        const filteredEdges = formattedEdges.filter(e => 
+            filteredNodeIds.has(e.from) && filteredNodeIds.has(e.to)
+        );
+
+        nodes.clear();
+        edges.clear();
+        nodes.add(filteredNodes);
+        edges.add(filteredEdges);
     }});
 
     // Auto-fit after stabilization
@@ -870,7 +900,7 @@ def cmd_impact(args):
                     edges.add((source, target))
 
                 nodes_set = list(nodes_map.items())
-                filename = generate_graph_html(nodes_set, edges, real_name)
+                filename = generate_graph_html(nodes_set, edges, real_name, args.depth)
                 abs_filename = os.path.abspath(filename)
                 serve_dir = os.path.dirname(abs_filename)
                 serve_file = os.path.basename(abs_filename)
