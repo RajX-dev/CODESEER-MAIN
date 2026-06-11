@@ -145,7 +145,7 @@ erDiagram
 
 ## ✨ Features
 
-### Current capabilities (v0.3)
+### Current capabilities (v0.4)
 
 - ✅ **AST-based parsing** — Tree-sitter integration for error-tolerant Python analysis
 - ✅ **Symbol extraction** — functions, classes, methods with full file + line context
@@ -153,13 +153,15 @@ erDiagram
 - ✅ **Call graph construction** — who calls whom, captured at ingestion time
 - ✅ **Blast radius analysis** — recursive CTE traversal to arbitrary depth
 - ✅ **Idempotent ingestion** — re-indexing updates existing data without duplication
-- ✅ **Interactive visualizer** — vis.js graph with click-to-inspect nodes and sidebar
+- ✅ **Interactive visualizer** — vis.js graph with click-to-inspect nodes, sidebar, and depth slider
 - ✅ **Docker-first** — single-command infrastructure setup
+- ✅ **Connection pooling** — eliminated per-symbol DB round trips
+- ✅ **Batch inserts** — symbols, imports, and calls batched per file
+- ✅ **SPLIT_PART query fix** — major call-resolution speedup
+- ✅ **CLI flags** — `--file` and `--depth` for targeted impact analysis
 
-### In development (v0.4)
+### In development (v0.5)
 
-- 🚧 **Connection pooling** — eliminate per-symbol DB round trips
-- 🚧 **Batch inserts** — 1 transaction per file, not per row
 - 🚧 **Incremental re-index** — SHA-256 file hashing, skip unchanged files
 - 🚧 **Multiprocessing** — parallel AST parsing via `ProcessPoolExecutor`
 - 🚧 **Scope-aware call resolution** — use imports table, eliminate false positives
@@ -222,7 +224,10 @@ n3mo index
 # Find everything affected by changing a function
 n3mo impact "authenticate_user"
 
-# Open an interactive visual graph in your browser
+# Limit to a specific file or traversal depth
+n3mo impact "authenticate_user" --file api/auth.py --depth 2
+
+# Open an interactive visual graph in your browser (with depth slider)
 n3mo impact "authenticate_user" --graph
 ```
 
@@ -290,9 +295,11 @@ graph LR
 
 ## 📊 Benchmarks
 
+### ScanCode Toolkit (v0.3 baseline)
+
 **Tested on [ScanCode Toolkit](https://github.com/nexB/scancode-toolkit)** — a real-world open source Python project with ~600k lines of code.
 
-| Metric | v0.3 (current) |
+| Metric | v0.3 (baseline) |
 |--------|---------------|
 | **Repository** | nexB/scancode-toolkit |
 | **Lines of code** | ~600,000 |
@@ -300,9 +307,23 @@ graph LR
 | **Processing mode** | Single-threaded |
 | **Hardware** | Intel i5-13450HX, 24GB RAM, NVMe SSD |
 
-> ✅ Real measured result on a real public repo — clone it and try yourself.
+### Django — full optimization history (v0.3 → v0.4)
+
+| Version | Index time | Speedup |
+|---------|-----------|---------|
+| v0.3 baseline | 23 minutes | 1x |
+| After SPLIT_PART fix | 11 minutes | 2x |
+| After batch inserts (symbols/imports/calls) | 5 minutes | 4.6x |
+
+```
+Files:    3,021
+Symbols:  ~43,000
+Calls:    ~181,000
+```
+
+> ✅ Real measured results on Django, single-threaded, same hardware as above.
 >
-> Multiprocessing (v0.4) will produce a proper before/after comparison once implemented. No projections until the code exists.
+> **Total improvement: 4.6x faster than v0.3.** Multiprocessing (v0.5) will produce a further before/after comparison once implemented. No projections until the code exists.
 
 ---
 
@@ -320,11 +341,14 @@ graph LR
 | | Blast radius (recursive CTE) | ✅ Complete |
 | | Interactive visualizer | ✅ Complete |
 | **Phase 2 — Performance** | | |
-| | Connection pooling | 🔵 Next |
-| | Batch DB operations | 🔵 Next |
+| | Connection pooling | ✅ Complete |
+| | Batch DB operations (symbols/imports/calls) | ✅ Complete |
+| | SPLIT_PART query fix | ✅ Complete |
+| | `--file` / `--depth` CLI flags | ✅ Complete |
+| | Interactive depth slider | ✅ Complete |
+| **Phase 3 — Correctness & Scaling** | | |
 | | Incremental re-index (file hashing) | 🔵 Next |
 | | Multiprocessing (AST parsing) | 🔵 Next |
-| **Phase 3 — Correctness** | | |
 | | Scope-aware call resolution | ⏳ Planned |
 | | CTE cycle guard | ⏳ Planned |
 | | Full type annotations + mypy | ⏳ Planned |
@@ -352,18 +376,23 @@ graph LR
 </details>
 
 <details>
-<summary><b>Phase 2: Performance</b> 🔵 In Progress</summary>
+<summary><b>Phase 2: Performance</b> ✅ Complete</summary>
 
-- [ ] `psycopg2.pool.ThreadedConnectionPool` — replace per-call connections
-- [ ] `execute_values()` batch inserts — 1 transaction per file
-- [ ] SHA-256 file hashing for incremental re-index
-- [ ] `ProcessPoolExecutor` for parallel AST parsing
+- [x] `psycopg2.pool.ThreadedConnectionPool` — replace per-call connections
+- [x] `execute_values()` batch inserts for symbols, imports, and calls — 1 transaction per file
+- [x] SPLIT_PART query optimization for call resolution
+- [x] `--file` and `--depth` CLI flags for targeted impact analysis
+- [x] Interactive depth slider in visualizer
+
+**Results:** Django (3,021 files, ~43k symbols, ~181k calls) — 23min → 5min (4.6x faster)
 
 </details>
 
 <details>
-<summary><b>Phase 3: Correctness + Quality</b> ⏳ Planned</summary>
+<summary><b>Phase 3: Correctness + Scaling</b> ⏳ Planned</summary>
 
+- [ ] SHA-256 file hashing for incremental re-index
+- [ ] `ProcessPoolExecutor` for parallel AST parsing
 - [ ] Scope-aware call resolution using imports table
 - [ ] CTE cycle guard (visited node tracking)
 - [ ] Full type annotations, `mypy --strict` clean
