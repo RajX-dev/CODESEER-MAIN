@@ -1,4 +1,4 @@
-from database import get_connection
+from src.database import get_connection
 
 def resolve_import_links(project_id):
     print("🔗 Resolving Imports...")

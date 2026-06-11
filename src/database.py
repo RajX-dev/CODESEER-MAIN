@@ -1,30 +1,37 @@
 import psycopg2
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import RealDictCursor, execute_values
+from psycopg2 import pool
 import os
 import uuid
 import time
 
+
+
+_pool = None
+
+def get_pool():
+    global _pool
+    if _pool is None:
+        _pool = pool.ThreadedConnectionPool(
+            minconn=2,
+            maxconn=10,
+            host=os.getenv("POSTGRES_HOST", "localhost"),
+            port=os.getenv("POSTGRES_PORT", "5432"),
+            database=os.getenv("POSTGRES_DB", "n3mo"),
+            user=os.getenv("POSTGRES_USER", "n3mo"),
+            password=os.getenv("POSTGRES_PASSWORD", "n3mo")
+        )
+    return _pool
+
 # 1. Database Connection Config
 def get_connection():
-    """
-    Establishes a connection to the PostgreSQL database.
-    Retries up to 5 times if the database is not ready.
-    """
-    max_retries = 5  # <--- FIXED (Was "5a")
-    for i in range(max_retries):
-        try:
-            return psycopg2.connect(
-                host=os.getenv("POSTGRES_HOST", "postgres"),
-                database=os.getenv("POSTGRES_DB", "n3mo"),
-                user=os.getenv("POSTGRES_USER", "n3mo"),
-                password=os.getenv("POSTGRES_PASSWORD", "n3mo")
-            )
-        except psycopg2.OperationalError:
-            if i < max_retries - 1:
-                time.sleep(2)
-                continue
-            else:
-                raise
+    """Borrow a connection from the pool."""
+    return get_pool().getconn()
+
+def release_connection(conn):
+    """Return a connection back to the pool."""
+    if conn:
+        get_pool().putconn(conn)
 
 # 2. Ensure Project Exists
 def ensure_project(name, repo_url):
@@ -45,7 +52,7 @@ def ensure_project(name, repo_url):
             conn.commit()
             return new_id
     finally:
-        if conn: conn.close()
+        release_connection(conn)
 
 # 3. Upsert Symbol
 def upsert_symbol(project_id, symbol_data):
@@ -59,9 +66,10 @@ def upsert_symbol(project_id, symbol_data):
                 (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (project_id, file_path, parent_id, name) 
             DO UPDATE SET 
-                signature = EXCLUDED.signature,
-                start_line = EXCLUDED.start_line,
-                end_line = EXCLUDED.end_line
+            file_path = EXCLUDED.file_path,
+            signature = EXCLUDED.signature,
+            start_line = EXCLUDED.start_line,
+            end_line = EXCLUDED.end_line
             RETURNING id;
             """
             
@@ -87,7 +95,81 @@ def upsert_symbol(project_id, symbol_data):
             print(f"❌ Error inserting {symbol_data['name']}: {e}")
         raise e
     finally:
-        if conn: conn.close()
+        release_connection(conn)
+def batch_upsert_symbols(project_id, symbols):
+    """Insert all symbols for a file in one transaction."""
+    if not symbols:
+        return {}
+    
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            values = [
+                (
+                    sym["id"],
+                    project_id,
+                    sym["parent_id"],
+                    sym["file_path"],
+                    sym["name"],
+                    sym["kind"],
+                    sym["signature"],
+                    sym["start_line"],
+                    sym["end_line"]
+                )
+                for sym in symbols
+            ]
+            
+            execute_values(cur, """
+                INSERT INTO symbols 
+                    (id, project_id, parent_id, file_path, name, kind, signature, start_line, end_line)
+                VALUES %s
+                ON CONFLICT (project_id, file_path, parent_id, name)
+                DO UPDATE SET
+                    file_path = EXCLUDED.file_path,
+                    signature = EXCLUDED.signature,
+                    start_line = EXCLUDED.start_line,
+                    end_line = EXCLUDED.end_line
+                RETURNING id, name
+            """, values)
+            
+            rows = cur.fetchall()
+            conn.commit()
+            
+            return {row[1]: row[0] for row in rows}
+    finally:
+        release_connection(conn)
+
+def batch_upsert_imports(project_id, imports):
+    """Insert all imports for a file in one transaction."""
+    if not imports:
+        return
+    
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            values = [
+                (
+                    imp["id"],
+                    project_id,
+                    imp["file_path"],
+                    imp["module"],
+                    imp["name"],
+                    imp["alias"]
+                )
+                for imp in imports
+            ]
+            
+            execute_values(cur, """
+                INSERT INTO imports 
+                    (id, project_id, file_path, module, name, alias)
+                VALUES %s
+                ON CONFLICT (project_id, file_path, module, name)
+                DO NOTHING
+            """, values)
+            
+            conn.commit()
+    finally:
+        release_connection(conn)
 
 # 4. Upsert Import
 def upsert_import(project_id, import_data):
@@ -122,7 +204,7 @@ def upsert_import(project_id, import_data):
         print(f"⚠️ Error inserting import {import_data['module']}: {e}")
         return None
     finally:
-        if conn: conn.close()
+        release_connection(conn)
 
 # 5. Upsert Call
 def upsert_call(project_id, call_data):
@@ -146,4 +228,4 @@ def upsert_call(project_id, call_data):
     except Exception as e:
         conn.rollback()
     finally:
-        if conn: conn.close()
+        release_connection(conn)

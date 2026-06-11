@@ -7,8 +7,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     entry_points={
-        'console_scripts': [
-            'n3mo=n3mo.wrapper:main',
-        ],
-    },
+    'console_scripts': [
+        'n3mo=src.cli:main',
+    ],
+},
 )

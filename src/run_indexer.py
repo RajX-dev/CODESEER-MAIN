@@ -2,7 +2,7 @@ import os
 import sys
 
 # --- DATABASE IMPORTS ---
-from database import (
+from src.database import (
     ensure_project, 
     upsert_symbol, 
     upsert_import, 
@@ -19,7 +19,7 @@ except ImportError:
 # --- EXTRACTOR IMPORT ---
 # Using the file 'symbol_extractor.py' seen in your screenshot
 try:
-    from symbol_extractor import extract_symbols
+    from src.symbol_extractor import extract_symbols
 except ImportError:
     try:
         from src.symbol_extractor import extract_symbols
@@ -30,12 +30,12 @@ except ImportError:
 # --- RESOLVER IMPORT ---
 # Using the file 'resolve_calls.py' seen in your screenshot
 try:
-    from resolve_calls import resolve_call_links
+    from src.resolve_calls import resolve_call_links
 except ImportError:
     from src.resolve_calls import resolve_call_links
 
 def main():
-    target_dir = os.getenv("TARGET_CODE_DIR", "/app/target_code")
+    target_dir = os.getenv("TARGET_CODE_DIR", os.getcwd())
     print(f"\n🌊 N3MO: Starting Analysis on {target_dir}...")
 
     if not os.path.exists(target_dir):
