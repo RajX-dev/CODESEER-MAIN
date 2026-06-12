@@ -3,10 +3,8 @@ import sys
 
 # --- DATABASE IMPORTS ---
 from src.database import (
-    ensure_project, 
-    upsert_symbol, 
-    upsert_import, 
-    upsert_call
+    ensure_project,
+    replace_file_index,
 )
 
 # --- CRAWLER IMPORT ---
@@ -72,20 +70,18 @@ def main():
             else:
                 symbols = result; imports = []; calls = []
 
-            for sym in symbols:
-                sym['file_path'] = rel_path
-                if upsert_symbol(project_id, sym): symbol_count += 1
+            replace_file_index(
+                project_id,
+                rel_path,
+                symbols,
+                imports,
+                calls,
+            )
+            symbol_count += len(symbols)
+            call_count += len(calls)
 
-            for imp in imports:
-                imp['file_path'] = rel_path
-                upsert_import(project_id, imp)
-
-            for call in calls:
-                upsert_call(project_id, call)
-                call_count += 1
-
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"Warning: failed to index {rel_path}: {exc}")
 
     # --- RUN THE LINKER (Using your existing resolve_calls.py) ---
     print("🔗 resolving calls...")

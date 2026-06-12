@@ -171,6 +171,118 @@ def batch_upsert_imports(project_id, imports):
     finally:
         release_connection(conn)
 
+def replace_file_index(project_id, file_path, symbols, imports, calls):
+    """Replace one file's graph records using a single transaction."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # Clear links to definitions that are about to receive new IDs.
+            cur.execute(
+                """
+                UPDATE calls
+                SET resolved_symbol_id = NULL
+                WHERE resolved_symbol_id IN (
+                    SELECT id
+                    FROM symbols
+                    WHERE project_id = %s AND file_path = %s
+                )
+                """,
+                (project_id, file_path),
+            )
+            cur.execute(
+                """
+                DELETE FROM calls
+                WHERE project_id = %s
+                  AND source_symbol_id IN (
+                      SELECT id
+                      FROM symbols
+                      WHERE project_id = %s AND file_path = %s
+                  )
+                """,
+                (project_id, project_id, file_path),
+            )
+            cur.execute(
+                "DELETE FROM imports WHERE project_id = %s AND file_path = %s",
+                (project_id, file_path),
+            )
+            cur.execute(
+                "DELETE FROM symbols WHERE project_id = %s AND file_path = %s",
+                (project_id, file_path),
+            )
+
+            if symbols:
+                execute_values(
+                    cur,
+                    """
+                    INSERT INTO symbols
+                        (id, project_id, parent_id, file_path, name, kind,
+                         signature, start_line, end_line)
+                    VALUES %s
+                    """,
+                    [
+                        (
+                            sym["id"],
+                            project_id,
+                            sym["parent_id"],
+                            file_path,
+                            sym["name"],
+                            sym["kind"],
+                            sym["signature"],
+                            sym["start_line"],
+                            sym["end_line"],
+                        )
+                        for sym in symbols
+                    ],
+                )
+
+            if imports:
+                execute_values(
+                    cur,
+                    """
+                    INSERT INTO imports
+                        (id, project_id, file_path, module, name, alias)
+                    VALUES %s
+                    """,
+                    [
+                        (
+                            imp["id"],
+                            project_id,
+                            file_path,
+                            imp["module"],
+                            imp["name"],
+                            imp["alias"],
+                        )
+                        for imp in imports
+                    ],
+                )
+
+            if calls:
+                execute_values(
+                    cur,
+                    """
+                    INSERT INTO calls
+                        (id, project_id, source_symbol_id, call_name, line_number)
+                    VALUES %s
+                    """,
+                    [
+                        (
+                            call["id"],
+                            project_id,
+                            call["source_symbol_id"],
+                            call["call_name"],
+                            call["line_number"],
+                        )
+                        for call in calls
+                    ],
+                )
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        release_connection(conn)
+
 # 4. Upsert Import
 def upsert_import(project_id, import_data):
     conn = get_connection()
