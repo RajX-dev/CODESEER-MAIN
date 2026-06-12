@@ -93,7 +93,7 @@ def print_ascii_tree(results, target_name):
 def generate_graph_html(nodes, edges, target_name, max_depth=3):
     nodes_list = [{"id": n, "label": n, "group": d["group"], "path": d.get("path", ""), "line": d.get("line", 0)} for n, d in nodes]
     edges_list = [{"from": u, "to": v} for u, v in edges]
-    
+
     nodes_json = json.dumps(nodes_list)
     edges_json = json.dumps(edges_list)
 
@@ -122,54 +122,54 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
     }}
 
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body, html {{ 
-      width: 100%; height: 100%; 
-      background: var(--bg); 
+    body, html {{
+      width: 100%; height: 100%;
+      background: var(--bg);
       color: var(--text-main);
-      font-family: 'Inter', sans-serif; 
+      font-family: 'Inter', sans-serif;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }}
 
     /* Layout */
     #app {{ display: flex; width: 100vw; height: 100vh; }}
-    
-    #graph-container {{ 
-      flex: 1; 
-      position: relative; 
+
+    #graph-container {{
+      flex: 1;
+      position: relative;
       background: var(--bg);
     }}
-    
-    #sidebar {{ 
-      width: 360px; 
-      background: var(--sidebar); 
-      border-left: 1px solid var(--border); 
-      display: flex; 
-      flex-direction: column; 
+
+    #sidebar {{
+      width: 360px;
+      background: var(--sidebar);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
       overflow-y: auto;
       box-shadow: -4px 0 24px rgba(0,0,0,0.3);
     }}
 
     /* Header */
-    .header {{ 
+    .header {{
       padding: 24px 20px 20px;
       border-bottom: 1px solid var(--border-subtle);
       background: linear-gradient(180deg, var(--sidebar) 0%, rgba(13,17,23,0.4) 100%);
     }}
-    
-    .logo {{ 
-      font-family: 'JetBrains Mono'; 
-      font-weight: 600; 
-      font-size: 11px; 
-      color: var(--accent); 
-      letter-spacing: 2px; 
+
+    .logo {{
+      font-family: 'JetBrains Mono';
+      font-weight: 600;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 2px;
       margin-bottom: 8px;
       opacity: 0.9;
     }}
-    
-    .target-box {{ 
-      font-size: 18px; 
-      font-weight: 600; 
+
+    .target-box {{
+      font-size: 18px;
+      font-weight: 600;
       color: #fff;
       font-family: 'JetBrains Mono';
       word-break: break-all;
@@ -222,11 +222,11 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
       flex: 1;
     }}
 
-    .card {{ 
-      background: var(--card-bg); 
-      border: 1px solid var(--border); 
-      border-radius: 8px; 
-      padding: 16px; 
+    .card {{
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
       margin-bottom: 16px;
       transition: all 0.2s;
     }}
@@ -235,18 +235,18 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
       border-color: var(--border);
     }}
 
-    .card-label {{ 
-      font-size: 10px; 
-      text-transform: uppercase; 
-      color: var(--text-muted); 
-      margin-bottom: 10px; 
+    .card-label {{
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
       letter-spacing: 0.5px;
       font-weight: 500;
     }}
 
-    .card-value {{ 
-      font-family: 'JetBrains Mono'; 
-      font-size: 13px; 
+    .card-value {{
+      font-family: 'JetBrains Mono';
+      font-size: 13px;
       word-break: break-all;
       line-height: 1.5;
       color: var(--text-main);
@@ -356,21 +356,21 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
     .btn {{
       display: block;
       width: 100%;
-      background: var(--accent); 
+      background: var(--accent);
       color: white;
-      border: none; 
-      border-radius: 8px; 
+      border: none;
+      border-radius: 8px;
       padding: 12px;
-      font-weight: 600; 
+      font-weight: 600;
       font-size: 14px;
-      cursor: pointer; 
+      cursor: pointer;
       text-align: center;
       text-decoration: none;
       transition: all 0.2s;
       font-family: 'Inter', sans-serif;
     }}
 
-    .btn:hover {{ 
+    .btn:hover {{
       background: var(--accent-hover);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(47,129,247,0.3);
@@ -496,7 +496,7 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
   <div id="app">
     <div id="graph-container">
       <div id="mynetwork"></div>
-      
+
       <!-- Graph Controls -->
       <div class="graph-controls">
         <button class="control-btn" id="btn-fit" title="Fit to view">⊡</button>
@@ -567,27 +567,27 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
       group: n.group,
       path: n.path,
       line: n.line,
-      font: {{ 
-        face: 'JetBrains Mono', 
+      font: {{
+        face: 'JetBrains Mono',
         color: '#e6edf3',
         size: n.group === 0 ? 14 : 12
       }},
       shape: 'dot',
       borderWidth: 2,
-      size: n.group === 0 ? 28 : n.group === 1 ? 18 : 12,
+      size: n.group === 0 ? 28 : n.group === 1 ? 18 : Math.max(8, 16 - (n.group - 1) * 2),
       color: {{
         background: n.group === 0 ? '#f85149' : '#161b22',
-        border: n.group === 0 ? '#f85149' : n.group === 1 ? '#d29922' : '#2f81f7',
-        highlight: {{ 
-          background: n.group === 0 ? '#f85149' : '#1f6feb', 
-          border: '#fff' 
+        border: n.group === 0 ? '#f85149' : n.group === 1 ? '#d29922' : `hsl(210, 80%, ${{Math.max(30, 70 - (n.group - 1) * 10)}}%)`,
+        highlight: {{
+          background: n.group === 0 ? '#f85149' : '#1f6feb',
+          border: '#fff'
         }}
       }}
     }}));
 
     // 2. Pre-calculate formatted edges with all styling applied
     const formattedEdges = edgesData.map(e => ({{
-      from: e.from, 
+      from: e.from,
       to: e.to,
       arrows: {{ to: {{ enabled: true, scaleFactor: 0.5 }} }},
       color: {{ color: '#30363d', highlight: '#8b949e' }},
@@ -608,8 +608,8 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
     const container = document.getElementById('mynetwork');
     const network = new vis.Network(container, {{ nodes, edges }}, {{
       physics: {{
-        forceAtlas2Based: {{ 
-          gravitationalConstant: -50, 
+        forceAtlas2Based: {{
+          gravitationalConstant: -50,
           springLength: 120,
           springConstant: 0.05,
           damping: 0.4
@@ -629,14 +629,14 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
       if (params.nodes.length > 0) {{
         const nodeId = params.nodes[0];
         const node = nodesData.find(n => n.id === nodeId);
-        
-        const classification = 
-          node.group === 0 ? 'target' : 
+
+        const classification =
+          node.group === 0 ? 'target' :
           node.group === 1 ? 'direct' : 'ripple';
-        
-        const classText = 
-          node.group === 0 ? 'TARGET · Root Change' : 
-          node.group === 1 ? 'DIRECT · High Risk' : 
+
+        const classText =
+          node.group === 0 ? 'TARGET · Root Change' :
+          node.group === 1 ? 'DIRECT · High Risk' :
           `RIPPLE · Depth ${{node.group}}`;
 
         const inspectorHTML = `
@@ -681,7 +681,7 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
           <a href="vscode://file/${{node.path}}:${{node.line}}" class="btn">Open in Editor</a>
           <button class="btn btn-secondary" onclick="network.focus('${{node.id}}', {{ scale: 1.5, animation: true }})">Focus Node</button>
         `;
-        
+
         document.getElementById('inspector-content').innerHTML = inspectorHTML;
       }}
     }});
@@ -698,7 +698,7 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
     document.getElementById('btn-zoom-out').addEventListener('click', () => {{
       network.moveTo({{ scale: network.getScale() * 0.8 }});
     }});
-    
+
     // Depth slider
     document.getElementById('depth-slider').addEventListener('input', function() {{
         const depth = parseInt(this.value);
@@ -707,7 +707,7 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
         // 4. Filter against the fully styled arrays
         const filteredNodes = formattedNodes.filter(n => n.group <= depth);
         const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
-        const filteredEdges = formattedEdges.filter(e => 
+        const filteredEdges = formattedEdges.filter(e =>
             filteredNodeIds.has(e.from) && filteredNodeIds.has(e.to)
         );
 
@@ -724,7 +724,7 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
   </script>
 </body>
 </html>"""
-    
+
     filename = "impact_graph.html"
     with open(filename, "w", encoding="utf-8") as f:
         f.write(html_content)
@@ -733,100 +733,6 @@ def generate_graph_html(nodes, edges, target_name, max_depth=3):
 # ==========================================
 # 🚀 COMMAND: IMPACT
 # ==========================================
-
-# def cmd_impact(args):
-#     W = 64
-#     print()
-#     print(f"{BG_DARK}{CYAN}{BOLD}  N3MO  {R}{GRAY}  ◈  impact tracker{R}")
-#     print(f"{GRAY}  {'─' * W}{R}")
-
-#     conn = get_connection()
-#     symbol_name = args.symbol
-#     filename = None
-#     try:
-#         with conn.cursor() as cur:
-#             cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s LIMIT 1", (symbol_name,))
-#             target = cur.fetchone()
-#             if not target:
-#                 print(f"\n  {RED}✗{R} Symbol {WHITE}'{symbol_name}'{R} not found in index.\n")
-#                 return
-#             target_id, real_name, target_file = target
-#             print(f"\n  {DIM}Analyzing{R}  {AMBER}{BOLD}{real_name}{R}")
-#             print(f"  {GRAY}Location: {DIM}{target_file}{R}\n")
-
-#             query = """
-#             WITH RECURSIVE impact_chain AS (
-#                 SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target
-#                 FROM calls c
-#                 JOIN symbols s ON c.source_symbol_id = s.id
-#                 JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
-#                 WHERE c.resolved_symbol_id = %s
-#                 UNION ALL
-#                 SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source
-#                 FROM impact_chain ic
-#                 JOIN symbols current_target ON current_target.name = ic.source
-#                 JOIN calls c ON c.resolved_symbol_id = current_target.id
-#                 JOIN symbols s ON c.source_symbol_id = s.id
-#                 WHERE ic.depth < 5
-#             )
-#             SELECT DISTINCT source, file_path, line_number, depth, target
-#             FROM impact_chain ORDER BY depth ASC, file_path;
-#             """
-#             cur.execute(query, (target_id,))
-#             results = cur.fetchall()
-#             if not results:
-#                 print(f"  {CYAN}✓{R}  Safe to change — no dependencies found.\n")
-#                 return
-#             print_ascii_tree(results, real_name)
-
-#             if args.graph:
-#                 nodes_map = {real_name: {"group": 0, "path": "", "line": 0}}
-#                 edges = set()
-#                 for source, path, line, depth, target in results:
-#                     s_group = 1 if depth == 1 else 2
-#                     t_group = 1 if depth == 2 else 2
-#                     if target == real_name: t_group = 0
-#                     if source not in nodes_map or s_group < nodes_map[source]["group"]:
-#                        nodes_map[source] = {"group": s_group, "path": path, "line": line}
-#                     if target not in nodes_map or t_group < nodes_map[target]["group"]:
-#                        nodes_map[target] = {"group": t_group, "path": path, "line": line}
-#                     edges.add((source, target))
-
-#                 nodes_set = list(nodes_map.items())
-#                 filename = generate_graph_html(nodes_set, edges, real_name)
-#                 abs_filename = os.path.abspath(filename)
-#                 serve_dir = os.path.dirname(abs_filename)
-#                 serve_file = os.path.basename(abs_filename)
-#                 url = f"http://localhost:8080/{serve_file}"
-                
-#                 print(f"  {CYAN}◈{R}  Graph ready")
-#                 print(f"  {BOLD}{WHITE}Server:{R}  {BLUE}\033[4m{url}\033[0m{R}")
-#                 print(f"  {CYAN}◈{R}  Opening in browser... Ctrl+C to stop server")
-                
-#                 import subprocess
-#                 server = subprocess.Popen(
-#                     ["python", "-m", "http.server", "8080"],
-#                     cwd=serve_dir
-#                 )
-#                 threading.Timer(2.0, lambda: webbrowser.open(url)).start()
-#                 try:
-#                     server.wait()
-#                 except KeyboardInterrupt:
-#                     server.terminate()
-#                     print(f"\n  {CYAN}◈{R}  Server stopped.")
-                
-#     except KeyboardInterrupt:
-#         print(f"\n  {GRAY}Shutting down…{R}\n")
-#     except Exception as e:
-#         print(f"\n  {RED}✗  Error:{R} {e}\n")
-#     finally:
-#         if conn: conn.close()
-#         if filename and os.path.exists(filename):
-#             os.remove(filename)
-
-# ==========================================
-# COMMAND: IMPACT
-# ====================================================================================
 
 def cmd_impact(args):
     W = 64
@@ -840,11 +746,24 @@ def cmd_impact(args):
     filename = None
     try:
         with conn.cursor() as cur:
+            target_dir = os.getenv("TARGET_CODE_DIR", os.getcwd())
+            cur.execute("SELECT id FROM projects WHERE repo_url = %s", (target_dir,))
+            proj = cur.fetchone()
+            if not proj:
+                print(f"\n  {RED}✗{R} No index found for this directory. Run `n3mo index` first.\n")
+                return
+            project_id = proj[0]
+
             if file_filter:
-                cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s AND file_path LIKE %s LIMIT 1", 
-                            (symbol_name, f"%{file_filter}%"))
+                cur.execute(
+                    "SELECT id, name, file_path FROM symbols WHERE name = %s AND project_id = %s AND file_path LIKE %s LIMIT 1",
+                    (symbol_name, project_id, f"%{file_filter}%")
+                )
             else:
-                cur.execute("SELECT id, name, file_path FROM symbols WHERE name = %s LIMIT 1", (symbol_name,))
+                cur.execute(
+                    "SELECT id, name, file_path FROM symbols WHERE name = %s AND project_id = %s LIMIT 1",
+                    (symbol_name, project_id)
+                )
             target = cur.fetchone()
             if not target:
                 print(f"\n  {RED}✗{R} Symbol {WHITE}'{symbol_name}'{R} not found in index.\n")
@@ -866,7 +785,7 @@ def cmd_impact(args):
                 JOIN symbols current_target ON current_target.name = ic.source
                 JOIN calls c ON c.resolved_symbol_id = current_target.id
                 JOIN symbols s ON c.source_symbol_id = s.id
-                WHERE ic.depth < %s
+                WHERE ic.depth < %s + 1
             )
             SELECT DISTINCT source, file_path, line_number, depth, target
             FROM impact_chain ORDER BY depth ASC, file_path;
@@ -881,8 +800,8 @@ def cmd_impact(args):
             if args.graph:
                 nodes_map = {real_name: {"group": 0, "path": "", "line": 0}}
                 edges = set()
-                
-                # A host root keeps editor links valid when N3MO runs in Docker.
+
+                # Auto-detect terminal directory so VS Code links work perfectly
                 base_dir = args.root or os.getcwd()
 
                 for source, path, line, depth, target in results:
@@ -890,15 +809,15 @@ def cmd_impact(args):
                     t_group = max(depth - 1, 0)
                     if target == real_name:
                         t_group = 0
-                    
+
                     full_path = ""
                     if path:
                         full_path = f"{base_dir}/{path}".replace("\\", "/")
 
                     if source not in nodes_map or s_group < nodes_map[source]["group"]:
-                       nodes_map[source] = {"group": s_group, "path": full_path, "line": line}
+                        nodes_map[source] = {"group": s_group, "path": full_path, "line": line}
                     if target not in nodes_map or t_group < nodes_map[target]["group"]:
-                       nodes_map[target] = {"group": t_group, "path": full_path, "line": line}
+                        nodes_map[target] = {"group": t_group, "path": full_path, "line": line}
                     edges.add((source, target))
 
                 nodes_set = list(nodes_map.items())
@@ -907,11 +826,11 @@ def cmd_impact(args):
                 serve_dir = os.path.dirname(abs_filename)
                 serve_file = os.path.basename(abs_filename)
                 url = f"http://127.0.0.1:8080/{serve_file}"
-                
+
                 print(f"  {CYAN}◈{R}  Graph ready")
                 print(f"  {BOLD}{WHITE}Server:{R}  {BLUE}\033[4m{url}\033[0m{R}")
                 print(f"  {CYAN}◈{R}  Opening browser automatically... Press Ctrl+C to stop server")
-                
+
                 import subprocess
                 import threading
                 import webbrowser
@@ -921,16 +840,16 @@ def cmd_impact(args):
                     ["python", "-m", "http.server", "8080", "--bind", "127.0.0.1"],
                     cwd=serve_dir
                 )
-                
+
                 # Wait 1.5s for the server to boot, then pop the browser
                 threading.Timer(1.5, lambda: webbrowser.open(url)).start()
-                
+
                 try:
                     server.wait()
                 except KeyboardInterrupt:
                     server.terminate()
                     print(f"\n  {CYAN}◈{R}  Server stopped.")
-                
+
     except KeyboardInterrupt:
         print(f"\n  {GRAY}Shutting down…{R}\n")
     except Exception as e:
@@ -940,6 +859,22 @@ def cmd_impact(args):
         # Keep the file so the server can actually serve it!
         # if filename and os.path.exists(filename):
         #     os.remove(filename)
+
+
+def cmd_clean(args):
+    target_dir = os.getenv("TARGET_CODE_DIR", os.getcwd())
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM projects WHERE repo_url = %s RETURNING name", (target_dir,))
+            row = cur.fetchone()
+            conn.commit()
+            if row:
+                print(f"🗑️  Index cleared for project '{row[0]}'")
+            else:
+                print(f"⚠️  No index found for {target_dir}")
+    finally:
+        conn.close()
 
 
 def main():
@@ -954,8 +889,11 @@ def main():
     parser_impact.set_defaults(func=cmd_impact)
     parser_index = subparsers.add_parser('index')
     parser_index.set_defaults(func=lambda args: run_indexer_logic())
+    parser_clean = subparsers.add_parser('clean')
+    parser_clean.set_defaults(func=cmd_clean)
     args = parser.parse_args()
     if hasattr(args, 'func'): args.func(args)
+
 
 if __name__ == '__main__':
     main()
