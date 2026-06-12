@@ -1,4 +1,23 @@
-<!DOCTYPE html>
+import json
+
+
+def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
+    nodes_list = [
+        {
+            "id": name,
+            "label": name,
+            "group": data["group"],
+            "path": data.get("path", ""),
+            "line": data.get("line", 0),
+        }
+        for name, data in nodes
+    ]
+    edges_list = [
+        {"id": f"edge-{index}", "from": source, "to": target}
+        for index, (source, target) in enumerate(edges)
+    ]
+
+    page = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -447,8 +466,8 @@
 
         <div class="depth-control">
           <label for="depth-slider">Visible depth</label>
-          <input id="depth-slider" type="range" min="1" max="3" value="3">
-          <span class="depth-value" id="depth-label">3</span>
+          <input id="depth-slider" type="range" min="1" max="__MAX_DEPTH__" value="__MAX_DEPTH__">
+          <span class="depth-value" id="depth-label">__MAX_DEPTH__</span>
         </div>
         <div id="toast"></div>
       </section>
@@ -469,10 +488,10 @@
   </div>
 
   <script>
-    const targetName = "get_connection";
-    const nodesData = [{"id": "get_connection", "label": "get_connection", "group": 0, "path": "", "line": 0}, {"id": "batch_upsert_symbols", "label": "batch_upsert_symbols", "group": 1, "path": "/app/src/database.py", "line": 104}, {"id": "replace_file_index", "label": "replace_file_index", "group": 1, "path": "/app/src/database.py", "line": 176}, {"id": "upsert_call", "label": "upsert_call", "group": 1, "path": "/app/src/database.py", "line": 323}, {"id": "ensure_project", "label": "ensure_project", "group": 1, "path": "/app/src/database.py", "line": 38}, {"id": "upsert_symbol", "label": "upsert_symbol", "group": 1, "path": "/app/src/database.py", "line": 59}, {"id": "batch_upsert_imports", "label": "batch_upsert_imports", "group": 1, "path": "/app/src/database.py", "line": 147}, {"id": "upsert_import", "label": "upsert_import", "group": 1, "path": "/app/src/database.py", "line": 288}, {"id": "resolve_call_links", "label": "resolve_call_links", "group": 1, "path": "/app/src/resolve_calls.py", "line": 8}, {"id": "resolve_import_links", "label": "resolve_import_links", "group": 1, "path": "/app/src/resolve_imports.py", "line": 5}, {"id": "process_file", "label": "process_file", "group": 2, "path": "/app/src/ingest_files.py", "line": 116}, {"id": "ingest_repo", "label": "ingest_repo", "group": 2, "path": "/app/src/ingest_files.py", "line": 45}, {"id": "main", "label": "main", "group": 2, "path": "/app/src/run_indexer.py", "line": 77}];
-    const edgesData = [{"id": "edge-0", "from": "batch_upsert_symbols", "to": "get_connection"}, {"id": "edge-1", "from": "resolve_import_links", "to": "get_connection"}, {"id": "edge-2", "from": "replace_file_index", "to": "get_connection"}, {"id": "edge-3", "from": "resolve_call_links", "to": "get_connection"}, {"id": "edge-4", "from": "ingest_repo", "to": "ensure_project"}, {"id": "edge-5", "from": "ensure_project", "to": "get_connection"}, {"id": "edge-6", "from": "process_file", "to": "upsert_call"}, {"id": "edge-7", "from": "batch_upsert_imports", "to": "get_connection"}, {"id": "edge-8", "from": "upsert_call", "to": "get_connection"}, {"id": "edge-9", "from": "main", "to": "upsert_call"}, {"id": "edge-10", "from": "main", "to": "resolve_call_links"}, {"id": "edge-11", "from": "main", "to": "ensure_project"}, {"id": "edge-12", "from": "process_file", "to": "upsert_import"}, {"id": "edge-13", "from": "main", "to": "upsert_import"}, {"id": "edge-14", "from": "process_file", "to": "batch_upsert_symbols"}, {"id": "edge-15", "from": "upsert_symbol", "to": "get_connection"}, {"id": "edge-16", "from": "main", "to": "upsert_symbol"}, {"id": "edge-17", "from": "ingest_repo", "to": "process_file"}, {"id": "edge-18", "from": "upsert_import", "to": "get_connection"}];
-    const configuredMaxDepth = 3;
+    const targetName = __TARGET_JSON__;
+    const nodesData = __NODES_JSON__;
+    const edgesData = __EDGES_JSON__;
+    const configuredMaxDepth = __MAX_DEPTH__;
     const actualMaxDepth = Math.max(1, ...nodesData.map(node => node.group));
     const palette = ['#55d6e8', '#a78bfa', '#39d98a', '#ff7a90', '#f3cf5b', '#5aa9ff'];
     let currentDepth = Math.min(configuredMaxDepth, actualMaxDepth);
@@ -809,3 +828,14 @@
   </script>
 </body>
 </html>
+"""
+
+    page = page.replace("__TARGET_JSON__", json.dumps(target_name))
+    page = page.replace("__NODES_JSON__", json.dumps(nodes_list))
+    page = page.replace("__EDGES_JSON__", json.dumps(edges_list))
+    page = page.replace("__MAX_DEPTH__", str(max(1, max_depth)))
+
+    filename = "impact_graph.html"
+    with open(filename, "w", encoding="utf-8") as graph_file:
+        graph_file.write(page)
+    return filename

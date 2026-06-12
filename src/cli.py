@@ -7,6 +7,7 @@ import socketserver
 from src.database import get_connection
 import webbrowser
 import threading
+from src.graph_visualizer import generate_solar_graph_html
 
 # Try to import the indexer logic
 try:
@@ -881,13 +882,14 @@ def cmd_impact(args):
                 nodes_map = {real_name: {"group": 0, "path": "", "line": 0}}
                 edges = set()
                 
-                # Auto-detect terminal directory so VS Code links work perfectly
-                base_dir = os.getcwd()
+                # A host root keeps editor links valid when N3MO runs in Docker.
+                base_dir = args.root or os.getcwd()
 
                 for source, path, line, depth, target in results:
-                    s_group = 1 if depth == 1 else 2
-                    t_group = 1 if depth == 2 else 2
-                    if target == real_name: t_group = 0
+                    s_group = depth
+                    t_group = max(depth - 1, 0)
+                    if target == real_name:
+                        t_group = 0
                     
                     full_path = ""
                     if path:
@@ -900,7 +902,7 @@ def cmd_impact(args):
                     edges.add((source, target))
 
                 nodes_set = list(nodes_map.items())
-                filename = generate_graph_html(nodes_set, edges, real_name, args.depth)
+                filename = generate_solar_graph_html(nodes_set, edges, real_name, args.depth)
                 abs_filename = os.path.abspath(filename)
                 serve_dir = os.path.dirname(abs_filename)
                 serve_file = os.path.basename(abs_filename)
