@@ -540,7 +540,7 @@ See [LICENSE](LICENSE) for full legal details.
 **Raj Shekhar** — Delhi Technological University
 
 [![GitHub](https://img.shields.io/badge/GitHub-RajX--dev-181717?logo=github)](https://github.com/RajX-dev)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?logo=linkedin)](https://linkedin.com/in/your-profile)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?logo=linkedin)](https://linkedin.com/in/raj-shekhar349)
 
 ---
 
