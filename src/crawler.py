@@ -1,21 +1,109 @@
 import os
 
-# Folders we never want to scan
+# Folders we never want to scan (case-insensitive)
 IGNORED_DIRS = {
     "node_modules", ".git", "dist", "build", "__pycache__", 
     ".venv", "venv", "env", ".idea", ".vscode",
-    "tests", "test", "__tests__"
+    "tests", "test", "__tests__", "spec", "specs", "mock", "mocks",
+    "benchmark", "benchmarks", "example", "examples", "sample", "samples",
+    "fixtures", "fixture", "testing", "tmp", "temp"
 }
 
+def is_test_or_mock_file(filename: str) -> bool:
+    name_lower = filename.lower()
+    
+    # Handle Perl test file extension .t
+    if name_lower.endswith(".t"):
+        return True
+        
+    name_without_ext, ext = os.path.splitext(filename)
+    name_without_ext_lower = name_without_ext.lower()
+    
+    # 1. Direct match checks (case-insensitive)
+    test_terms = {
+        "test", "tests", "spec", "specs", "unittest", "unittests", 
+        "mock", "mocks", "fixture", "fixtures"
+    }
+    if name_without_ext_lower in test_terms:
+        return True
+        
+    # 2. Check prefix: starts with "test" or "mock" followed by a separator or uppercase letter
+    for prefix in ("test", "mock"):
+        if name_without_ext_lower.startswith(prefix):
+            rest = name_without_ext[len(prefix):]
+            if not rest:
+                return True
+            # If next char is a separator or uppercase letter
+            if rest[0] in ("_", "-", ".") or rest[0].isupper():
+                return True
+                
+    # 3. Check suffix: ends with one of the test terms preceded by a separator or uppercase boundary
+    for suffix in test_terms:
+        if name_without_ext_lower.endswith(suffix):
+            prefix_len = len(name_without_ext) - len(suffix)
+            if prefix_len <= 0:
+                return True
+            before_char = name_without_ext[prefix_len - 1]
+            if before_char in ("_", "-", ".") or name_without_ext[prefix_len].isupper():
+                return True
+                
+    return False
+
 def detect_language(filename: str) -> str | None:
-    # --- ADDED: Python Support ---
-    if filename.endswith(".py"):
+    ext = os.path.splitext(filename)[1].lower()
+    if ext == ".py":
         return "python"
-    # -----------------------------
-    if filename.endswith(".js"):
+    elif ext in (".js", ".jsx"):
         return "javascript"
-    if filename.endswith(".ts"):
+    elif ext in (".ts", ".tsx"):
         return "typescript"
+    elif ext == ".go":
+        return "go"
+    elif ext == ".rs":
+        return "rust"
+    elif ext == ".java":
+        return "java"
+    elif ext in (".cpp", ".cc", ".cxx", ".hpp", ".h"):
+        return "cpp"
+    elif ext == ".c":
+        return "c"
+    elif ext == ".cs":
+        return "csharp"
+    elif ext in (".cob", ".cbl"):
+        return "cobol"
+    elif ext == ".dart":
+        return "dart"
+    elif ext in (".pas", ".dfm", ".dpr"):
+        return "delphi"
+    elif ext in (".groovy", ".gvy", ".gy", ".gsh"):
+        return "groovy"
+    elif ext in (".hs", ".lhs"):
+        return "haskell"
+    elif ext == ".jl":
+        return "julia"
+    elif ext in (".kt", ".kts"):
+        return "kotlin"
+    elif ext == ".lua":
+        return "lua"
+    elif ext in (".m", ".mm"):
+        # Default to Objective-C; fallback to Matlab if parser matches
+        return "objc"
+    elif ext in (".pl", ".pm"):
+        return "perl"
+    elif ext == ".php":
+        return "php"
+    elif ext in (".ps1", ".psm1"):
+        return "powershell"
+    elif ext in (".r", ".R"):
+        return "r"
+    elif ext in (".rb", ".rbw"):
+        return "ruby"
+    elif ext in (".scala", ".sc"):
+        return "scala"
+    elif ext == ".swift":
+        return "swift"
+    elif ext in (".vba", ".bas", ".cls", ".frm", ".vb"):
+        return "vba"
     return None
 
 def crawl_repo(repo_path: str):
@@ -25,20 +113,12 @@ def crawl_repo(repo_path: str):
     files = []
 
     for root, dirs, filenames in os.walk(repo_path):
-        # Modify dirs in-place so os.walk skips them
-        dirs[:] = [d for d in dirs if d not in IGNORED_DIRS]
+        # Modify dirs in-place so os.walk skips them (case-insensitive)
+        dirs[:] = [d for d in dirs if d.lower() not in IGNORED_DIRS]
 
         for filename in filenames:
-            # Skip test files
-            name_lower = filename.lower()
-            if (name_lower.startswith("test_") or 
-                name_lower.endswith("_test.py") or 
-                name_lower.endswith(".test.py") or
-                name_lower.endswith("_test.js") or
-                name_lower.endswith(".test.js") or
-                name_lower.endswith("_test.ts") or
-                name_lower.endswith(".test.ts") or
-                name_lower in ("test.py", "test.js", "test.ts")):
+            # Skip test or mock files
+            if is_test_or_mock_file(filename):
                 continue
 
             language = detect_language(filename)
@@ -46,23 +126,7 @@ def crawl_repo(repo_path: str):
                 continue
 
             full_path = os.path.join(root, filename)
-            
-            # For the N3MO CLI, we just need the path string right now.
-            # But we can keep the dictionary logic commented out if you prefer that format later.
             files.append(full_path) 
-            
-            # --- OLD DICTIONARY FORMAT (Preserved but commented) ---
-            # try:
-            #     size_bytes = os.path.getsize(full_path)
-            # except OSError:
-            #     continue
-            # files.append({
-            #     "id": str(uuid.uuid4()),
-            #     "path": full_path,
-            #     "language": language,
-            #     "size_bytes": size_bytes
-            # })
-            # -------------------------------------------------------
 
     return files
 

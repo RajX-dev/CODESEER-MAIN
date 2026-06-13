@@ -1,10 +1,13 @@
+import logging
 from src.database import get_connection, release_connection
+
+logger = logging.getLogger("n3mo")
 
 def resolve_call_links(project_id):
     """
     Connects calls to definitions, handling 'self.' and 'module.' prefixes.
     """
-    print("🔗 Linking function calls (Smart Strategy)...")
+    logger.info("🔗 Linking function calls (Smart Strategy)...")
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -35,9 +38,9 @@ def resolve_call_links(project_id):
             match_smart = cur.rowcount
 
             conn.commit()
-            print(f"🔗 Connected {match_exact + match_smart} calls ({match_exact} exact, {match_smart} smart).")
+            logger.info(f"🔗 Connected {match_exact + match_smart} calls ({match_exact} exact, {match_smart} smart).")
 
     except Exception as e:
-        print(f"❌ Linking failed: {e}")
+        logger.error(f"❌ Linking failed: {e}")
     finally:
         release_connection(conn) 

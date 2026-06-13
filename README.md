@@ -145,9 +145,13 @@ erDiagram
 
 ## ✨ Features
 
-### Current capabilities (v0.4)
+### Current capabilities (v0.5)
 
-- ✅ **AST-based parsing** — Tree-sitter integration for error-tolerant Python analysis
+- ✅ **Multi-Language Ingestion** — dynamic Tree-sitter loading with support for all 27 requested languages (including Python, JS, TS, Go, Rust, Java, C/C++, C#, Haskell, Perl, Ruby, PHP, Powershell, Groovy, Matlab, Delphi, Kotlin, Swift, Scala, etc.)
+- ✅ **Parallel AST Ingestion** — multiprocessing scaling utilizing `ProcessPoolExecutor` to distribute CPU-bound parsing across cores
+- ✅ **Strict & Flawless Exclusions** — case-insensitive directory filters (tests, mocks, specs, fixtures, temp) and camelCase-aware prefix/suffix filename checks to avoid false positives (e.g. allows `contest.py`)
+- ✅ **No-Impact Skips & Pruning** — skips files with 0 symbols, imports, and calls to prevent db bloat and deletes database residues upon updates
+- ✅ **AST-based parsing** — Tree-sitter integration for error-tolerant source analysis
 - ✅ **Symbol extraction** — functions, classes, methods with full file + line context
 - ✅ **Hierarchical modeling** — Module → Class → Method parent-child relationships
 - ✅ **Call graph construction** — who calls whom, captured at ingestion time
@@ -163,10 +167,10 @@ erDiagram
 - ✅ **Test suite** — pytest with database integration testing
 - ✅ **GitHub Actions CI** — lint and test pipeline on every PR
 
-### In development (v0.5)
+### In development (v0.6)
 
-- 🚧 **Multiprocessing** — parallel AST parsing via `ProcessPoolExecutor`
 - 🚧 **Scope-aware call resolution** — use imports table, eliminate false positives
+- 🚧 **CTE cycle guard** — visited node tracking for deep recursion cycles
 
 ---
 
@@ -364,15 +368,15 @@ python benchmarks/benchmark_indexing.py
 | | Interactive depth slider | ✅ Complete |
 | **Phase 3 — Correctness & Scaling** | | |
 | | Incremental re-index (file hashing) | ✅ Complete |
-| | Multiprocessing (AST parsing) | 🔵 Next |
+| | Multiprocessing (AST parsing) | ✅ Complete |
 | | Scope-aware call resolution | ⏳ Planned |
 | | CTE cycle guard | ⏳ Planned |
 | | Full type annotations + mypy | ⏳ Planned |
 | | pytest suite + CI | ✅ Complete |
+| | Multi-language support | ✅ Complete |
 | **Phase 4 — Distribution** | | |
 | | MCP server (Cursor / Claude Code) | ⏳ Planned |
 | | FastAPI REST layer | ⏳ Planned |
-| | JavaScript / TypeScript support | ⏳ Planned |
 | | Real-time git-hook indexing | ⏳ Planned |
 | | pgvector semantic search | ⏳ Planned |
 
@@ -408,12 +412,13 @@ python benchmarks/benchmark_indexing.py
 <summary><b>Phase 3: Correctness + Scaling</b> 🔵 In Progress</summary>
 
 - [x] SHA-256 file hashing for incremental re-index
-- [ ] `ProcessPoolExecutor` for parallel AST parsing
+- [x] `ProcessPoolExecutor` for parallel AST parsing
 - [ ] Scope-aware call resolution using imports table
 - [ ] CTE cycle guard (visited node tracking)
 - [ ] Full type annotations, `mypy --strict` clean
 - [x] pytest unit + integration test suite
 - [x] GitHub Actions CI pipeline
+- [x] Multi-language support
 
 </details>
 
@@ -422,7 +427,6 @@ python benchmarks/benchmark_indexing.py
 
 - [ ] MCP server — N3MO as a tool for Cursor, Claude Code, Windsurf
 - [ ] FastAPI REST layer — `GET /impact/{symbol}`, `POST /index`
-- [ ] JavaScript / TypeScript support
 - [ ] Real-time incremental indexing via git hooks
 - [ ] `pgvector` semantic search — "find functions that do X"
 
