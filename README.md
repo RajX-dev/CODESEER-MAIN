@@ -4,6 +4,7 @@
 <div align="center">
 
 ![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Engine-blue?style=for-the-badge)
+[![PyPI version](https://img.shields.io/pypi/v/n3mo?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/n3mo/)
 [![License: AGPL v3.0](https://img.shields.io/badge/license-AGPL%20v3.0-green?style=for-the-badge)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue?style=for-the-badge&logo=python)](https://www.python.org)
 [![Docker](https://img.shields.io/badge/docker-required-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
@@ -162,9 +163,7 @@ erDiagram
 
 ---
 
-## ✨ Features
-
-### Current capabilities (v0.5)
+## ✨ Core Capabilities
 
 - ✅ **Multi-Language Ingestion** — dynamic Tree-sitter loading with support for all 27 requested languages (including Python, JS, TS, Go, Rust, Java, C/C++, C#, Haskell, Perl, Ruby, PHP, Powershell, Groovy, Matlab, Delphi, Kotlin, Swift, Scala, etc.)
 - ✅ **Parallel AST Ingestion** — multiprocessing scaling utilizing `ProcessPoolExecutor` to distribute CPU-bound parsing across cores
@@ -174,7 +173,7 @@ erDiagram
 - ✅ **Dynamic Canvas Dark Mode** — toggleable dark mode that dynamically updates Vis.js canvas nodes, edges, labels, and orbit lines in real-time, persisting preference in `localStorage`
 - ✅ **AST-based parsing** — Tree-sitter integration for error-tolerant source analysis
 - ✅ **Symbol extraction** — functions, classes, methods with full file + line context
-- ✅ **Hierarchical modeling** — Module → Class → Method parent-child relationships
+- ✅ **Hierarchical modeling** — parent-child relationships (Module → Class → Method)
 - ✅ **Call graph construction** — who calls whom, captured at ingestion time
 - ✅ **Blast radius analysis** — recursive CTE traversal to arbitrary depth
 - ✅ **Idempotent ingestion** — re-indexing updates existing data without duplication
@@ -188,11 +187,6 @@ erDiagram
 - ✅ **Test suite** — pytest with database integration testing
 - ✅ **GitHub Actions CI** — lint and test pipeline on every PR
 
-### In development (v0.6)
-
-- 🚧 **Scope-aware call resolution** — use imports table, eliminate false positives
-- 🚧 **CTE cycle guard** — visited node tracking for deep recursion cycles
-
 ---
 
 ## 🚀 Installation
@@ -205,13 +199,13 @@ erDiagram
 
 ### Quick start
 
-Once you have N3MO published or want to install it locally:
+Install N3MO directly from PyPI:
 
 ```bash
 # Install the package
-pip install .
+pip install n3mo
 
-# Run the automatic database and background engines setup
+# Start Docker containers & run the database and background engines setup
 n3mo setup
 ```
 
@@ -244,7 +238,7 @@ To use N3MO in Cursor:
 3. Set the configuration details:
    * **Name**: `n3mo`
    * **Type**: `command`
-   * **Command**: `python -m n3mo.mcp_server`
+   * **Command**: `n3mo mcp start` (or `uvx n3mo mcp start` to run directly)
    * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
 4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
 
