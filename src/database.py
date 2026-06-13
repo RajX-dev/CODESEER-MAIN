@@ -1,9 +1,7 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor, execute_values
+from psycopg2.extras import execute_values
 from psycopg2 import pool
 import os
 import uuid
-import time
 
 
 
@@ -211,6 +209,14 @@ def replace_file_index(project_id, file_path, symbols, imports, calls):
             )
 
             if symbols:
+                seen_syms = set()
+                unique_syms = []
+                for sym in symbols:
+                    key = (sym["parent_id"], sym["name"])
+                    if key not in seen_syms:
+                        seen_syms.add(key)
+                        unique_syms.append(sym)
+
                 execute_values(
                     cur,
                     """
@@ -231,11 +237,19 @@ def replace_file_index(project_id, file_path, symbols, imports, calls):
                             sym["start_line"],
                             sym["end_line"],
                         )
-                        for sym in symbols
+                        for sym in unique_syms
                     ],
                 )
 
             if imports:
+                seen_imps = set()
+                unique_imps = []
+                for imp in imports:
+                    key = (imp["module"], imp.get("name"), imp.get("alias"))
+                    if key not in seen_imps:
+                        seen_imps.add(key)
+                        unique_imps.append(imp)
+
                 execute_values(
                     cur,
                     """
@@ -252,7 +266,7 @@ def replace_file_index(project_id, file_path, symbols, imports, calls):
                             imp["name"],
                             imp["alias"],
                         )
-                        for imp in imports
+                        for imp in unique_imps
                     ],
                 )
 
@@ -337,7 +351,87 @@ def upsert_call(project_id, call_data):
                 call_data["line_number"]
             ))
             conn.commit()
-    except Exception as e:
+    except Exception:
         conn.rollback()
     finally:
         release_connection(conn)
+
+# 6. File Hashing Helpers for Incremental Indexing
+def get_file_hashes(project_id):
+    """Retrieve all file paths and their SHA-256 hashes for a project."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT file_path, sha256 FROM files WHERE project_id = %s", (project_id,))
+            return {row[0]: row[1] for row in cur.fetchall()}
+    finally:
+        release_connection(conn)
+
+def upsert_file_hash(project_id, file_path, sha256):
+    """Insert or update a file's SHA-256 hash."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO files (project_id, file_path, sha256)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (project_id, file_path)
+                DO UPDATE SET sha256 = EXCLUDED.sha256
+                """,
+                (project_id, file_path, sha256)
+            )
+            conn.commit()
+    finally:
+        release_connection(conn)
+
+def delete_file_index(project_id, file_path):
+    """Fully remove a file's index records and hash from the database."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # Clear links to definitions in this file
+            cur.execute(
+                """
+                UPDATE calls
+                SET resolved_symbol_id = NULL
+                WHERE resolved_symbol_id IN (
+                    SELECT id
+                    FROM symbols
+                    WHERE project_id = %s AND file_path = %s
+                )
+                """,
+                (project_id, file_path),
+            )
+            # Delete calls from this file
+            cur.execute(
+                """
+                DELETE FROM calls
+                WHERE project_id = %s
+                  AND source_symbol_id IN (
+                      SELECT id
+                      FROM symbols
+                      WHERE project_id = %s AND file_path = %s
+                  )
+                """,
+                (project_id, project_id, file_path),
+            )
+            # Delete imports from this file
+            cur.execute(
+                "DELETE FROM imports WHERE project_id = %s AND file_path = %s",
+                (project_id, file_path),
+            )
+            # Delete symbols from this file
+            cur.execute(
+                "DELETE FROM symbols WHERE project_id = %s AND file_path = %s",
+                (project_id, file_path),
+            )
+            # Delete file hash record
+            cur.execute(
+                "DELETE FROM files WHERE project_id = %s AND file_path = %s",
+                (project_id, file_path),
+            )
+            conn.commit()
+    finally:
+        release_connection(conn)
+

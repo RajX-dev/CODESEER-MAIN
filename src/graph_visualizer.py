@@ -9,6 +9,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
             "group": data["group"],
             "path": data.get("path", ""),
             "line": data.get("line", 0),
+            "code_context": data.get("code_context", []),
         }
         for name, data in nodes
     ]
@@ -361,8 +362,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       text-transform: uppercase;
     }
     .badge.target { color: #ff8589; background: rgba(255,90,95,.08); }
-    .badge.direct { color: #ffc35c; background: rgba(245,165,36,.08); }
-    .badge.ripple { color: #77a6ff; background: rgba(76,141,255,.08); }
+    .badge.inner { color: #ff8589; background: rgba(255,90,95,.08); }
+    .badge.mid { color: #ffc35c; background: rgba(245,165,36,.08); }
+    .badge.outer { color: #77a6ff; background: rgba(76,141,255,.08); }
     .location {
       color: #b7c4d4;
       font-family: "JetBrains Mono", monospace;
@@ -405,6 +407,72 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
     #toast.visible { opacity: 1; transform: translate(-50%, 0); }
 
+
+    /* Code Preview UI */
+    .code-preview {
+      background: #05070b;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .code-header {
+      background: rgba(12, 17, 24, 0.7);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .code-file {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 70%;
+    }
+    .code-line-badge {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px;
+      color: var(--text);
+      background: var(--line);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .code-content {
+      padding: 12px;
+      overflow-x: auto;
+      background: #05070b;
+    }
+    .code-line {
+      display: flex;
+      gap: 12px;
+      padding: 2px 0;
+    }
+    .code-line.highlight {
+      background: rgba(255, 90, 95, 0.12);
+      margin: 0 -12px;
+      padding: 2px 12px;
+      border-left: 2px solid var(--red);
+    }
+    .line-num {
+      color: var(--muted);
+      text-align: right;
+      min-width: 32px;
+      user-select: none;
+      opacity: 0.6;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+    }
+    .line-code {
+      color: var(--text);
+      white-space: pre;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+    }
+
     @media (max-width: 980px) {
       .workspace { grid-template-columns: minmax(0, 1fr) 300px; }
       .summary-stat:nth-child(3) { display: none; }
@@ -445,6 +513,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
             <select class="tool-select" id="layout-select" aria-label="Graph layout">
               <option value="solar">Solar system</option>
               <option value="force">Force graph</option>
+              <option value="tree">Impact tree</option>
             </select>
             <button class="tool-button" id="btn-group" type="button">Group by file</button>
           </div>
@@ -460,8 +529,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
         <div class="legend">
           <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Target sun</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Direct orbit</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Ripple orbit</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Inner layer</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Mid layer</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Outer layer</div>
         </div>
 
         <div class="depth-control">
@@ -472,15 +542,17 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         <div id="toast"></div>
       </section>
 
-      <aside id="sidebar">
-        <div class="sidebar-header">
+      <aside id="sidebar" style="display: flex; flex-direction: column;">
+        <div class="sidebar-header" style="flex-shrink: 0;">
           <div class="eyebrow">Node inspector</div>
-          <div class="sidebar-title">Trace a dependency</div>
+          <div class="sidebar-title" id="sidebar-title-text">Trace a dependency</div>
         </div>
-        <div class="inspector" id="inspector-content">
-          <div class="empty-state">
-            <div class="empty-orbit"></div>
-            <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+        <div id="inspector-tab-content" style="flex: 1; overflow-y: auto; padding: 16px;">
+          <div class="inspector" id="inspector-content" style="padding: 0;">
+            <div class="empty-state">
+              <div class="empty-orbit"></div>
+              <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+            </div>
           </div>
         </div>
       </aside>
@@ -514,14 +586,26 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     const baseNode = node => {
       const isTarget = node.group === 0;
-      const isDirect = node.group === 1;
+      const isInner = node.group === 1;
+      const isMid = node.group === 2;
+      const isOuter = node.group >= 3;
+
       const border = groupByFile && !isTarget
         ? fileColor(node.path)
-        : isTarget ? '#ff7478' : isDirect ? '#f5a524' : '#4c8dff';
+        : isTarget ? '#ff7478' : isInner ? '#ff5a5f' : isMid ? '#f5a524' : '#4c8dff';
+
+      const background = isTarget ? '#ff4f55' : isInner ? '#1c0a0b' : isMid ? '#1a140a' : '#0a111d';
+
+      // Create a copy and remove "group" to prevent Vis.js group styling override
+      const cleanNode = { ...node };
+      delete cleanNode.group;
+
       return {
-        ...node,
+        ...cleanNode,
+        depth: node.group,
+        level: node.group,
         shape: 'dot',
-        size: isTarget ? 36 : isDirect ? 17 : Math.max(10, 15 - node.group),
+        size: isTarget ? 36 : isInner ? 17 : isMid ? 14 : Math.max(10, 15 - node.group),
         borderWidth: isTarget ? 3 : 2,
         borderWidthSelected: 4,
         font: {
@@ -532,29 +616,32 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           strokeColor: '#05070b'
         },
         color: {
-          background: isTarget ? '#ff4f55' : isDirect ? '#151510' : '#0a111d',
+          background,
           border,
           highlight: { background: isTarget ? '#ff4f55' : '#142848', border: '#ffffff' },
           hover: { background: isTarget ? '#ff6267' : '#12233d', border: '#ffffff' }
         },
         shadow: {
-          enabled: true,
-          color: isTarget ? 'rgba(255,79,85,.72)' : `${border}66`,
-          size: isTarget ? 32 : 15,
+          enabled: isTarget,
+          color: 'rgba(255,79,85,.72)',
+          size: 32,
           x: 0,
           y: 0
         }
       };
     };
 
-    const baseEdge = edge => ({
+    const baseEdge = (edge, index) => ({
       ...edge,
+      id: edge.id || `edge-${index}`,
       arrows: { to: { enabled: true, scaleFactor: .45 } },
       color: { color: '#2a3748', highlight: '#83aefc', hover: '#526c8d', opacity: .78 },
       width: 1,
       selectionWidth: 2,
       hoverWidth: 1.5,
-      smooth: { enabled: true, type: 'curvedCW', roundness: .08 }
+      smooth: currentLayout === 'tree'
+        ? { enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 }
+        : { enabled: true, type: 'curvedCW', roundness: .08 }
     });
 
     const nodes = new vis.DataSet(nodesData.map(baseNode));
@@ -571,13 +658,27 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       const positions = {};
       const visible = nodesData.filter(node => node.group <= currentDepth);
       positions[targetName] = { x: 0, y: 0 };
+      
       for (let depth = 1; depth <= currentDepth; depth += 1) {
         const ringNodes = visible.filter(node => node.group === depth);
-        const radius = 145 + ((depth - 1) * 125);
         ringNodes.sort((a, b) => a.label.localeCompare(b.label));
+        
+        const maxPerRing = 10;
+        const numSubRings = Math.ceil(ringNodes.length / maxPerRing);
+        const baseRadius = 160 + ((depth - 1) * 160);
+        
         ringNodes.forEach((node, index) => {
-          const offset = depth % 2 === 0 ? Math.PI / 5 : -Math.PI / 2;
-          const angle = offset + ((Math.PI * 2 * index) / Math.max(ringNodes.length, 1));
+          const subRingIdx = index % numSubRings;
+          const ringSpacing = 45;
+          const offsetRadius = (subRingIdx - (numSubRings - 1) / 2) * ringSpacing;
+          const radius = baseRadius + offsetRadius;
+          
+          const nodesInThisSubRing = Math.ceil(ringNodes.length / numSubRings);
+          const nodeIdxInSubRing = Math.floor(index / numSubRings);
+          
+          const angleOffset = (depth % 2 === 0 ? Math.PI / 5 : -Math.PI / 2) + (subRingIdx * (Math.PI / 10));
+          const angle = angleOffset + ((Math.PI * 2 * nodeIdxInSubRing) / Math.max(nodesInThisSubRing, 1));
+          
           positions[node.id] = {
             x: Math.cos(angle) * radius,
             y: Math.sin(angle) * radius
@@ -598,15 +699,29 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       const ids = new Set(visibleNodes.map(node => node.id));
       const visibleEdges = edgesData
         .filter(edge => ids.has(edge.from) && ids.has(edge.to))
-        .map(edge => baseEdge(edge));
+        .map((edge, idx) => baseEdge(edge, idx));
       nodes.clear();
       edges.clear();
       nodes.add(visibleNodes);
       edges.add(visibleEdges);
+
+      const scale = network.getScale();
+      updateLabelVisibility(scale > 0.45, true);
+    }
+
+    function disableHierarchical() {
+      network.setOptions({
+        layout: {
+          hierarchical: {
+            enabled: false
+          }
+        }
+      });
     }
 
     function applySolarLayout(animate = true) {
       currentLayout = 'solar';
+      disableHierarchical();
       network.setOptions({ physics: false });
       visibleGraph();
       const positions = solarPositions();
@@ -622,6 +737,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     function applyForceLayout() {
       currentLayout = 'force';
+      disableHierarchical();
       visibleGraph();
       nodes.update(nodes.get().map(node => ({ id: node.id, fixed: false })));
       drawOrbits();
@@ -636,55 +752,199 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
             springConstant: .055,
             damping: .5
           },
-          stabilization: { iterations: 180, fit: true }
+          stabilization: { enabled: true, iterations: 150, fit: true }
         }
       });
     }
 
-    function traceToTarget(startId) {
-      const tracedNodes = new Set([startId, targetName]);
-      const tracedEdges = new Set();
-      let cursor = startId;
-      let guard = 0;
-      while (cursor !== targetName && guard < nodesData.length) {
-        const edge = edgesData.find(item => item.from === cursor);
-        if (!edge) break;
-        tracedEdges.add(edge.id);
-        tracedNodes.add(edge.to);
-        cursor = edge.to;
-        guard += 1;
+    function applyTreeLayout() {
+      currentLayout = 'tree';
+      disableHierarchical();
+      visibleGraph();
+      nodes.update(nodes.get().map(node => ({ id: node.id, fixed: false })));
+      drawOrbits();
+      network.setOptions({
+        physics: { enabled: false },
+        layout: {
+          hierarchical: {
+            enabled: true,
+            direction: 'LR',
+            sortMethod: 'directed',
+            levelSeparation: 180,
+            nodeSpacing: 80,
+            parentCentralization: true,
+            blockShifting: true,
+            edgeMinimization: true
+          }
+        }
+      });
+      setTimeout(() => network.fit({ animation: { duration: 500 } }), 50);
+    }
+
+    network.on('stabilizationIterationsDone', () => {
+      if (currentLayout === 'force') {
+        network.setOptions({ physics: false });
+        showToast('Physics stabilized and frozen');
       }
-      nodes.update(nodes.get().map(node => ({
-        id: node.id,
-        opacity: tracedNodes.has(node.id) ? 1 : .16
-      })));
-      edges.update(edges.get().map(edge => ({
-        id: edge.id,
-        color: tracedEdges.has(edge.id)
-          ? { color: '#7da9ff', opacity: 1 }
-          : { color: '#243041', opacity: .12 },
-        width: tracedEdges.has(edge.id) ? 2.4 : 1
-      })));
+    });
+
+    let lastShowLabels = true;
+    function updateLabelVisibility(showLabels, force = false) {
+      if (showLabels === lastShowLabels && !force) return;
+      lastShowLabels = showLabels;
+      
+      nodes.update(nodes.get().map(node => {
+        const isTarget = node.depth === 0;
+        const isSelected = node.id === selectedId;
+        return {
+          id: node.id,
+          font: {
+            size: (showLabels || isTarget || isSelected) ? (isTarget ? 15 : 11) : 0
+          }
+        };
+      }));
+    }
+
+    network.on('zoom', () => {
+      const scale = network.getScale();
+      updateLabelVisibility(scale > 0.45);
+    });
+
+    function traceToTarget(startId) {
+      const tracedNodes = new Set();
+      const tracedEdges = new Set();
+      const pathNodes = [];
+
+      function findPaths(currentId) {
+        pathNodes.push(currentId);
+        if (currentId === targetName) {
+          pathNodes.forEach(n => tracedNodes.add(n));
+          for (let i = 0; i < pathNodes.length - 1; i++) {
+            const fromNode = pathNodes[i];
+            const toNode = pathNodes[i + 1];
+            const edge = edgesData.find(e => e.from === fromNode && e.to === toNode);
+            if (edge) {
+              const edgeId = edge.id || `edge-${edgesData.indexOf(edge)}`;
+              tracedEdges.add(edgeId);
+            }
+          }
+          pathNodes.pop();
+          return;
+        }
+
+        const outgoing = edgesData.filter(e => e.from === currentId);
+        for (const edge of outgoing) {
+          const nextId = edge.to;
+          if (!pathNodes.includes(nextId)) {
+            findPaths(nextId);
+          }
+        }
+        pathNodes.pop();
+      }
+
+      findPaths(startId);
+
+      if (tracedNodes.size === 0) {
+        tracedNodes.add(startId);
+        tracedNodes.add(targetName);
+      }
+
+      nodes.update(nodes.get().map(node => {
+        const isTarget = node.depth === 0;
+        const isSelected = node.id === selectedId;
+        const scale = network.getScale();
+        const showLabels = scale > 0.45;
+        const showLabel = showLabels || isTarget || isSelected || node.id === startId;
+        return {
+          id: node.id,
+          opacity: tracedNodes.has(node.id) ? 1 : 0.08,
+          font: { size: showLabel ? (isTarget ? 15 : 11) : 0 }
+        };
+      }));
+
+      edges.update(edges.get().map((edge, idx) => {
+        const edgeId = edge.id || `edge-${idx}`;
+        const isTraced = tracedEdges.has(edgeId);
+        return {
+          id: edgeId,
+          color: isTraced
+            ? { color: '#ff7478', opacity: 1 }
+            : { color: '#243041', opacity: 0.06 },
+          width: isTraced ? 2.5 : 1
+        };
+      }));
     }
 
     function clearTrace() {
-      nodes.update(nodes.get().map(node => ({ id: node.id, opacity: 1 })));
-      edges.update(edges.get().map((edge, index) => ({
-        id: edge.id,
+      const scale = network.getScale();
+      const showLabels = scale > 0.45;
+      nodes.update(nodes.get().map(node => {
+        const isTarget = node.depth === 0;
+        const isSelected = node.id === selectedId;
+        return {
+          id: node.id,
+          opacity: 1,
+          font: {
+            size: (showLabels || isTarget || isSelected) ? (isTarget ? 15 : 11) : 0
+          }
+        };
+      }));
+      edges.update(edges.get().map((edge, idx) => ({
+        id: edge.id || `edge-${idx}`,
         color: { color: '#2a3748', highlight: '#83aefc', hover: '#526c8d', opacity: .78 },
         width: 1
       })));
     }
+
+    function osBasename(path) {
+      if (!path) return '';
+      const parts = path.split('/');
+      return parts[parts.length - 1];
+    }
+
+    function renderCodePreview(node) {
+      if (!node.code_context || node.code_context.length === 0) {
+        return '';
+      }
+      const linesHtml = node.code_context.map(([lineNum, lineContent]) => {
+        const isCallSite = lineNum === node.line;
+        return `
+          <div class="code-line ${isCallSite ? 'highlight' : ''}">
+            <span class="line-num">${lineNum}</span>
+            <span class="line-code">${escapeHtml(lineContent)}</span>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="card">
+          <div class="card-label">Call Site Code Preview</div>
+          <div class="code-preview">
+            <div class="code-header">
+              <span class="code-file" title="${escapeHtml(node.path)}">${escapeHtml(osBasename(node.path))}</span>
+              <span class="code-line-badge">Line ${node.line}</span>
+            </div>
+            <div class="code-content">
+              ${linesHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+
 
     function inspectNode(nodeId) {
       const node = nodesData.find(item => item.id === nodeId);
       if (!node) return;
       selectedId = nodeId;
       traceToTarget(nodeId);
-      const classification = node.group === 0 ? 'target' : node.group === 1 ? 'direct' : 'ripple';
-      const classText = node.group === 0 ? 'Target sun' : node.group === 1 ? 'Direct caller / Depth 1' : `Ripple effect / Depth ${node.group}`;
+      const classification = node.group === 0 ? 'target' : node.group === 1 ? 'inner' : node.group === 2 ? 'mid' : 'outer';
+      const classText = node.group === 0 ? 'Target sun' : node.group === 1 ? 'Inner layer / Depth 1' : node.group === 2 ? 'Mid layer / Depth 2' : `Outer layer / Depth ${node.group}`;
       const location = node.path ? `${node.path}:${node.line || 1}` : 'Target definition';
       const editorLink = node.path ? `vscode://file/${encodeURI(node.path)}:${node.line || 1}` : '#';
+      const codeHtml = renderCodePreview(node);
+      
       document.getElementById('inspector-content').innerHTML = `
         <div class="card">
           <div class="card-label">Selected symbol</div>
@@ -698,12 +958,14 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           <div class="card-label">Source location</div>
           <div class="location">${escapeHtml(location)}</div>
         </div>
+        ${codeHtml}
         <div class="action-row">
           <a class="action primary" href="${editorLink}">Open in editor</a>
           <button class="action" id="focus-selected" type="button">Focus path</button>
           <button class="action" id="copy-location" type="button">Copy location</button>
           <button class="action" id="clear-path" type="button">Clear path</button>
         </div>`;
+
       document.getElementById('focus-selected').onclick = () =>
         network.focus(nodeId, { scale: 1.35, animation: { duration: 500 } });
       document.getElementById('copy-location').onclick = async () => {
@@ -714,6 +976,11 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         selectedId = null;
         network.unselectAll();
         clearTrace();
+        document.getElementById('inspector-content').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-orbit"></div>
+            <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+          </div>`;
       };
     }
 
@@ -736,29 +1003,69 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
 
     network.on('click', params => {
-      if (params.nodes.length) inspectNode(params.nodes[0]);
-      else {
+      if (params.nodes.length) {
+        inspectNode(params.nodes[0]);
+      } else {
         selectedId = null;
+        clearTrace();
+        document.getElementById('inspector-content').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-orbit"></div>
+            <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+          </div>`;
+      }
+    });
+
+    network.on('hoverNode', params => {
+      nodes.update({
+        id: params.node,
+        font: { size: params.node === targetName ? 15 : 11 }
+      });
+      if (!selectedId) {
+        traceToTarget(params.node);
+      }
+    });
+
+    network.on('blurNode', params => {
+      const scale = network.getScale();
+      const showLabels = scale > 0.45;
+      if (!showLabels && params.node !== targetName && params.node !== selectedId) {
+        nodes.update({
+          id: params.node,
+          font: { size: 0 }
+        });
+      }
+      if (!selectedId) {
         clearTrace();
       }
     });
-    network.on('hoverNode', params => {
-      if (!selectedId) traceToTarget(params.node);
-    });
-    network.on('blurNode', () => {
-      if (!selectedId) clearTrace();
-    });
+
     network.on('beforeDrawing', context => {
       if (currentLayout !== 'solar') return;
       context.save();
       context.setLineDash([5, 8]);
       context.lineWidth = 1 / network.getScale();
-      context.strokeStyle = 'rgba(96, 127, 165, 0.32)';
+      context.strokeStyle = 'rgba(96, 127, 165, 0.22)';
+      
+      const visible = nodesData.filter(node => node.group <= currentDepth);
+      
       for (let depth = 1; depth <= currentDepth; depth += 1) {
-        const radius = 145 + ((depth - 1) * 125);
-        context.beginPath();
-        context.arc(0, 0, radius, 0, Math.PI * 2);
-        context.stroke();
+        const ringNodes = visible.filter(node => node.group === depth);
+        if (ringNodes.length === 0) continue;
+        
+        const maxPerRing = 10;
+        const numSubRings = Math.ceil(ringNodes.length / maxPerRing);
+        const baseRadius = 160 + ((depth - 1) * 160);
+        
+        for (let subRingIdx = 0; subRingIdx < numSubRings; subRingIdx++) {
+          const ringSpacing = 45;
+          const offsetRadius = (subRingIdx - (numSubRings - 1) / 2) * ringSpacing;
+          const radius = baseRadius + offsetRadius;
+          
+          context.beginPath();
+          context.arc(0, 0, radius, 0, Math.PI * 2);
+          context.stroke();
+        }
       }
       context.restore();
     });
@@ -769,15 +1076,22 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       clearTrace();
       if (!query) return;
       const matches = nodes.get().filter(node => node.label.toLowerCase().includes(query));
-      nodes.update(nodes.get().map(node => ({
-        id: node.id,
-        opacity: matches.some(match => match.id === node.id) ? 1 : .12
-      })));
+      nodes.update(nodes.get().map(node => {
+        const isTarget = node.depth === 0;
+        const isMatched = matches.some(match => match.id === node.id);
+        return {
+          id: node.id,
+          opacity: isMatched ? 1 : .12,
+          font: { size: (isMatched || isTarget) ? (isTarget ? 15 : 11) : 0 }
+        };
+      }));
       if (matches.length === 1) {
         network.selectNodes([matches[0].id]);
+        inspectNode(matches[0].id);
         network.focus(matches[0].id, { scale: 1.25, animation: true });
       }
     });
+
     document.addEventListener('keydown', event => {
       if (event.key === '/' && document.activeElement !== search) {
         event.preventDefault();
@@ -788,16 +1102,25 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         selectedId = null;
         network.unselectAll();
         clearTrace();
+        document.getElementById('inspector-content').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-orbit"></div>
+            <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+          </div>`;
       }
     });
 
-    document.getElementById('layout-select').onchange = event =>
-      event.target.value === 'solar' ? applySolarLayout() : applyForceLayout();
+    document.getElementById('layout-select').onchange = event => {
+      const val = event.target.value;
+      if (val === 'solar') applySolarLayout();
+      else if (val === 'force') applyForceLayout();
+      else if (val === 'tree') applyTreeLayout();
+    };
     document.getElementById('btn-group').onclick = event => {
       groupByFile = !groupByFile;
       event.currentTarget.classList.toggle('active', groupByFile);
       visibleGraph();
-      currentLayout === 'solar' ? applySolarLayout(false) : applyForceLayout();
+      currentLayout === 'solar' ? applySolarLayout(false) : currentLayout === 'force' ? applyForceLayout() : applyTreeLayout();
       showToast(groupByFile ? 'File colors enabled' : 'Depth colors restored');
     };
     document.getElementById('btn-fit').onclick = () => network.fit({ animation: true });
@@ -807,7 +1130,12 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       search.value = '';
       selectedId = null;
       clearTrace();
-      currentLayout === 'solar' ? applySolarLayout() : applyForceLayout();
+      currentLayout === 'solar' ? applySolarLayout() : currentLayout === 'force' ? applyForceLayout() : applyTreeLayout();
+      document.getElementById('inspector-content').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-orbit"></div>
+          <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+        </div>`;
     };
     document.getElementById('btn-export').onclick = () => {
       const canvas = container.querySelector('canvas');
@@ -820,7 +1148,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     document.getElementById('depth-slider').oninput = event => {
       currentDepth = Number(event.target.value);
       document.getElementById('depth-label').textContent = currentDepth;
-      currentLayout === 'solar' ? applySolarLayout(false) : applyForceLayout();
+      currentLayout === 'solar' ? applySolarLayout(false) : currentLayout === 'force' ? applyForceLayout() : applyTreeLayout();
     };
 
     drawOrbits();

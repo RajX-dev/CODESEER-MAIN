@@ -21,7 +21,7 @@ from pathlib import Path
 
 # 1. Imports
 from src.symbol_extractor import extract_symbols_imports_calls
-from src.database import ensure_project, upsert_symbol, upsert_import, upsert_call, batch_upsert_symbols
+from src.database import ensure_project, upsert_import, upsert_call, batch_upsert_symbols
 from src.resolve_imports import resolve_project_imports
 from src.resolve_calls import resolve_project_calls
 
@@ -82,7 +82,7 @@ def ingest_repo(repo_path, project_name, repo_url):
     # Resolve Calls
     resolve_project_calls(project_id)
 
-    print(f"\n🏁 INGESTION COMPLETE.")
+    print("\n🏁 INGESTION COMPLETE.")
     print(f"Files: {file_count}")
 
 def process_file(full_path, rel_path, project_id):

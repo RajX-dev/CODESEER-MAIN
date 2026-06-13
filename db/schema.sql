@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS imports (
     CONSTRAINT unq_imports UNIQUE NULLS NOT DISTINCT (project_id, file_path, module, name)
 );
 
+-- 6. Files Table (for incremental indexing)
+CREATE TABLE IF NOT EXISTS files (
+    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    PRIMARY KEY (project_id, file_path)
+);
+
 -- Indexes for Speed ⚡
 CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name);
 CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(file_path);

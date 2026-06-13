@@ -159,14 +159,14 @@ erDiagram
 - ✅ **Batch inserts** — symbols, imports, and calls batched per file
 - ✅ **SPLIT_PART query fix** — major call-resolution speedup
 - ✅ **CLI flags** — `--file` and `--depth` for targeted impact analysis
+- ✅ **Incremental re-index** — SHA-256 file hashing, skip unchanged files
+- ✅ **Test suite** — pytest with database integration testing
+- ✅ **GitHub Actions CI** — lint and test pipeline on every PR
 
 ### In development (v0.5)
 
-- 🚧 **Incremental re-index** — SHA-256 file hashing, skip unchanged files
 - 🚧 **Multiprocessing** — parallel AST parsing via `ProcessPoolExecutor`
 - 🚧 **Scope-aware call resolution** — use imports table, eliminate false positives
-- 🚧 **Test suite** — pytest with real Postgres integration tests
-- 🚧 **GitHub Actions CI** — lint, typecheck, test on every PR
 
 ---
 
@@ -230,6 +230,14 @@ n3mo impact "authenticate_user" --file api/auth.py --depth 2
 # Open an interactive visual graph in your browser (with depth slider)
 n3mo impact "authenticate_user" --graph
 ```
+
+### Visualizer Screenshots
+
+#### Solar Orbit View
+![Solar Orbit View](docs/images/solar_orbit.png)
+
+#### Horizontal Tree View
+![Horizontal Tree View](docs/images/horizontal_tree.png)
 
 **Example terminal output:**
 
@@ -324,6 +332,14 @@ Calls:    ~181,000
 > ✅ Real measured results on Django, single-threaded, same hardware as above.
 >
 > **Total improvement: 4.6x faster than v0.3.** Multiprocessing (v0.5) will produce a further before/after comparison once implemented. No projections until the code exists.
+
+### Running the Indexing Performance Benchmark
+
+N3MO includes an automated performance benchmarking script to evaluate index timing improvements (comparing full indexing times against incremental re-indexing times):
+
+```bash
+python benchmarks/benchmark_indexing.py
+```
 
 ---
 

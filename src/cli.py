@@ -2,11 +2,7 @@ import sys
 import os
 import argparse
 import json
-import http.server
-import socketserver
 from src.database import get_connection
-import webbrowser
-import threading
 from src.graph_visualizer import generate_solar_graph_html
 
 # Try to import the indexer logic
@@ -756,34 +752,33 @@ def cmd_impact(args):
 
             if file_filter:
                 cur.execute(
-                    "SELECT id, name, file_path FROM symbols WHERE name = %s AND project_id = %s AND file_path LIKE %s LIMIT 1",
+                    "SELECT id, name, file_path, start_line FROM symbols WHERE name = %s AND project_id = %s AND file_path LIKE %s LIMIT 1",
                     (symbol_name, project_id, f"%{file_filter}%")
                 )
             else:
                 cur.execute(
-                    "SELECT id, name, file_path FROM symbols WHERE name = %s AND project_id = %s LIMIT 1",
+                    "SELECT id, name, file_path, start_line FROM symbols WHERE name = %s AND project_id = %s LIMIT 1",
                     (symbol_name, project_id)
                 )
             target = cur.fetchone()
             if not target:
                 print(f"\n  {RED}✗{R} Symbol {WHITE}'{symbol_name}'{R} not found in index.\n")
                 return
-            target_id, real_name, target_file = target
+            target_id, real_name, target_file, target_start_line = target
             print(f"\n  {DIM}Analyzing{R}  {AMBER}{BOLD}{real_name}{R}")
             print(f"  {GRAY}Location: {DIM}{target_file}{R}\n")
 
             query = """
             WITH RECURSIVE impact_chain AS (
-                SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target
+                SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id
                 FROM calls c
                 JOIN symbols s ON c.source_symbol_id = s.id
                 JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
                 WHERE c.resolved_symbol_id = %s
                 UNION ALL
-                SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source
+                SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id
                 FROM impact_chain ic
-                JOIN symbols current_target ON current_target.name = ic.source
-                JOIN calls c ON c.resolved_symbol_id = current_target.id
+                JOIN calls c ON c.resolved_symbol_id = ic.source_id
                 JOIN symbols s ON c.source_symbol_id = s.id
                 WHERE ic.depth < %s + 1
             )
@@ -798,27 +793,33 @@ def cmd_impact(args):
             print_ascii_tree(results, real_name)
 
             if args.graph:
-                nodes_map = {real_name: {"group": 0, "path": "", "line": 0}}
-                edges = set()
-
                 # Auto-detect terminal directory so VS Code links work perfectly
                 base_dir = args.root or os.getcwd()
 
-                for source, path, line, depth, target in results:
+                target_full_path = f"{base_dir}/{target_file}".replace("\\", "/") if target_file else ""
+                target_start_line = target_start_line or 1
+                target_code_ctx = get_code_context(target_full_path, target_start_line)
+
+                nodes_map = {real_name: {"group": 0, "path": target_full_path, "line": target_start_line, "code_context": target_code_ctx}}
+                edges = set()
+
+                for source, path, line, depth, target_node in results:
                     s_group = depth
                     t_group = max(depth - 1, 0)
-                    if target == real_name:
+                    if target_node == real_name:
                         t_group = 0
 
                     full_path = ""
                     if path:
                         full_path = f"{base_dir}/{path}".replace("\\", "/")
 
+                    code_ctx = get_code_context(full_path, line)
+
                     if source not in nodes_map or s_group < nodes_map[source]["group"]:
-                        nodes_map[source] = {"group": s_group, "path": full_path, "line": line}
-                    if target not in nodes_map or t_group < nodes_map[target]["group"]:
-                        nodes_map[target] = {"group": t_group, "path": full_path, "line": line}
-                    edges.add((source, target))
+                        nodes_map[source] = {"group": s_group, "path": full_path, "line": line, "code_context": code_ctx}
+                    if target_node not in nodes_map or t_group < nodes_map[target_node]["group"]:
+                        nodes_map[target_node] = {"group": t_group, "path": full_path, "line": line, "code_context": code_ctx}
+                    edges.add((source, target_node))
 
                 nodes_set = list(nodes_map.items())
                 filename = generate_solar_graph_html(nodes_set, edges, real_name, args.depth)
@@ -878,6 +879,12 @@ def cmd_clean(args):
 
 
 def main():
+    if sys.stdout.encoding != 'utf-8':
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
     parser = argparse.ArgumentParser(prog="n3mo")
     subparsers = parser.add_subparsers(dest='command')
     parser_impact = subparsers.add_parser('impact')

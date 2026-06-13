@@ -11,6 +11,7 @@ src/__init__.py
 src/cli.py
 src/crawler.py
 src/database.py
+src/graph_visualizer.py
 src/ingest_files.py
 src/resolve_calls.py
 src/resolve_imports.py

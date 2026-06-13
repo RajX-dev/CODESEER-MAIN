@@ -1,5 +1,4 @@
 import os
-import uuid
 
 # Folders we never want to scan
 IGNORED_DIRS = {
