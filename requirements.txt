@@ -24,3 +24,6 @@ tree-sitter-powershell==0.26.4
 tree-sitter-ruby==0.23.1
 tree-sitter-scala==0.26.0
 tree-sitter-swift==0.7.3
+fastapi
+uvicorn
+mcp
