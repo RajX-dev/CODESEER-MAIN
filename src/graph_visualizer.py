@@ -27,31 +27,64 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --space: #05070b;
-      --panel: rgba(12, 17, 24, 0.92);
-      --panel-solid: #0c1118;
-      --panel-raised: #111924;
-      --line: #263244;
-      --line-soft: rgba(92, 116, 145, 0.18);
-      --text: #edf5ff;
-      --muted: #8090a5;
-      --blue: #4c8dff;
-      --amber: #f5a524;
-      --red: #ff5a5f;
-      --cyan: #55d6e8;
+      --space: #f7f4ef;
+      --panel: #f9f6f0;
+      --panel-solid: #f9f6f0;
+      --panel-raised: #f1ebd9;
+      --line: #e5dfd5;
+      --line-soft: rgba(27, 24, 22, 0.05);
+      --text: #191816;
+      --muted: #6e6a64;
+      --blue: #5a7f9c;
+      --amber: #bf8e3b;
+      --red: #cc5a3f;
+      --cyan: #385c43;
+    }
+
+    body.dark-mode {
+      --space: #191919;
+      --panel: #222222;
+      --panel-solid: #222222;
+      --panel-raised: #2a2a2a;
+      --line: #333333;
+      --line-soft: rgba(255, 255, 255, 0.05);
+      --text: #f7f4ef;
+      --muted: #a39f99;
+      --blue: #8faec4;
+      --amber: #d9ab55;
+      --red: #e0755a;
+      --cyan: #5fa673;
+    }
+
+    body.dark-mode .card,
+    body.dark-mode .summary-stat,
+    body.dark-mode .search input,
+    body.dark-mode .toolbar-group,
+    body.dark-mode .depth-control,
+    body.dark-mode .legend,
+    body.dark-mode #toast,
+    body.dark-mode .action {
+      background: #222222;
+    }
+
+    body.dark-mode .code-preview {
+      background: #1e1e1e;
+    }
+    body.dark-mode .code-header {
+      background: #2a2a2a;
+    }
+    body.dark-mode .code-content {
+      background: #1e1e1e;
     }
 
     * { box-sizing: border-box; }
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
     body {
       color: var(--text);
-      background:
-        radial-gradient(circle at 35% 42%, rgba(34, 64, 112, 0.16), transparent 34%),
-        radial-gradient(circle at 70% 15%, rgba(76, 141, 255, 0.08), transparent 24%),
-        var(--space);
+      background: var(--space);
       font-family: Inter, sans-serif;
     }
 
@@ -73,8 +106,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       gap: 20px;
       padding: 12px 18px;
       border-bottom: 1px solid var(--line);
-      background: rgba(5, 7, 11, 0.86);
-      backdrop-filter: blur(18px);
+      background: var(--panel-solid);
     }
 
     .brand-row { display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -82,72 +114,73 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       display: flex;
       align-items: center;
       gap: 9px;
-      color: var(--blue);
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
+      color: var(--text);
+      font-family: "Lora", serif;
+      font-size: 16px;
       font-weight: 700;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.05em;
       white-space: nowrap;
     }
     .brand-mark {
       position: relative;
-      width: 24px;
-      height: 24px;
-      border: 1px solid rgba(76, 141, 255, 0.7);
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--red);
       border-radius: 50%;
-      box-shadow: inset 0 0 12px rgba(76, 141, 255, 0.3);
     }
     .brand-mark::after {
       content: "";
       position: absolute;
-      inset: 7px;
+      inset: 4px;
       border-radius: 50%;
-      background: var(--blue);
-      box-shadow: 0 0 12px var(--blue);
+      background: var(--red);
     }
     .target-summary { min-width: 0; }
     .target-name {
       overflow: hidden;
       font-family: "JetBrains Mono", monospace;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     .target-meta { margin-top: 3px; color: var(--muted); font-size: 11px; }
     .risk-pill {
-      padding: 5px 8px;
-      border: 1px solid rgba(255, 90, 95, 0.4);
-      border-radius: 999px;
-      color: #ff9699;
-      background: rgba(255, 90, 95, 0.1);
+      padding: 4px 8px;
+      border: 1px solid var(--red);
+      border-radius: 4px;
+      color: var(--red);
+      background: rgba(204, 90, 63, 0.05);
+      font-family: "Lora", serif;
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
       white-space: nowrap;
     }
 
     .summary-stats { display: flex; align-items: center; gap: 8px; }
     .summary-stat {
       min-width: 82px;
-      padding: 8px 11px;
+      padding: 6px 10px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(17, 25, 36, 0.72);
+      border-radius: 4px;
+      background: #ffffff;
     }
     .summary-stat span {
       display: block;
       color: var(--muted);
-      font-size: 9px;
+      font-family: "Lora", serif;
+      font-size: 8px;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
     .summary-stat strong {
       display: block;
       margin-top: 2px;
       font-family: "JetBrains Mono", monospace;
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .workspace {
@@ -157,37 +190,28 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       min-height: 0;
     }
 
-    #graph-shell { position: relative; min-width: 0; overflow: hidden; }
+    #graph-shell { position: relative; min-width: 0; overflow: hidden; background: var(--space); }
     #mynetwork { position: absolute; inset: 0; z-index: 2; }
     #stars, #orbit-layer { position: absolute; inset: 0; pointer-events: none; }
-    #stars {
-      z-index: 0;
-      opacity: 0.48;
-      background-image:
-        radial-gradient(circle, rgba(255,255,255,.7) 0 1px, transparent 1.2px),
-        radial-gradient(circle, rgba(90,150,255,.6) 0 1px, transparent 1.3px);
-      background-position: 0 0, 37px 51px;
-      background-size: 83px 83px, 127px 127px;
-    }
+    #stars { display: none; }
     #orbit-layer { z-index: 1; }
     .orbit {
       position: absolute;
       left: 50%;
       top: 50%;
-      border: 1px solid rgba(96, 127, 165, 0.22);
+      border: 1px solid rgba(27, 24, 22, 0.08);
       border-radius: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: inset 0 0 40px rgba(76, 141, 255, 0.018);
     }
     .orbit-label {
       position: absolute;
       left: 50%;
       top: 0;
       padding: 3px 7px;
-      border: 1px solid rgba(96, 127, 165, 0.2);
-      border-radius: 999px;
-      color: #65778f;
-      background: rgba(5, 7, 11, 0.84);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--muted);
+      background: var(--panel-solid);
       font-family: "JetBrains Mono", monospace;
       font-size: 9px;
       letter-spacing: 0.08em;
@@ -216,15 +240,15 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       height: 40px;
       padding: 0 36px 0 13px;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 4px;
       outline: none;
       color: var(--text);
-      background: var(--panel);
-      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,.03);
       font-family: "JetBrains Mono", monospace;
       font-size: 12px;
     }
-    .search input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(76,141,255,.12); }
+    .search input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(204,90,63,.12); }
     .search kbd {
       position: absolute;
       top: 10px;
@@ -233,7 +257,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       border: 1px solid var(--line);
       border-radius: 4px;
       color: var(--muted);
-      background: #0a0e14;
+      background: var(--space);
       font-size: 9px;
     }
     .toolbar-group {
@@ -242,15 +266,15 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       gap: 5px;
       padding: 4px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--panel);
-      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      border-radius: 4px;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,.03);
     }
     .toolbar-spacer { flex: 1; }
     .tool-button, .tool-select {
       height: 32px;
       border: 1px solid transparent;
-      border-radius: 7px;
+      border-radius: 3px;
       color: var(--muted);
       background: transparent;
       cursor: pointer;
@@ -276,12 +300,12 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       min-width: 230px;
       padding: 10px 12px;
       border: 1px solid var(--line);
-      border-radius: 11px;
-      background: var(--panel);
-      box-shadow: 0 14px 36px rgba(0,0,0,.32);
+      border-radius: 4px;
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.05);
     }
     .depth-control label { color: var(--muted); font-size: 11px; }
-    .depth-control input { flex: 1; accent-color: var(--blue); }
+    .depth-control input { flex: 1; accent-color: var(--red); }
     .depth-value {
       min-width: 22px;
       color: var(--text);
@@ -299,9 +323,10 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       gap: 14px;
       padding: 9px 12px;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 4px;
       color: var(--muted);
-      background: var(--panel);
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.05);
       font-size: 10px;
     }
     .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -313,60 +338,61 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       overflow-y: auto;
       border-left: 1px solid var(--line);
       background: var(--panel-solid);
-      box-shadow: -18px 0 45px rgba(0,0,0,.2);
+      box-shadow: none;
     }
     .sidebar-header { padding: 18px; border-bottom: 1px solid var(--line); }
     .eyebrow {
-      color: var(--blue);
-      font-size: 9px;
+      color: var(--red);
+      font-family: "Lora", serif;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: .14em;
+      letter-spacing: .08em;
       text-transform: uppercase;
     }
-    .sidebar-title { margin-top: 7px; font-size: 15px; font-weight: 600; }
+    .sidebar-title { margin-top: 7px; font-family: "Lora", serif; font-size: 18px; font-weight: 600; }
     .inspector { padding: 16px; }
     .empty-state { padding: 80px 20px; color: var(--muted); text-align: center; }
     .empty-orbit {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       margin: 0 auto 18px;
       border: 1px solid var(--line);
       border-radius: 50%;
-      box-shadow: inset 0 0 20px rgba(76,141,255,.09);
     }
     .empty-state p { margin: 0; font-size: 12px; line-height: 1.6; }
     .card {
       margin-bottom: 12px;
       padding: 14px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #0a0f16;
+      border-radius: 4px;
+      background: #ffffff;
     }
     .card-label {
       margin-bottom: 8px;
       color: var(--muted);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-    .symbol-name { font-family: "JetBrains Mono", monospace; font-size: 14px; font-weight: 600; word-break: break-all; }
-    .badge {
-      display: inline-flex;
-      padding: 5px 8px;
-      border: 1px solid currentColor;
-      border-radius: 999px;
+      font-family: "Lora", serif;
       font-size: 9px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
     }
-    .badge.target { color: #ff8589; background: rgba(255,90,95,.08); }
-    .badge.inner { color: #ff8589; background: rgba(255,90,95,.08); }
-    .badge.mid { color: #ffc35c; background: rgba(245,165,36,.08); }
-    .badge.outer { color: #77a6ff; background: rgba(76,141,255,.08); }
+    .symbol-name { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 600; word-break: break-all; }
+    .badge {
+      display: inline-flex;
+      padding: 4px 8px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .badge.target { color: var(--red); background: rgba(204, 90, 63, 0.05); }
+    .badge.inner { color: var(--cyan); background: rgba(56, 92, 67, 0.05); }
+    .badge.mid { color: var(--amber); background: rgba(191, 142, 59, 0.05); }
+    .badge.outer { color: var(--blue); background: rgba(90, 127, 156, 0.05); }
     .location {
-      color: #b7c4d4;
+      color: var(--muted);
       font-family: "JetBrains Mono", monospace;
       font-size: 11px;
       line-height: 1.6;
@@ -376,17 +402,17 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     .action {
       min-height: 38px;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 4px;
       color: var(--text);
-      background: var(--panel-raised);
+      background: #ffffff;
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
       text-decoration: none;
     }
     a.action { display: flex; align-items: center; justify-content: center; }
-    .action.primary { border-color: #346ccf; background: #2459b8; }
-    .action:hover { filter: brightness(1.13); }
+    .action.primary { border-color: var(--red); background: var(--red); color: #ffffff; }
+    .action:hover { filter: brightness(0.96); }
 
     #toast {
       z-index: 30;
@@ -395,11 +421,11 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       bottom: 24px;
       padding: 9px 12px;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 4px;
       opacity: 0;
       color: var(--text);
-      background: var(--panel-solid);
-      box-shadow: 0 14px 35px rgba(0,0,0,.35);
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
       font-size: 11px;
       pointer-events: none;
       transform: translate(-50%, 10px);
@@ -407,17 +433,16 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
     #toast.visible { opacity: 1; transform: translate(-50%, 0); }
 
-
     /* Code Preview UI */
     .code-preview {
-      background: #05070b;
+      background: #faf8f5;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 4px;
       overflow: hidden;
       margin-top: 8px;
     }
     .code-header {
-      background: rgba(12, 17, 24, 0.7);
+      background: #f3ede2;
       padding: 8px 12px;
       border-bottom: 1px solid var(--line);
       display: flex;
@@ -444,7 +469,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     .code-content {
       padding: 12px;
       overflow-x: auto;
-      background: #05070b;
+      background: #faf8f5;
     }
     .code-line {
       display: flex;
@@ -452,7 +477,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       padding: 2px 0;
     }
     .code-line.highlight {
-      background: rgba(255, 90, 95, 0.12);
+      background: rgba(204, 90, 63, 0.06);
       margin: 0 -12px;
       padding: 2px 12px;
       border-left: 2px solid var(--red);
@@ -462,7 +487,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       text-align: right;
       min-width: 32px;
       user-select: none;
-      opacity: 0.6;
+      opacity: 0.5;
       font-family: "JetBrains Mono", monospace;
       font-size: 11px;
     }
@@ -523,6 +548,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
             <button class="tool-button square" id="btn-zoom-in" type="button" title="Zoom in">+</button>
             <button class="tool-button square" id="btn-zoom-out" type="button" title="Zoom out">-</button>
             <button class="tool-button" id="btn-export" type="button">Export PNG</button>
+            <button class="tool-button" id="btn-theme" type="button">◑ Theme</button>
             <button class="tool-button" id="btn-reset" type="button">Reset</button>
           </div>
         </div>
@@ -565,7 +591,38 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     const edgesData = __EDGES_JSON__;
     const configuredMaxDepth = __MAX_DEPTH__;
     const actualMaxDepth = Math.max(1, ...nodesData.map(node => node.group));
-    const palette = ['#55d6e8', '#a78bfa', '#39d98a', '#ff7a90', '#f3cf5b', '#5aa9ff'];
+    const themes = {
+      light: {
+        text: '#191816',
+        stroke: '#fbf9f6',
+        edge: '#d3c9b9',
+        edgeHover: '#a19685',
+        orbitStroke: 'rgba(27, 24, 22, 0.08)',
+        orbitDash: 'rgba(96, 127, 165, 0.22)',
+        palette: ['#5a7f9c', '#cc5a3f', '#385c43', '#bf8e3b', '#b07060', '#8372a6'],
+        nodes: {
+          target: { bg: '#fcf1ee', border: '#cc5a3f', highlightBg: '#cc5a3f', hoverBg: '#fcf1ee' },
+          inner: { bg: '#f4f9f5', border: '#385c43', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' },
+          mid: { bg: '#faf5ec', border: '#bf8e3b', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' },
+          outer: { bg: '#f4f7fa', border: '#5a7f9c', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' }
+        }
+      },
+      dark: {
+        text: '#f7f4ef',
+        stroke: '#191919',
+        edge: '#444444',
+        edgeHover: '#666666',
+        orbitStroke: 'rgba(255, 255, 255, 0.08)',
+        orbitDash: 'rgba(143, 174, 196, 0.25)',
+        palette: ['#8faec4', '#e0755a', '#5fa673', '#d9ab55', '#cc8c7a', '#a699c7'],
+        nodes: {
+          target: { bg: '#3a1e1a', border: '#e0755a', highlightBg: '#e0755a', hoverBg: '#4d2822' },
+          inner: { bg: '#17271c', border: '#5fa673', highlightBg: '#2a2a2a', hoverBg: '#1e3325' },
+          mid: { bg: '#2d2313', border: '#d9ab55', highlightBg: '#2a2a2a', hoverBg: '#3b2e19' },
+          outer: { bg: '#1a2730', border: '#8faec4', highlightBg: '#2a2a2a', hoverBg: '#22333f' }
+        }
+      }
+    };
     let currentDepth = Math.min(configuredMaxDepth, actualMaxDepth);
     let currentLayout = 'solar';
     let groupByFile = false;
@@ -578,9 +635,10 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     document.getElementById('risk-pill').textContent =
       nodesData.filter(node => node.group > 0).length > 10 ? 'High impact' : 'Moderate impact';
 
-    const fileColor = path => {
+    const fileColor = (path, currentTheme) => {
       let hash = 0;
       for (const char of path || 'target') hash = ((hash << 5) - hash) + char.charCodeAt(0);
+      const palette = themes[currentTheme].palette;
       return palette[Math.abs(hash) % palette.length];
     };
 
@@ -590,11 +648,15 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       const isMid = node.group === 2;
       const isOuter = node.group >= 3;
 
-      const border = groupByFile && !isTarget
-        ? fileColor(node.path)
-        : isTarget ? '#ff7478' : isInner ? '#ff5a5f' : isMid ? '#f5a524' : '#4c8dff';
+      const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+      const t = themes[currentTheme];
+      const nodeTheme = isTarget ? t.nodes.target : isInner ? t.nodes.inner : isMid ? t.nodes.mid : t.nodes.outer;
 
-      const background = isTarget ? '#ff4f55' : isInner ? '#1c0a0b' : isMid ? '#1a140a' : '#0a111d';
+      const border = groupByFile && !isTarget
+        ? fileColor(node.path, currentTheme)
+        : nodeTheme.border;
+
+      const background = nodeTheme.bg;
 
       // Create a copy and remove "group" to prevent Vis.js group styling override
       const cleanNode = { ...node };
@@ -605,44 +667,41 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         depth: node.group,
         level: node.group,
         shape: 'dot',
-        size: isTarget ? 36 : isInner ? 17 : isMid ? 14 : Math.max(10, 15 - node.group),
+        size: isTarget ? 28 : isInner ? 14 : isMid ? 11 : Math.max(8, 12 - node.group),
         borderWidth: isTarget ? 3 : 2,
-        borderWidthSelected: 4,
+        borderWidthSelected: 3,
         font: {
           face: 'JetBrains Mono',
-          color: '#dce8f6',
-          size: isTarget ? 15 : 11,
-          strokeWidth: 5,
-          strokeColor: '#05070b'
+          color: t.text,
+          size: isTarget ? 13 : 10,
+          strokeWidth: 4,
+          strokeColor: t.stroke
         },
         color: {
           background,
           border,
-          highlight: { background: isTarget ? '#ff4f55' : '#142848', border: '#ffffff' },
-          hover: { background: isTarget ? '#ff6267' : '#12233d', border: '#ffffff' }
-        },
-        shadow: {
-          enabled: isTarget,
-          color: 'rgba(255,79,85,.72)',
-          size: 32,
-          x: 0,
-          y: 0
+          highlight: { background: nodeTheme.highlightBg, border: t.text },
+          hover: { background: nodeTheme.hoverBg, border: t.text }
         }
       };
     };
 
-    const baseEdge = (edge, index) => ({
-      ...edge,
-      id: edge.id || `edge-${index}`,
-      arrows: { to: { enabled: true, scaleFactor: .45 } },
-      color: { color: '#2a3748', highlight: '#83aefc', hover: '#526c8d', opacity: .78 },
-      width: 1,
-      selectionWidth: 2,
-      hoverWidth: 1.5,
-      smooth: currentLayout === 'tree'
-        ? { enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 }
-        : { enabled: true, type: 'curvedCW', roundness: .08 }
-    });
+    const baseEdge = (edge, index) => {
+      const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+      const t = themes[currentTheme];
+      return {
+        ...edge,
+        id: edge.id || `edge-${index}`,
+        arrows: { to: { enabled: true, scaleFactor: .45 } },
+        color: { color: t.edge, highlight: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', hover: t.edgeHover, opacity: .8 },
+        width: 1,
+        selectionWidth: 1.5,
+        hoverWidth: 1.2,
+        smooth: currentLayout === 'tree'
+          ? { enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 }
+          : { enabled: true, type: 'curvedCW', roundness: .08 }
+      };
+    };
 
     const nodes = new vis.DataSet(nodesData.map(baseNode));
     const edges = new vis.DataSet(edgesData.map(baseEdge));
@@ -857,20 +916,22 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         const showLabel = showLabels || isTarget || isSelected || node.id === startId;
         return {
           id: node.id,
-          opacity: tracedNodes.has(node.id) ? 1 : 0.08,
-          font: { size: showLabel ? (isTarget ? 15 : 11) : 0 }
+          opacity: tracedNodes.has(node.id) ? 1 : 0.15,
+          font: { size: showLabel ? (isTarget ? 13 : 10) : 0 }
         };
       }));
 
       edges.update(edges.get().map((edge, idx) => {
         const edgeId = edge.id || `edge-${idx}`;
         const isTraced = tracedEdges.has(edgeId);
+        const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+        const t = themes[currentTheme];
         return {
           id: edgeId,
           color: isTraced
-            ? { color: '#ff7478', opacity: 1 }
-            : { color: '#243041', opacity: 0.06 },
-          width: isTraced ? 2.5 : 1
+            ? { color: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', opacity: 1 }
+            : { color: t.edge, opacity: 0.1 },
+          width: isTraced ? 2 : 1
         };
       }));
     }
@@ -885,13 +946,15 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           id: node.id,
           opacity: 1,
           font: {
-            size: (showLabels || isTarget || isSelected) ? (isTarget ? 15 : 11) : 0
+            size: (showLabels || isTarget || isSelected) ? (isTarget ? 13 : 10) : 0
           }
         };
       }));
+      const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+      const t = themes[currentTheme];
       edges.update(edges.get().map((edge, idx) => ({
         id: edge.id || `edge-${idx}`,
-        color: { color: '#2a3748', highlight: '#83aefc', hover: '#526c8d', opacity: .78 },
+        color: { color: t.edge, highlight: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', hover: t.edgeHover, opacity: .8 },
         width: 1
       })));
     }
@@ -1149,6 +1212,40 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       currentDepth = Number(event.target.value);
       document.getElementById('depth-label').textContent = currentDepth;
       currentLayout === 'solar' ? applySolarLayout(false) : currentLayout === 'force' ? applyForceLayout() : applyTreeLayout();
+    };
+
+    function updateThemeColors() {
+      const allNodes = nodes.get();
+      nodes.update(allNodes.map(node => {
+        const origNode = nodesData.find(item => item.id === node.id);
+        return baseNode(origNode);
+      }));
+      
+      const allEdges = edges.get();
+      edges.update(allEdges.map((edge, idx) => {
+        const origEdge = edgesData.find(e => e.id === edge.id);
+        return baseEdge(origEdge, idx);
+      }));
+      
+      drawOrbits();
+      if (selectedId) {
+        traceToTarget(selectedId);
+      }
+    }
+
+    const savedTheme = localStorage.getItem('n3mo-theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('btn-theme').textContent = '☼ Light Mode';
+    } else {
+      document.getElementById('btn-theme').textContent = '◑ Dark Mode';
+    }
+
+    document.getElementById('btn-theme').onclick = () => {
+      const isDark = document.body.classList.toggle('dark-mode');
+      localStorage.setItem('n3mo-theme', isDark ? 'dark' : 'light');
+      document.getElementById('btn-theme').textContent = isDark ? '☼ Light Mode' : '◑ Dark Mode';
+      updateThemeColors();
     };
 
     drawOrbits();

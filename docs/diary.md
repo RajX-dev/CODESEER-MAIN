@@ -144,3 +144,14 @@ Welcome to the N3MO Development Diary! This is the chronological story of **N3MO
   - **Exclusions**: `backend/mock_data_generator.py` was correctly ignored because it starts with the `mock_` prefix, showing that the filename exclusion rules function perfectly in practice.
   - **No-Impact Skips**: `frontend/src/index.js` was skipped from index database insertion since it produced 0 symbols, imports, and calls.
   - **Multi-language parsing**: Indexing succeeded, successfully extracting 27 symbols and 136 calls from Python backend files (`backend/main.py`, `backend/ml_model.py`) and JS/React files (`frontend/src/App.jsx`). The calls were resolved and linked successfully in PostgreSQL.
+
+### Chapter 15: Warm Beige Theme and Dynamic Canvas Dark Mode (Today)
+* **Git Commits**: `4f8c199` (updated)
+* **The Story**:
+  The default visualizer layout was too bright. To improve user comfort, we completely refactored the UI design to have a premium, warm beige aesthetic inspired by Anthropic's website (using Google Serif font Lora, custom fonts, rounded badges, and subtle borders).
+  
+  Additionally, we introduced an interactive Theme Toggle button. Clicking the button toggles between Light Mode and Dark Mode, saving the user's preference in browser `localStorage`. When the theme changes:
+  1. CSS variables dynamically switch the dashboard background, panel, borders, search input, and code preview colors.
+  2. A javascript theme handler immediately updates all Vis.js canvas nodes (adjusting node backgrounds and borders), edges (adjusting connector and highlight colors), text labels (ensuring perfect readability on the dark background), and dotted concentric orbit lines in real-time.
+  
+  We indexed the `MUZIK` React project and successfully generated `impact_graph.html` demonstrating the seamless transition between the warm light and dark mode styles. All tests and ruff compliance checks continue to pass cleanly.

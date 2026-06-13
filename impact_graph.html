@@ -7,31 +7,64 @@
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --space: #05070b;
-      --panel: rgba(12, 17, 24, 0.92);
-      --panel-solid: #0c1118;
-      --panel-raised: #111924;
-      --line: #263244;
-      --line-soft: rgba(92, 116, 145, 0.18);
-      --text: #edf5ff;
-      --muted: #8090a5;
-      --blue: #4c8dff;
-      --amber: #f5a524;
-      --red: #ff5a5f;
-      --cyan: #55d6e8;
+      --space: #f7f4ef;
+      --panel: #f9f6f0;
+      --panel-solid: #f9f6f0;
+      --panel-raised: #f1ebd9;
+      --line: #e5dfd5;
+      --line-soft: rgba(27, 24, 22, 0.05);
+      --text: #191816;
+      --muted: #6e6a64;
+      --blue: #5a7f9c;
+      --amber: #bf8e3b;
+      --red: #cc5a3f;
+      --cyan: #385c43;
+    }
+
+    body.dark-mode {
+      --space: #191919;
+      --panel: #222222;
+      --panel-solid: #222222;
+      --panel-raised: #2a2a2a;
+      --line: #333333;
+      --line-soft: rgba(255, 255, 255, 0.05);
+      --text: #f7f4ef;
+      --muted: #a39f99;
+      --blue: #8faec4;
+      --amber: #d9ab55;
+      --red: #e0755a;
+      --cyan: #5fa673;
+    }
+
+    body.dark-mode .card,
+    body.dark-mode .summary-stat,
+    body.dark-mode .search input,
+    body.dark-mode .toolbar-group,
+    body.dark-mode .depth-control,
+    body.dark-mode .legend,
+    body.dark-mode #toast,
+    body.dark-mode .action {
+      background: #222222;
+    }
+
+    body.dark-mode .code-preview {
+      background: #1e1e1e;
+    }
+    body.dark-mode .code-header {
+      background: #2a2a2a;
+    }
+    body.dark-mode .code-content {
+      background: #1e1e1e;
     }
 
     * { box-sizing: border-box; }
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
     body {
       color: var(--text);
-      background:
-        radial-gradient(circle at 35% 42%, rgba(34, 64, 112, 0.16), transparent 34%),
-        radial-gradient(circle at 70% 15%, rgba(76, 141, 255, 0.08), transparent 24%),
-        var(--space);
+      background: var(--space);
       font-family: Inter, sans-serif;
     }
 
@@ -53,8 +86,7 @@
       gap: 20px;
       padding: 12px 18px;
       border-bottom: 1px solid var(--line);
-      background: rgba(5, 7, 11, 0.86);
-      backdrop-filter: blur(18px);
+      background: var(--panel-solid);
     }
 
     .brand-row { display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -62,72 +94,73 @@
       display: flex;
       align-items: center;
       gap: 9px;
-      color: var(--blue);
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
+      color: var(--text);
+      font-family: "Lora", serif;
+      font-size: 16px;
       font-weight: 700;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.05em;
       white-space: nowrap;
     }
     .brand-mark {
       position: relative;
-      width: 24px;
-      height: 24px;
-      border: 1px solid rgba(76, 141, 255, 0.7);
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--red);
       border-radius: 50%;
-      box-shadow: inset 0 0 12px rgba(76, 141, 255, 0.3);
     }
     .brand-mark::after {
       content: "";
       position: absolute;
-      inset: 7px;
+      inset: 4px;
       border-radius: 50%;
-      background: var(--blue);
-      box-shadow: 0 0 12px var(--blue);
+      background: var(--red);
     }
     .target-summary { min-width: 0; }
     .target-name {
       overflow: hidden;
       font-family: "JetBrains Mono", monospace;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     .target-meta { margin-top: 3px; color: var(--muted); font-size: 11px; }
     .risk-pill {
-      padding: 5px 8px;
-      border: 1px solid rgba(255, 90, 95, 0.4);
-      border-radius: 999px;
-      color: #ff9699;
-      background: rgba(255, 90, 95, 0.1);
+      padding: 4px 8px;
+      border: 1px solid var(--red);
+      border-radius: 4px;
+      color: var(--red);
+      background: rgba(204, 90, 63, 0.05);
+      font-family: "Lora", serif;
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
       white-space: nowrap;
     }
 
     .summary-stats { display: flex; align-items: center; gap: 8px; }
     .summary-stat {
       min-width: 82px;
-      padding: 8px 11px;
+      padding: 6px 10px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(17, 25, 36, 0.72);
+      border-radius: 4px;
+      background: #ffffff;
     }
     .summary-stat span {
       display: block;
       color: var(--muted);
-      font-size: 9px;
+      font-family: "Lora", serif;
+      font-size: 8px;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
     .summary-stat strong {
       display: block;
       margin-top: 2px;
       font-family: "JetBrains Mono", monospace;
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .workspace {
@@ -137,37 +170,28 @@
       min-height: 0;
     }
 
-    #graph-shell { position: relative; min-width: 0; overflow: hidden; }
+    #graph-shell { position: relative; min-width: 0; overflow: hidden; background: var(--space); }
     #mynetwork { position: absolute; inset: 0; z-index: 2; }
     #stars, #orbit-layer { position: absolute; inset: 0; pointer-events: none; }
-    #stars {
-      z-index: 0;
-      opacity: 0.48;
-      background-image:
-        radial-gradient(circle, rgba(255,255,255,.7) 0 1px, transparent 1.2px),
-        radial-gradient(circle, rgba(90,150,255,.6) 0 1px, transparent 1.3px);
-      background-position: 0 0, 37px 51px;
-      background-size: 83px 83px, 127px 127px;
-    }
+    #stars { display: none; }
     #orbit-layer { z-index: 1; }
     .orbit {
       position: absolute;
       left: 50%;
       top: 50%;
-      border: 1px solid rgba(96, 127, 165, 0.22);
+      border: 1px solid rgba(27, 24, 22, 0.08);
       border-radius: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: inset 0 0 40px rgba(76, 141, 255, 0.018);
     }
     .orbit-label {
       position: absolute;
       left: 50%;
       top: 0;
       padding: 3px 7px;
-      border: 1px solid rgba(96, 127, 165, 0.2);
-      border-radius: 999px;
-      color: #65778f;
-      background: rgba(5, 7, 11, 0.84);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--muted);
+      background: var(--panel-solid);
       font-family: "JetBrains Mono", monospace;
       font-size: 9px;
       letter-spacing: 0.08em;
@@ -196,15 +220,15 @@
       height: 40px;
       padding: 0 36px 0 13px;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 4px;
       outline: none;
       color: var(--text);
-      background: var(--panel);
-      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,.03);
       font-family: "JetBrains Mono", monospace;
       font-size: 12px;
     }
-    .search input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(76,141,255,.12); }
+    .search input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(204,90,63,.12); }
     .search kbd {
       position: absolute;
       top: 10px;
@@ -213,7 +237,7 @@
       border: 1px solid var(--line);
       border-radius: 4px;
       color: var(--muted);
-      background: #0a0e14;
+      background: var(--space);
       font-size: 9px;
     }
     .toolbar-group {
@@ -222,15 +246,15 @@
       gap: 5px;
       padding: 4px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--panel);
-      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      border-radius: 4px;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,.03);
     }
     .toolbar-spacer { flex: 1; }
     .tool-button, .tool-select {
       height: 32px;
       border: 1px solid transparent;
-      border-radius: 7px;
+      border-radius: 3px;
       color: var(--muted);
       background: transparent;
       cursor: pointer;
@@ -256,12 +280,12 @@
       min-width: 230px;
       padding: 10px 12px;
       border: 1px solid var(--line);
-      border-radius: 11px;
-      background: var(--panel);
-      box-shadow: 0 14px 36px rgba(0,0,0,.32);
+      border-radius: 4px;
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.05);
     }
     .depth-control label { color: var(--muted); font-size: 11px; }
-    .depth-control input { flex: 1; accent-color: var(--blue); }
+    .depth-control input { flex: 1; accent-color: var(--red); }
     .depth-value {
       min-width: 22px;
       color: var(--text);
@@ -279,9 +303,10 @@
       gap: 14px;
       padding: 9px 12px;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 4px;
       color: var(--muted);
-      background: var(--panel);
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.05);
       font-size: 10px;
     }
     .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -293,60 +318,61 @@
       overflow-y: auto;
       border-left: 1px solid var(--line);
       background: var(--panel-solid);
-      box-shadow: -18px 0 45px rgba(0,0,0,.2);
+      box-shadow: none;
     }
     .sidebar-header { padding: 18px; border-bottom: 1px solid var(--line); }
     .eyebrow {
-      color: var(--blue);
-      font-size: 9px;
+      color: var(--red);
+      font-family: "Lora", serif;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: .14em;
+      letter-spacing: .08em;
       text-transform: uppercase;
     }
-    .sidebar-title { margin-top: 7px; font-size: 15px; font-weight: 600; }
+    .sidebar-title { margin-top: 7px; font-family: "Lora", serif; font-size: 18px; font-weight: 600; }
     .inspector { padding: 16px; }
     .empty-state { padding: 80px 20px; color: var(--muted); text-align: center; }
     .empty-orbit {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       margin: 0 auto 18px;
       border: 1px solid var(--line);
       border-radius: 50%;
-      box-shadow: inset 0 0 20px rgba(76,141,255,.09);
     }
     .empty-state p { margin: 0; font-size: 12px; line-height: 1.6; }
     .card {
       margin-bottom: 12px;
       padding: 14px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #0a0f16;
+      border-radius: 4px;
+      background: #ffffff;
     }
     .card-label {
       margin-bottom: 8px;
       color: var(--muted);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-    .symbol-name { font-family: "JetBrains Mono", monospace; font-size: 14px; font-weight: 600; word-break: break-all; }
-    .badge {
-      display: inline-flex;
-      padding: 5px 8px;
-      border: 1px solid currentColor;
-      border-radius: 999px;
+      font-family: "Lora", serif;
       font-size: 9px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
     }
-    .badge.target { color: #ff8589; background: rgba(255,90,95,.08); }
-    .badge.inner { color: #ff8589; background: rgba(255,90,95,.08); }
-    .badge.mid { color: #ffc35c; background: rgba(245,165,36,.08); }
-    .badge.outer { color: #77a6ff; background: rgba(76,141,255,.08); }
+    .symbol-name { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 600; word-break: break-all; }
+    .badge {
+      display: inline-flex;
+      padding: 4px 8px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .badge.target { color: var(--red); background: rgba(204, 90, 63, 0.05); }
+    .badge.inner { color: var(--cyan); background: rgba(56, 92, 67, 0.05); }
+    .badge.mid { color: var(--amber); background: rgba(191, 142, 59, 0.05); }
+    .badge.outer { color: var(--blue); background: rgba(90, 127, 156, 0.05); }
     .location {
-      color: #b7c4d4;
+      color: var(--muted);
       font-family: "JetBrains Mono", monospace;
       font-size: 11px;
       line-height: 1.6;
@@ -356,17 +382,17 @@
     .action {
       min-height: 38px;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 4px;
       color: var(--text);
-      background: var(--panel-raised);
+      background: #ffffff;
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
       text-decoration: none;
     }
     a.action { display: flex; align-items: center; justify-content: center; }
-    .action.primary { border-color: #346ccf; background: #2459b8; }
-    .action:hover { filter: brightness(1.13); }
+    .action.primary { border-color: var(--red); background: var(--red); color: #ffffff; }
+    .action:hover { filter: brightness(0.96); }
 
     #toast {
       z-index: 30;
@@ -375,11 +401,11 @@
       bottom: 24px;
       padding: 9px 12px;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 4px;
       opacity: 0;
       color: var(--text);
-      background: var(--panel-solid);
-      box-shadow: 0 14px 35px rgba(0,0,0,.35);
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
       font-size: 11px;
       pointer-events: none;
       transform: translate(-50%, 10px);
@@ -387,17 +413,16 @@
     }
     #toast.visible { opacity: 1; transform: translate(-50%, 0); }
 
-
     /* Code Preview UI */
     .code-preview {
-      background: #05070b;
+      background: #faf8f5;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 4px;
       overflow: hidden;
       margin-top: 8px;
     }
     .code-header {
-      background: rgba(12, 17, 24, 0.7);
+      background: #f3ede2;
       padding: 8px 12px;
       border-bottom: 1px solid var(--line);
       display: flex;
@@ -424,7 +449,7 @@
     .code-content {
       padding: 12px;
       overflow-x: auto;
-      background: #05070b;
+      background: #faf8f5;
     }
     .code-line {
       display: flex;
@@ -432,7 +457,7 @@
       padding: 2px 0;
     }
     .code-line.highlight {
-      background: rgba(255, 90, 95, 0.12);
+      background: rgba(204, 90, 63, 0.06);
       margin: 0 -12px;
       padding: 2px 12px;
       border-left: 2px solid var(--red);
@@ -442,7 +467,7 @@
       text-align: right;
       min-width: 32px;
       user-select: none;
-      opacity: 0.6;
+      opacity: 0.5;
       font-family: "JetBrains Mono", monospace;
       font-size: 11px;
     }
@@ -503,6 +528,7 @@
             <button class="tool-button square" id="btn-zoom-in" type="button" title="Zoom in">+</button>
             <button class="tool-button square" id="btn-zoom-out" type="button" title="Zoom out">-</button>
             <button class="tool-button" id="btn-export" type="button">Export PNG</button>
+            <button class="tool-button" id="btn-theme" type="button">◑ Theme</button>
             <button class="tool-button" id="btn-reset" type="button">Reset</button>
           </div>
         </div>
@@ -540,12 +566,43 @@
   </div>
 
   <script>
-    const targetName = "get_connection";
-    const nodesData = [{"id": "get_connection", "label": "get_connection", "group": 0, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 25, "code_context": [[23, ""], [24, "# 1. Database Connection Config"], [25, "def get_connection():"], [26, "    \"\"\"Borrow a connection from the pool.\"\"\""], [27, "    return get_pool().getconn()"]]}, {"id": "wipe_db_for_clean_slate", "label": "wipe_db_for_clean_slate", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/benchmarks/benchmark_indexing.py", "line": 40, "code_context": [[38, ""], [39, "def wipe_db_for_clean_slate(repo_url):"], [40, "    conn = get_connection()"], [41, "    try:"], [42, "        with conn.cursor() as cur:"]]}, {"id": "cmd_clean", "label": "cmd_clean", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/cli.py", "line": 869, "code_context": [[867, "def cmd_clean(args):"], [868, "    target_dir = os.getenv(\"TARGET_CODE_DIR\", os.getcwd())"], [869, "    conn = get_connection()"], [870, "    try:"], [871, "        with conn.cursor() as cur:"]]}, {"id": "cmd_impact", "label": "cmd_impact", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/cli.py", "line": 740, "code_context": [[738, "    print(f\"{GRAY}  {'\u2500' * W}{R}\")"], [739, ""], [740, "    conn = get_connection()"], [741, "    symbol_name = args.symbol"], [742, "    file_filter = args.file if hasattr(args, 'file') else None"]]}, {"id": "batch_upsert_imports", "label": "batch_upsert_imports", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 145, "code_context": [[143, "        return"], [144, ""], [145, "    conn = get_connection()"], [146, "    try:"], [147, "        with conn.cursor() as cur:"]]}, {"id": "batch_upsert_symbols", "label": "batch_upsert_symbols", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 102, "code_context": [[100, "        return {}"], [101, ""], [102, "    conn = get_connection()"], [103, "    try:"], [104, "        with conn.cursor() as cur:"]]}, {"id": "delete_file_index", "label": "delete_file_index", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 390, "code_context": [[388, "def delete_file_index(project_id, file_path):"], [389, "    \"\"\"Fully remove a file's index records and hash from the database.\"\"\""], [390, "    conn = get_connection()"], [391, "    try:"], [392, "        with conn.cursor() as cur:"]]}, {"id": "ensure_project", "label": "ensure_project", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 36, "code_context": [[34, "# 2. Ensure Project Exists"], [35, "def ensure_project(name, repo_url):"], [36, "    conn = get_connection()"], [37, "    try:"], [38, "        with conn.cursor() as cur:"]]}, {"id": "get_file_hashes", "label": "get_file_hashes", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 362, "code_context": [[360, "def get_file_hashes(project_id):"], [361, "    \"\"\"Retrieve all file paths and their SHA-256 hashes for a project.\"\"\""], [362, "    conn = get_connection()"], [363, "    try:"], [364, "        with conn.cursor() as cur:"]]}, {"id": "replace_file_index", "label": "replace_file_index", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 174, "code_context": [[172, "def replace_file_index(project_id, file_path, symbols, imports, calls):"], [173, "    \"\"\"Replace one file's graph records using a single transaction.\"\"\""], [174, "    conn = get_connection()"], [175, "    try:"], [176, "        with conn.cursor() as cur:"]]}, {"id": "upsert_call", "label": "upsert_call", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 337, "code_context": [[335, "# 5. Upsert Call"], [336, "def upsert_call(project_id, call_data):"], [337, "    conn = get_connection()"], [338, "    try:"], [339, "        with conn.cursor() as cur:"]]}, {"id": "upsert_file_hash", "label": "upsert_file_hash", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 372, "code_context": [[370, "def upsert_file_hash(project_id, file_path, sha256):"], [371, "    \"\"\"Insert or update a file's SHA-256 hash.\"\"\""], [372, "    conn = get_connection()"], [373, "    try:"], [374, "        with conn.cursor() as cur:"]]}, {"id": "upsert_import", "label": "upsert_import", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 302, "code_context": [[300, "# 4. Upsert Import"], [301, "def upsert_import(project_id, import_data):"], [302, "    conn = get_connection()"], [303, "    try:"], [304, "        with conn.cursor() as cur:"]]}, {"id": "upsert_symbol", "label": "upsert_symbol", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/database.py", "line": 57, "code_context": [[55, "# 3. Upsert Symbol"], [56, "def upsert_symbol(project_id, symbol_data):"], [57, "    conn = get_connection()"], [58, "    try:"], [59, "        with conn.cursor() as cur:"]]}, {"id": "resolve_call_links", "label": "resolve_call_links", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/resolve_calls.py", "line": 8, "code_context": [[6, "    \"\"\""], [7, "    print(\"\ud83d\udd17 Linking function calls (Smart Strategy)...\")"], [8, "    conn = get_connection()"], [9, "    try:"], [10, "        with conn.cursor() as cur:"]]}, {"id": "resolve_import_links", "label": "resolve_import_links", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/resolve_imports.py", "line": 5, "code_context": [[3, "def resolve_import_links(project_id):"], [4, "    print(\"\ud83d\udd17 Resolving Imports...\")"], [5, "    conn = get_connection()"], [6, "    try:"], [7, "        with conn.cursor() as cur:"]]}, {"id": "clear_all_data", "label": "clear_all_data", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/run_indexer.py", "line": 119, "code_context": [[117, "    from src.database import get_connection, release_connection"], [118, "    print(\"\ud83e\uddf9 Cleaning database of other projects to ensure no residues...\")"], [119, "    conn = get_connection()"], [120, "    try:"], [121, "        with conn.cursor() as cur:"]]}, {"id": "wait_for_postgres_and_schema", "label": "wait_for_postgres_and_schema", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/run_indexer.py", "line": 73, "code_context": [[71, "        conn = None"], [72, "        try:"], [73, "            conn = get_connection()"], [74, "            with conn.cursor() as cur:"], [75, "                cur.execute(\"SELECT 1 FROM information_schema.tables WHERE table_name = 'projects'\")"]]}, {"id": "db_conn", "label": "db_conn", "group": 1, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/tests/test_indexer.py", "line": 25, "code_context": [[23, "@pytest.fixture(scope=\"module\")"], [24, "def db_conn():"], [25, "    conn = get_connection()"], [26, "    try:"], [27, "        with conn.cursor() as cur:"]]}, {"id": "main", "label": "main", "group": 2, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/benchmarks/benchmark_indexing.py", "line": 61, "code_context": [[59, ""], [60, "    # Ensure a completely clean slate (no projects indexed at all)"], [61, "    wipe_db_for_clean_slate(dummy_repo_abs)"], [62, ""], [63, "    print(\"\\n--- 1. Running Full Index (First Run) ---\")"]]}, {"id": "ingest_repo", "label": "ingest_repo", "group": 2, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/ingest_files.py", "line": 45, "code_context": [[43, ""], [44, "    # 2. Define project_id"], [45, "    project_id = ensure_project(project_name, repo_url)"], [46, "    print(f\"\u2705 Project ID: {project_id}\")"], [47, ""]]}, {"id": "process_file", "label": "process_file", "group": 2, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/src/ingest_files.py", "line": 106, "code_context": [[104, "    # Save Imports"], [105, "    for imp in imports:"], [106, "        upsert_import(project_id, imp)"], [107, ""], [108, "    # Save Symbols - batch insert classes first, then functions"]]}, {"id": "test_database_hashing_queries", "label": "test_database_hashing_queries", "group": 2, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/tests/test_indexer.py", "line": 72, "code_context": [[70, "def test_database_hashing_queries(db_conn):"], [71, "    # Ensure project exists"], [72, "    project_id = ensure_project(\"test-hash-project\", \"http://test-url-project\")"], [73, ""], [74, "    # Clean previous records if any"]]}, {"id": "test_incremental_indexing", "label": "test_incremental_indexing", "group": 2, "path": "C:/Users/Raj shekhar/Documents/raj/project/main project/n3mo/tests/test_indexer.py", "line": 108, "code_context": [[106, ""], [107, "    # Verify both files got indexed"], [108, "    project_id = ensure_project(os.path.basename(temp_repo), temp_repo_abs)"], [109, "    hashes = get_file_hashes(project_id)"], [110, "    assert \"file_a.py\" in hashes"]]}];
-    const edgesData = [{"id": "edge-0", "from": "main", "to": "ensure_project"}, {"id": "edge-1", "from": "replace_file_index", "to": "get_connection"}, {"id": "edge-2", "from": "batch_upsert_imports", "to": "get_connection"}, {"id": "edge-3", "from": "wipe_db_for_clean_slate", "to": "get_connection"}, {"id": "edge-4", "from": "main", "to": "clear_all_data"}, {"id": "edge-5", "from": "batch_upsert_symbols", "to": "get_connection"}, {"id": "edge-6", "from": "resolve_call_links", "to": "get_connection"}, {"id": "edge-7", "from": "test_incremental_indexing", "to": "get_file_hashes"}, {"id": "edge-8", "from": "main", "to": "delete_file_index"}, {"id": "edge-9", "from": "test_database_hashing_queries", "to": "upsert_file_hash"}, {"id": "edge-10", "from": "cmd_impact", "to": "get_connection"}, {"id": "edge-11", "from": "wait_for_postgres_and_schema", "to": "get_connection"}, {"id": "edge-12", "from": "main", "to": "wait_for_postgres_and_schema"}, {"id": "edge-13", "from": "main", "to": "replace_file_index"}, {"id": "edge-14", "from": "cmd_clean", "to": "get_connection"}, {"id": "edge-15", "from": "get_file_hashes", "to": "get_connection"}, {"id": "edge-16", "from": "resolve_import_links", "to": "get_connection"}, {"id": "edge-17", "from": "ensure_project", "to": "get_connection"}, {"id": "edge-18", "from": "test_incremental_indexing", "to": "ensure_project"}, {"id": "edge-19", "from": "db_conn", "to": "get_connection"}, {"id": "edge-20", "from": "test_database_hashing_queries", "to": "get_file_hashes"}, {"id": "edge-21", "from": "upsert_file_hash", "to": "get_connection"}, {"id": "edge-22", "from": "upsert_import", "to": "get_connection"}, {"id": "edge-23", "from": "process_file", "to": "batch_upsert_symbols"}, {"id": "edge-24", "from": "delete_file_index", "to": "get_connection"}, {"id": "edge-25", "from": "main", "to": "upsert_file_hash"}, {"id": "edge-26", "from": "clear_all_data", "to": "get_connection"}, {"id": "edge-27", "from": "process_file", "to": "upsert_import"}, {"id": "edge-28", "from": "test_database_hashing_queries", "to": "ensure_project"}, {"id": "edge-29", "from": "ingest_repo", "to": "ensure_project"}, {"id": "edge-30", "from": "main", "to": "get_file_hashes"}, {"id": "edge-31", "from": "main", "to": "wipe_db_for_clean_slate"}, {"id": "edge-32", "from": "ingest_repo", "to": "process_file"}, {"id": "edge-33", "from": "process_file", "to": "upsert_call"}, {"id": "edge-34", "from": "upsert_call", "to": "get_connection"}, {"id": "edge-35", "from": "main", "to": "resolve_call_links"}, {"id": "edge-36", "from": "test_database_hashing_queries", "to": "delete_file_index"}, {"id": "edge-37", "from": "upsert_symbol", "to": "get_connection"}];
+    const targetName = "predict_song_score";
+    const nodesData = [{"id": "predict_song_score", "label": "predict_song_score", "group": 0, "path": "c:/Users/Raj shekhar/Documents/raj/project/main project/MUZIK/backend/ml_model.py", "line": 63, "code_context": [[61, "        return True"], [62, ""], [63, "    def predict_song_score(self, song):"], [64, "        \"\"\"Predict how much user will like this song\"\"\""], [65, "        if self.model is None:"]]}, {"id": "get_recommendations", "label": "get_recommendations", "group": 1, "path": "c:/Users/Raj shekhar/Documents/raj/project/main project/MUZIK/backend/ml_model.py", "line": 91, "code_context": [[89, "        scored_songs = []"], [90, "        for song in unrated_songs:"], [91, "            score = self.predict_song_score(song)"], [92, "            scored_songs.append({"], [93, "                **song,"]]}];
+    const edgesData = [{"id": "edge-0", "from": "get_recommendations", "to": "predict_song_score"}];
     const configuredMaxDepth = 3;
     const actualMaxDepth = Math.max(1, ...nodesData.map(node => node.group));
-    const palette = ['#55d6e8', '#a78bfa', '#39d98a', '#ff7a90', '#f3cf5b', '#5aa9ff'];
+    const themes = {
+      light: {
+        text: '#191816',
+        stroke: '#fbf9f6',
+        edge: '#d3c9b9',
+        edgeHover: '#a19685',
+        orbitStroke: 'rgba(27, 24, 22, 0.08)',
+        orbitDash: 'rgba(96, 127, 165, 0.22)',
+        palette: ['#5a7f9c', '#cc5a3f', '#385c43', '#bf8e3b', '#b07060', '#8372a6'],
+        nodes: {
+          target: { bg: '#fcf1ee', border: '#cc5a3f', highlightBg: '#cc5a3f', hoverBg: '#fcf1ee' },
+          inner: { bg: '#f4f9f5', border: '#385c43', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' },
+          mid: { bg: '#faf5ec', border: '#bf8e3b', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' },
+          outer: { bg: '#f4f7fa', border: '#5a7f9c', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' }
+        }
+      },
+      dark: {
+        text: '#f7f4ef',
+        stroke: '#191919',
+        edge: '#444444',
+        edgeHover: '#666666',
+        orbitStroke: 'rgba(255, 255, 255, 0.08)',
+        orbitDash: 'rgba(143, 174, 196, 0.25)',
+        palette: ['#8faec4', '#e0755a', '#5fa673', '#d9ab55', '#cc8c7a', '#a699c7'],
+        nodes: {
+          target: { bg: '#3a1e1a', border: '#e0755a', highlightBg: '#e0755a', hoverBg: '#4d2822' },
+          inner: { bg: '#17271c', border: '#5fa673', highlightBg: '#2a2a2a', hoverBg: '#1e3325' },
+          mid: { bg: '#2d2313', border: '#d9ab55', highlightBg: '#2a2a2a', hoverBg: '#3b2e19' },
+          outer: { bg: '#1a2730', border: '#8faec4', highlightBg: '#2a2a2a', hoverBg: '#22333f' }
+        }
+      }
+    };
     let currentDepth = Math.min(configuredMaxDepth, actualMaxDepth);
     let currentLayout = 'solar';
     let groupByFile = false;
@@ -558,9 +615,10 @@
     document.getElementById('risk-pill').textContent =
       nodesData.filter(node => node.group > 0).length > 10 ? 'High impact' : 'Moderate impact';
 
-    const fileColor = path => {
+    const fileColor = (path, currentTheme) => {
       let hash = 0;
       for (const char of path || 'target') hash = ((hash << 5) - hash) + char.charCodeAt(0);
+      const palette = themes[currentTheme].palette;
       return palette[Math.abs(hash) % palette.length];
     };
 
@@ -570,11 +628,15 @@
       const isMid = node.group === 2;
       const isOuter = node.group >= 3;
 
-      const border = groupByFile && !isTarget
-        ? fileColor(node.path)
-        : isTarget ? '#ff7478' : isInner ? '#ff5a5f' : isMid ? '#f5a524' : '#4c8dff';
+      const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+      const t = themes[currentTheme];
+      const nodeTheme = isTarget ? t.nodes.target : isInner ? t.nodes.inner : isMid ? t.nodes.mid : t.nodes.outer;
 
-      const background = isTarget ? '#ff4f55' : isInner ? '#1c0a0b' : isMid ? '#1a140a' : '#0a111d';
+      const border = groupByFile && !isTarget
+        ? fileColor(node.path, currentTheme)
+        : nodeTheme.border;
+
+      const background = nodeTheme.bg;
 
       // Create a copy and remove "group" to prevent Vis.js group styling override
       const cleanNode = { ...node };
@@ -585,44 +647,41 @@
         depth: node.group,
         level: node.group,
         shape: 'dot',
-        size: isTarget ? 36 : isInner ? 17 : isMid ? 14 : Math.max(10, 15 - node.group),
+        size: isTarget ? 28 : isInner ? 14 : isMid ? 11 : Math.max(8, 12 - node.group),
         borderWidth: isTarget ? 3 : 2,
-        borderWidthSelected: 4,
+        borderWidthSelected: 3,
         font: {
           face: 'JetBrains Mono',
-          color: '#dce8f6',
-          size: isTarget ? 15 : 11,
-          strokeWidth: 5,
-          strokeColor: '#05070b'
+          color: t.text,
+          size: isTarget ? 13 : 10,
+          strokeWidth: 4,
+          strokeColor: t.stroke
         },
         color: {
           background,
           border,
-          highlight: { background: isTarget ? '#ff4f55' : '#142848', border: '#ffffff' },
-          hover: { background: isTarget ? '#ff6267' : '#12233d', border: '#ffffff' }
-        },
-        shadow: {
-          enabled: isTarget,
-          color: 'rgba(255,79,85,.72)',
-          size: 32,
-          x: 0,
-          y: 0
+          highlight: { background: nodeTheme.highlightBg, border: t.text },
+          hover: { background: nodeTheme.hoverBg, border: t.text }
         }
       };
     };
 
-    const baseEdge = (edge, index) => ({
-      ...edge,
-      id: edge.id || `edge-${index}`,
-      arrows: { to: { enabled: true, scaleFactor: .45 } },
-      color: { color: '#2a3748', highlight: '#83aefc', hover: '#526c8d', opacity: .78 },
-      width: 1,
-      selectionWidth: 2,
-      hoverWidth: 1.5,
-      smooth: currentLayout === 'tree'
-        ? { enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 }
-        : { enabled: true, type: 'curvedCW', roundness: .08 }
-    });
+    const baseEdge = (edge, index) => {
+      const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+      const t = themes[currentTheme];
+      return {
+        ...edge,
+        id: edge.id || `edge-${index}`,
+        arrows: { to: { enabled: true, scaleFactor: .45 } },
+        color: { color: t.edge, highlight: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', hover: t.edgeHover, opacity: .8 },
+        width: 1,
+        selectionWidth: 1.5,
+        hoverWidth: 1.2,
+        smooth: currentLayout === 'tree'
+          ? { enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 }
+          : { enabled: true, type: 'curvedCW', roundness: .08 }
+      };
+    };
 
     const nodes = new vis.DataSet(nodesData.map(baseNode));
     const edges = new vis.DataSet(edgesData.map(baseEdge));
@@ -837,20 +896,22 @@
         const showLabel = showLabels || isTarget || isSelected || node.id === startId;
         return {
           id: node.id,
-          opacity: tracedNodes.has(node.id) ? 1 : 0.08,
-          font: { size: showLabel ? (isTarget ? 15 : 11) : 0 }
+          opacity: tracedNodes.has(node.id) ? 1 : 0.15,
+          font: { size: showLabel ? (isTarget ? 13 : 10) : 0 }
         };
       }));
 
       edges.update(edges.get().map((edge, idx) => {
         const edgeId = edge.id || `edge-${idx}`;
         const isTraced = tracedEdges.has(edgeId);
+        const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+        const t = themes[currentTheme];
         return {
           id: edgeId,
           color: isTraced
-            ? { color: '#ff7478', opacity: 1 }
-            : { color: '#243041', opacity: 0.06 },
-          width: isTraced ? 2.5 : 1
+            ? { color: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', opacity: 1 }
+            : { color: t.edge, opacity: 0.1 },
+          width: isTraced ? 2 : 1
         };
       }));
     }
@@ -865,13 +926,15 @@
           id: node.id,
           opacity: 1,
           font: {
-            size: (showLabels || isTarget || isSelected) ? (isTarget ? 15 : 11) : 0
+            size: (showLabels || isTarget || isSelected) ? (isTarget ? 13 : 10) : 0
           }
         };
       }));
+      const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+      const t = themes[currentTheme];
       edges.update(edges.get().map((edge, idx) => ({
         id: edge.id || `edge-${idx}`,
-        color: { color: '#2a3748', highlight: '#83aefc', hover: '#526c8d', opacity: .78 },
+        color: { color: t.edge, highlight: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', hover: t.edgeHover, opacity: .8 },
         width: 1
       })));
     }
@@ -1129,6 +1192,40 @@
       currentDepth = Number(event.target.value);
       document.getElementById('depth-label').textContent = currentDepth;
       currentLayout === 'solar' ? applySolarLayout(false) : currentLayout === 'force' ? applyForceLayout() : applyTreeLayout();
+    };
+
+    function updateThemeColors() {
+      const allNodes = nodes.get();
+      nodes.update(allNodes.map(node => {
+        const origNode = nodesData.find(item => item.id === node.id);
+        return baseNode(origNode);
+      }));
+      
+      const allEdges = edges.get();
+      edges.update(allEdges.map((edge, idx) => {
+        const origEdge = edgesData.find(e => e.id === edge.id);
+        return baseEdge(origEdge, idx);
+      }));
+      
+      drawOrbits();
+      if (selectedId) {
+        traceToTarget(selectedId);
+      }
+    }
+
+    const savedTheme = localStorage.getItem('n3mo-theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('btn-theme').textContent = '☼ Light Mode';
+    } else {
+      document.getElementById('btn-theme').textContent = '◑ Dark Mode';
+    }
+
+    document.getElementById('btn-theme').onclick = () => {
+      const isDark = document.body.classList.toggle('dark-mode');
+      localStorage.setItem('n3mo-theme', isDark ? 'dark' : 'light');
+      document.getElementById('btn-theme').textContent = isDark ? '☼ Light Mode' : '◑ Dark Mode';
+      updateThemeColors();
     };
 
     drawOrbits();
