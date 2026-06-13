@@ -151,6 +151,8 @@ erDiagram
 - ✅ **Parallel AST Ingestion** — multiprocessing scaling utilizing `ProcessPoolExecutor` to distribute CPU-bound parsing across cores
 - ✅ **Strict & Flawless Exclusions** — case-insensitive directory filters (tests, mocks, specs, fixtures, temp) and camelCase-aware prefix/suffix filename checks to avoid false positives (e.g. allows `contest.py`)
 - ✅ **No-Impact Skips & Pruning** — skips files with 0 symbols, imports, and calls to prevent db bloat and deletes database residues upon updates
+- ✅ **Premium Theme & Visual Styling** — warm beige editorial layout inspired by modern minimalist web design with elegant typography (`Lora` serif and `Inter` sans-serif)
+- ✅ **Dynamic Canvas Dark Mode** — toggleable dark mode that dynamically updates Vis.js canvas nodes, edges, labels, and orbit lines in real-time, persisting preference in `localStorage`
 - ✅ **AST-based parsing** — Tree-sitter integration for error-tolerant source analysis
 - ✅ **Symbol extraction** — functions, classes, methods with full file + line context
 - ✅ **Hierarchical modeling** — Module → Class → Method parent-child relationships
