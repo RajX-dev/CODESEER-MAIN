@@ -38,3 +38,8 @@ Makefile
 dist/
 build/
 *.egg-info/
+
+# MCP Publisher (downloaded binary)
+mcp-publisher.exe
+mcp-publisher
+*.tar.gz
