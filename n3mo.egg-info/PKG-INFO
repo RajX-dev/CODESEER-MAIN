@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: n3mo
-Version: 1.0.0
+Version: 1.0.2
 Summary: N3MO: The Impact Tracker
 License-File: LICENSE
 Requires-Dist: psycopg2-binary

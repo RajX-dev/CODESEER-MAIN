@@ -1,5 +1,6 @@
 # 🔍 N3MO
 
+<!-- mcp-name: io.github.rajx-dev/n3mo -->
 <div align="center">
 
 ![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Engine-blue?style=for-the-badge)
@@ -22,16 +23,34 @@
 
 ## 🎯 What is N3MO?
 
-N3MO addresses a fundamental challenge in software engineering: **understanding large codebases**. Unlike simple code search tools that rely on text matching, N3MO models code structure first — capturing symbols, their relationships, and their call chains.
+N3MO is a symbol-centric code intelligence engine. Instead of scanning raw text, it parses your source code ASTs, maps call graphs, and models dependencies in a queryable relational database. 
 
-### The Problem It Solves
+For engineering leaders and teams, N3MO acts as a **structural insurance policy** for your codebases.
+
+### 💡 Why N3MO?
+
+*   **🛡️ Eliminate Regression Risks:** Utility functions are rarely refactored because developers fear unknown side effects. N3MO maps the transitive blast radius of any symbol to arbitrary depth, showing you exactly what will break before you make the edit.
+*   **🏎️ Rapid Developer Onboarding:** Instead of senior engineers spending hours explaining codebase flow to new hires, developers can run one command to visualize complex call chains and parent-child dependencies interactively.
+*   **🤖 AI-Agent Ready Infrastructure:** Modern LLM agents (Cursor, Claude Desktop) are limited by context windows and text search. N3MO's native MCP server lets AI agents query the actual code graph, enabling fast, hallucination-free refactoring.
+
+### 📊 How N3MO Compares
+
+| Capability | Grep / Text Search | IDE "Find References" | N3MO Code Graph |
+| :--- | :--- | :--- | :--- |
+| **Analysis Basis** | Substring Matching | AST-based Direct matching | Relational Knowledge Graph |
+| **Transitive Traversal** | ❌ None | ❌ Manual (one level at a time) | ⚡ **Instant (to arbitrary depth)** |
+| **Blast Radius Mapping** | ❌ None | ❌ Text-based search list | 🎨 **Interactive visual orbit map** |
+| **CI/CD Integration** | ❌ None | ❌ Bound to IDE runtime | ⚙️ **Dockerized CLI & DB CTE queries** |
+| **AI Agent Integration** | ❌ Injected file chunks | ⚠️ Manual context copy | 🤖 **Native MCP Server (Claude/Cursor)** |
+
+### 🛠️ The Core Problem N3MO Solves
 
 ```
 ❌ Traditional grep/search:  "Where does 'login' appear?"
 ✅ N3MO:                     "What will break if I change the login function?"
 ```
 
-**Critical questions N3MO answers:**
+**Critical questions N3MO answers instantly:**
 - 🔎 What functions and classes exist in this repository?
 - 🎯 Where is this symbol being used — directly and transitively?
 - 💥 What is the **blast radius** of changing this function?

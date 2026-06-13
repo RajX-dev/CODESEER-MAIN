@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.rajx-dev/n3mo",
+  "description": "N3MO: Code Intelligence Engine. A tool that transforms repositories into queryable knowledge graphs for impact analysis.",
+  "repository": {
+    "url": "https://github.com/RajX-dev/N3MO",
+    "source": "github"
+  },
+  "version": "1.0.3",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "n3mo",
+      "version": "1.0.3",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
