@@ -42,7 +42,7 @@ jobs:
 
     - name: Lint with Ruff
       run: |
-        ruff check src/
+        ruff check n3mo/
 
     - name: Run Pytest
       env:

@@ -494,10 +494,10 @@ Contributions are welcome. Please follow these steps:
 pip install -e ".[dev]"
 
 # Lint
-ruff check src/
+ruff check n3mo/
 
 # Type check
-mypy src/
+mypy n3mo/
 
 # Tests
 pytest tests/
