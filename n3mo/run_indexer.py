@@ -3,7 +3,7 @@ import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # --- DATABASE IMPORTS ---
-from src.database import (
+from n3mo.database import (
     ensure_project,
     replace_file_index,
     get_file_hashes,
@@ -15,22 +15,22 @@ from src.database import (
 try:
     from crawler import crawl_directory
 except ImportError:
-    from src.crawler import crawl_directory
+    from n3mo.crawler import crawl_directory
 
 # --- EXTRACTOR IMPORT ---
 try:
-    from src.symbol_extractor import extract_symbols
+    from n3mo.symbol_extractor import extract_symbols
 except ImportError:
     try:
-        from src.symbol_extractor import extract_symbols
+        from n3mo.symbol_extractor import extract_symbols
     except ImportError:
         from extractor import extract_symbols
 
 # --- RESOLVER IMPORT ---
 try:
-    from src.resolve_calls import resolve_call_links
+    from n3mo.resolve_calls import resolve_call_links
 except ImportError:
-    from src.resolve_calls import resolve_call_links
+    from n3mo.resolve_calls import resolve_call_links
 
 # Create module-level logger
 logger = logging.getLogger("n3mo")
@@ -84,11 +84,16 @@ def start_docker_services():
     import os
     
     logger.info("🐳 Checking Docker services...")
-    n3mo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    compose_path = os.path.join(n3mo_root, "docker-compose.yml")
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    compose_path = os.path.join(package_dir, "docker-compose.yml")
     
     if not os.path.exists(compose_path):
-        logger.warning(f"⚠️ Warning: docker-compose.yml not found at {compose_path}. Skipping automatic Docker startup.")
+        # Fallback to parent directory if running in dev mode
+        parent_dir = os.path.dirname(package_dir)
+        compose_path = os.path.join(parent_dir, "docker-compose.yml")
+        
+    if not os.path.exists(compose_path):
+        logger.warning(f"⚠️ Warning: docker-compose.yml not found. Skipping automatic Docker startup.")
         return
         
     cmd = ["docker", "compose", "-f", compose_path, "up", "-d"]
@@ -108,7 +113,7 @@ def start_docker_services():
 
 def wait_for_postgres_and_schema(timeout=30):
     import time
-    from src.database import get_connection, release_connection
+    from n3mo.database import get_connection, release_connection
     
     logger.info("⏳ Waiting for PostgreSQL database and schema to be ready...")
     start_time = time.time()
@@ -120,9 +125,12 @@ def wait_for_postgres_and_schema(timeout=30):
                 cur.execute("SELECT 1 FROM information_schema.tables WHERE table_name = 'projects'")
                 exists = cur.fetchone()
                 if not exists:
+                    package_dir = os.path.dirname(os.path.abspath(__file__))
                     logger.info("🗄️ Database empty. Initializing schema from db/schema.sql...")
-                    n3mo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                    schema_path = os.path.join(n3mo_root, "db", "schema.sql")
+                    schema_path = os.path.join(package_dir, "db", "schema.sql")
+                    if not os.path.exists(schema_path):
+                        # Fallback for dev mode
+                        schema_path = os.path.join(os.path.dirname(package_dir), "db", "schema.sql")
                     if os.path.exists(schema_path):
                         with open(schema_path, "r", encoding="utf-8") as f:
                             schema_sql = f.read()
@@ -158,7 +166,7 @@ def wait_for_postgres_and_schema(timeout=30):
     return False
 
 def clear_all_data(exclude_url=None):
-    from src.database import get_connection, release_connection
+    from n3mo.database import get_connection, release_connection
     logger.info("🧹 Cleaning database of other projects to ensure no residues...")
     conn = get_connection()
     try:
@@ -186,22 +194,21 @@ def calculate_sha256(file_path):
         logger.warning(f"⚠️ Warning: Could not calculate hash for {file_path}: {e}")
         return ""
 
-def main():
-    target_dir = os.getenv("TARGET_CODE_DIR", os.getcwd())
+
+def run_indexer_for_path(target_dir):
     setup_logging(target_dir)
-    
     try:
         logger.info(f"\n🌊 N3MO: Starting Analysis on {target_dir}...")
 
         if not os.path.exists(target_dir):
             logger.error(f"❌ Error: Target directory '{target_dir}' does not exist.")
-            return
+            return False, f"Error: Target directory '{target_dir}' does not exist."
 
         # Automatically start Docker container and wait for Postgres readiness
         start_docker_services()
         if not wait_for_postgres_and_schema():
             logger.error("❌ Aborting indexing due to database unreadiness.")
-            return
+            return False, "Aborting indexing due to database unreadiness."
 
         # Clear previous residues from OTHER repositories
         clear_all_data(exclude_url=target_dir)
@@ -213,7 +220,7 @@ def main():
             logger.info(f"✅ Project ID: {project_id}")
         except Exception as e:
             logger.error(f"❌ Database Connection Failed: {e}")
-            return
+            return False, f"Database Connection Failed: {e}"
 
         # Fetch existing file hashes
         existing_hashes = get_file_hashes(project_id)
@@ -309,6 +316,16 @@ def main():
             logger.info(f"📚 Symbols:   {symbol_count} (newly indexed)")
             logger.info(f"📞 Calls:     {call_count} (newly indexed)")
         logger.info("-" * 30)
+        
+        summary = (
+            f"Success: Indexed workspace at '{target_dir}'.\n"
+            f"Processed: {len(files)} files\n"
+            f"Indexed:   {indexed_count} files (new/modified)\n"
+            f"Skipped:   {skipped_count} files (unchanged)\n"
+            f"Symbols:   {symbol_count} (newly indexed)\n"
+            f"Calls:     {call_count} (newly indexed)"
+        )
+        return True, summary
     finally:
         # Shutdown logger handlers to release file handles (important on Windows)
         for handler in list(logger.handlers):
@@ -317,6 +334,11 @@ def main():
                 logger.removeHandler(handler)
             except Exception:
                 pass
+
+def main():
+    target_dir = os.getenv("TARGET_CODE_DIR", os.getcwd())
+    run_indexer_for_path(target_dir)
+
 
 if __name__ == "__main__":
     main()

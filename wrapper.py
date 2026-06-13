@@ -20,13 +20,13 @@ def main():
     env["TARGET_CODE_DIR"] = user_cwd
 
     # 4. Construct the Docker Command
-    # We point to /app/src/cli.py because that is where we mounted the engine
+    # We point to /app/n3mo/cli.py because that is where we mounted the engine
     cmd = [
         "docker-compose", 
         "-f", compose_file, 
         "run", "--rm", 
         "indexer", 
-        "python", "/app/src/cli.py" 
+        "python", "/app/n3mo/cli.py" 
     ] + sys.argv[1:]  # Append any arguments the user typed (e.g., impact "login")
 
     # 5. Execute

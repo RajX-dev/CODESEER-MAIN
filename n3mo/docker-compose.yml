@@ -33,38 +33,6 @@ services:
       timeout: 5s
       retries: 10
 
-  indexer:
-    build: 
-      context: .           # <--- CHANGED: Build from the root now
-    container_name: n3mo-indexer
-    depends_on:
-      - postgres
-      - elasticsearch
-    env_file:
-      - .env
-    ports:
-      - "8000:8000"        # <--- VITAL: Keeps the Graph Server accessible!
-    volumes:
-      - ./n3mo:/app/n3mo:ro  # Maps the local source code
-      # This defaults to scanning the current folder (.) unless you set TARGET_CODE_DIR
-      - ${TARGET_CODE_DIR:-.}:/app/target_code
-
-  db-init:
-    image: postgres:15
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - ./db:/schema       # Maps the db folder from the root
-    environment:
-      PGPASSWORD: n3mo
-    entrypoint: >
-      bash -c "
-      echo 'N3MO: Applying database schema...' &&
-      ls -l /schema &&
-      psql -h postgres -U n3mo -d n3mo -f /schema/schema.sql
-      "
-
 volumes:
   postgres_data:
   es_data:

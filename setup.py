@@ -9,10 +9,13 @@ setup(
     description="N3MO: The Impact Tracker",
     packages=find_packages(),
     include_package_data=True,
+    package_data={
+        "n3mo": ["docker-compose.yml", "db/*.sql"],
+    },
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'n3mo=src.cli:main',
+            'n3mo=n3mo.cli:main',
         ],
     },
 )

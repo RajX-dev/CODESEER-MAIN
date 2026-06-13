@@ -1,5 +1,7 @@
+include requirements.txt
+include LICENSE
+include README.md
 recursive-include n3mo/db *
-recursive-include n3mo/db-init *
-recursive-include n3mo/src *
 include n3mo/docker-compose.yml
-include n3mo/.env
+global-exclude *.pyc
+global-exclude __pycache__

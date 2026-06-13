@@ -2,12 +2,12 @@ import sys
 import os
 import argparse
 import json
-from src.database import get_connection
-from src.graph_visualizer import generate_solar_graph_html
+from n3mo.database import get_connection
+from n3mo.graph_visualizer import generate_solar_graph_html
 
 # Try to import the indexer logic
 try:
-    from src.run_indexer import main as run_indexer_logic
+    from n3mo.run_indexer import main as run_indexer_logic
 except ImportError:
     run_indexer_logic = None
 
@@ -880,6 +880,165 @@ def cmd_clean(args):
         conn.close()
 
 
+def cmd_setup(args):
+    W = 64
+    print()
+    print(f"{BG_DARK}{CYAN}{BOLD}  N3MO  {R}{GRAY}  ◈  initial setup{R}")
+    print(f"{GRAY}  {'─' * W}{R}")
+    
+    # 1. Check if Docker is installed
+    import subprocess
+    print("  🐳 Validating Docker installation...")
+    try:
+        res = subprocess.run(["docker", "--version"], capture_output=True, text=True, check=True)
+        print(f"  {CYAN}✓{R} Docker is installed: {WHITE}{res.stdout.strip()}{R}")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print(f"\n  {RED}✗{R} {BOLD}Docker not found in system PATH.{R}")
+        print("  N3MO requires Docker to run its PostgreSQL (graph storage) and Elasticsearch (search backend) automatically.")
+        print(f"\n  👉 Please download and install Docker Desktop:")
+        print(f"     {BLUE}\033[4mhttps://www.docker.com/products/docker-desktop/\033[0m")
+        print("  👉 Once installed, start Docker Desktop and run: n3mo setup\n")
+        return
+
+    # 2. Check if Docker Daemon is running
+    try:
+        subprocess.run(["docker", "info"], capture_output=True, text=True, check=True)
+        print(f"  {CYAN}✓{R} Docker daemon is running.")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print(f"\n  {RED}✗{R} {BOLD}Docker daemon is not running.{R}")
+        print("  Please make sure Docker Desktop is started and active.")
+        print("  👉 Once started, run: n3mo setup\n")
+        return
+
+    # 3. Create .env if not present
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(package_dir)
+    env_path = os.path.join(project_root, ".env")
+    env_example_path = os.path.join(project_root, ".env.example")
+    
+    if os.path.exists(env_example_path) and not os.path.exists(env_path):
+        import shutil
+        try:
+            shutil.copy(env_example_path, env_path)
+            print(f"  {CYAN}✓{R} Environment file .env created with default settings.")
+        except Exception as e:
+            print(f"  {AMBER}⚠️{R} Could not copy .env: {e}")
+
+    # 4. Start Docker services
+    from n3mo.run_indexer import start_docker_services, wait_for_postgres_and_schema
+    print(f"  {CYAN}▸{R} Starting PostgreSQL and Elasticsearch containers...")
+    start_docker_services()
+    
+    # 5. Wait for DB and schema
+    if wait_for_postgres_and_schema(timeout=25):
+        print(f"{GRAY}  {'─' * W}{R}")
+        print(f"  {CYAN}🎉{R} {BOLD}{WHITE}N3MO is fully set up and ready to analyze your repositories!{R}")
+        print(f"{GRAY}  {'─' * W}{R}")
+        print(f"  Next Steps:")
+        print(f"  - Run {CYAN}n3mo index{R} in any project folder to map its dependencies.")
+        print(f"  - Run {CYAN}n3mo impact <symbol_name>{R} to see the blast radius of changes.")
+        print(f"  - Run {CYAN}n3mo mcp install{R} to register N3MO with Claude Desktop.")
+        print()
+    else:
+        print(f"\n  {RED}✗{R} {BOLD}Setup failed: Database services timed out during boot.{R}")
+        print("  Please run `docker ps` to verify container health.\n")
+
+
+def cmd_mcp(args):
+    mcp_cmd = args.mcp_command if hasattr(args, 'mcp_command') else None
+    
+    if mcp_cmd == "install":
+        W = 64
+        print()
+        print(f"{BG_DARK}{CYAN}{BOLD}  N3MO  {R}{GRAY}  ◈  mcp client registration{R}")
+        print(f"{GRAY}  {'─' * W}{R}")
+        
+        target_dir = args.target_dir or os.getcwd()
+        target_dir = os.path.abspath(target_dir)
+        
+        # 1. Claude Desktop config path
+        appdata = os.environ.get("APPDATA")
+        if not appdata:
+            print(f"  {RED}✗{R} Could not resolve %APPDATA% path. Claude Desktop registration is only supported on Windows/macOS/Linux standard layouts.")
+            return
+            
+        claude_config_path = os.path.join(appdata, "Claude", "claude_desktop_config.json")
+        claude_dir = os.path.dirname(claude_config_path)
+        os.makedirs(claude_dir, exist_ok=True)
+        
+        # Backup existing config if it exists
+        if os.path.exists(claude_config_path):
+            backup_path = claude_config_path + ".bak"
+            import shutil
+            try:
+                shutil.copy(claude_config_path, backup_path)
+                print(f"  {CYAN}✓{R} Backed up existing Claude config to: {os.path.basename(backup_path)}")
+            except Exception as e:
+                print(f"  {AMBER}⚠️{R} Failed to create backup config: {e}")
+                
+        # Read or init config
+        config = {"mcpServers": {}}
+        if os.path.exists(claude_config_path):
+            try:
+                with open(claude_config_path, "r", encoding="utf-8") as f:
+                    content = f.read().strip()
+                    if content:
+                        config = json.loads(content)
+            except Exception as e:
+                print(f"  {AMBER}⚠️{R} Failed to parse existing Claude config: {e}. Starting fresh.")
+                
+        if "mcpServers" not in config:
+            config["mcpServers"] = {}
+            
+        package_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Configure n3mo server entry
+        config["mcpServers"]["n3mo"] = {
+            "command": sys.executable,
+            "args": ["-m", "n3mo.mcp_server"],
+            "cwd": os.path.dirname(package_dir),
+            "env": {
+                "TARGET_CODE_DIR": target_dir
+            }
+        }
+        
+        try:
+            with open(claude_config_path, "w", encoding="utf-8") as f:
+                json.dump(config, f, indent=2)
+            print(f"  {CYAN}✓{R} Claude Desktop configuration updated successfully!")
+            print(f"  File location: {claude_config_path}")
+        except Exception as e:
+            print(f"  {RED}✗{R} Failed to write Claude configuration file: {e}")
+            return
+            
+        # 2. Print Cursor instructions
+        print(f"{GRAY}  {'─' * W}{R}")
+        print(f"  {CYAN}🎉{R} {BOLD}{WHITE}N3MO MCP Registration Complete!{R}")
+        print(f"{GRAY}  {'─' * W}{R}")
+        print(f"  {BOLD}For Claude Desktop:{R}")
+        print("  - Restart Claude Desktop to apply the new tool.")
+        print(f"  - Claude will now have tools to search and trace dependencies in:")
+        print(f"    {WHITE}{target_dir}{R}")
+        print()
+        print(f"  {BOLD}For Cursor (Copy settings to Settings -> Models -> MCP):{R}")
+        print(f"  - Name:        {CYAN}n3mo{R}")
+        print(f"  - Type:        {CYAN}command{R}")
+        print(f"  - Command:     {WHITE}{sys.executable} -m n3mo.mcp_server{R}")
+        print(f"  - Environment: {WHITE}TARGET_CODE_DIR={target_dir}{R}")
+        print()
+        
+    else:
+        # Default subcommand: start the stdio server
+        try:
+            import asyncio
+            from n3mo.mcp_server import main as mcp_main
+            asyncio.run(mcp_main())
+        except KeyboardInterrupt:
+            print(f"\n  {CYAN}◈{R}  MCP Server stopped.")
+        except Exception as e:
+            print(f"\n  {RED}✗  Error running MCP server:{R} {e}\n")
+
+
 def main():
     if sys.stdout.encoding != 'utf-8':
         try:
@@ -896,10 +1055,25 @@ def main():
     parser_impact.add_argument('--depth', type=int, default=3, help="Blast radius depth (default: 3, max recommended: 5)")
     parser_impact.add_argument('--root', help="Absolute Windows path to project root for VS Code links", default="")
     parser_impact.set_defaults(func=cmd_impact)
+    
     parser_index = subparsers.add_parser('index')
     parser_index.set_defaults(func=lambda args: run_indexer_logic())
+    
     parser_clean = subparsers.add_parser('clean')
     parser_clean.set_defaults(func=cmd_clean)
+    
+    parser_setup = subparsers.add_parser('setup')
+    parser_setup.set_defaults(func=cmd_setup)
+    
+    parser_mcp = subparsers.add_parser('mcp')
+    mcp_subparsers = parser_mcp.add_subparsers(dest='mcp_command')
+    parser_mcp_start = mcp_subparsers.add_parser('start')
+    parser_mcp_start.set_defaults(func=cmd_mcp)
+    parser_mcp_install = mcp_subparsers.add_parser('install')
+    parser_mcp_install.add_argument('--target-dir', help="Absolute path to workspace directory (defaults to current dir)", default=None)
+    parser_mcp_install.set_defaults(func=cmd_mcp)
+    parser_mcp.set_defaults(func=cmd_mcp) # fallback if just `n3mo mcp` is typed
+    
     args = parser.parse_args()
     if hasattr(args, 'func'):
         args.func(args)

@@ -1,5 +1,5 @@
 import logging
-from src.database import get_connection, release_connection
+from n3mo.database import get_connection, release_connection
 
 logger = logging.getLogger("n3mo")
 

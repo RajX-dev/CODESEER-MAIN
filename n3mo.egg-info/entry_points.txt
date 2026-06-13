@@ -1,2 +1,2 @@
 [console_scripts]
-n3mo = src.cli:main
+n3mo = n3mo.cli:main

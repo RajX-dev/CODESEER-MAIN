@@ -20,10 +20,10 @@ import os
 from pathlib import Path
 
 # 1. Imports
-from src.symbol_extractor import extract_symbols_imports_calls
-from src.database import ensure_project, upsert_import, upsert_call, batch_upsert_symbols
-from src.resolve_imports import resolve_project_imports
-from src.resolve_calls import resolve_project_calls
+from n3mo.symbol_extractor import extract_symbols_imports_calls
+from n3mo.database import ensure_project, upsert_import, upsert_call, batch_upsert_symbols
+from n3mo.resolve_imports import resolve_project_imports
+from n3mo.resolve_calls import resolve_project_calls
 
 # ==========================================
 # 🛑 IGNORE LIST (The Speed Boost)

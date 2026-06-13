@@ -33,3 +33,8 @@ Makefile
 .vscode/
 .DS_Store
 
+
+# Python build & distribution
+dist/
+build/
+*.egg-info/

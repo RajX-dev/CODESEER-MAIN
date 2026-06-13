@@ -186,23 +186,48 @@ erDiagram
 
 ### Quick start
 
+Once you have N3MO published or want to install it locally:
+
 ```bash
-# 1. Clone the repository
+# Install the package
+pip install .
+
+# Run the automatic database and background engines setup
+n3mo setup
+```
+
+Alternatively, for developers running in editable mode:
+```bash
 git clone https://github.com/RajX-dev/N3MO.git
 cd N3MO
-
-# 2. Configure environment
-cp .env.example .env
-
-# 3. Start infrastructure
-docker-compose up -d
-
-# 4. Install the CLI
 pip install -e .
-
-# 5. Verify
-n3mo --help
+n3mo setup
 ```
+
+---
+
+## 🤖 Model Context Protocol (MCP)
+
+N3MO includes a Model Context Protocol (MCP) server that exposes N3MO's repository analysis and graph traversal tools to LLM agents (like Claude or Cursor).
+
+### Automatic Claude Desktop Setup
+To automatically configure N3MO in your local Claude Desktop:
+```bash
+# Navigate to the workspace you want Claude to analyze, then run:
+n3mo mcp install
+```
+This registers N3MO and sets up the paths automatically. Restart Claude Desktop and you're ready!
+
+### Cursor Setup
+To use N3MO in Cursor:
+1. Go to **Settings -> Models -> MCP**.
+2. Click **+ Add New MCP Server**.
+3. Set the configuration details:
+   * **Name**: `n3mo`
+   * **Type**: `command`
+   * **Command**: `python -m n3mo.mcp_server`
+   * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
+4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
 
 ---
 

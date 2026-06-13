@@ -27,36 +27,36 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --space: #f7f4ef;
-      --panel: #f9f6f0;
-      --panel-solid: #f9f6f0;
-      --panel-raised: #f1ebd9;
-      --line: #e5dfd5;
-      --line-soft: rgba(27, 24, 22, 0.05);
-      --text: #191816;
-      --muted: #6e6a64;
-      --blue: #35608a;
-      --amber: #a36a18;
-      --red: #c85a49;
-      --cyan: #2b664c;
+      --space: #f6f8fa;
+      --panel: #ffffff;
+      --panel-solid: #ffffff;
+      --panel-raised: #f3f4f6;
+      --line: #d0d7de;
+      --line-soft: rgba(31, 35, 40, 0.04);
+      --text: #24292f;
+      --muted: #57606a;
+      --blue: #218bff;
+      --amber: #9a6700;
+      --red: #0969da;
+      --cyan: #1a7f37;
     }
 
     body.dark-mode {
-      --space: #191919;
-      --panel: #222222;
-      --panel-solid: #222222;
-      --panel-raised: #2a2a2a;
-      --line: #333333;
-      --line-soft: rgba(255, 255, 255, 0.05);
-      --text: #f7f4ef;
-      --muted: #a39f99;
-      --blue: #5294e2;
-      --amber: #cca043;
-      --red: #e07a6b;
-      --cyan: #59b387;
+      --space: #0d1117;
+      --panel: #161b22;
+      --panel-solid: #161b22;
+      --panel-raised: #21262d;
+      --line: #30363d;
+      --line-soft: rgba(240, 246, 252, 0.05);
+      --text: #c9d1d9;
+      --muted: #8b949e;
+      --blue: #2f81f7;
+      --amber: #d29922;
+      --red: #58a6ff;
+      --cyan: #3fb950;
     }
 
     body.dark-mode .card,
@@ -67,17 +67,17 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     body.dark-mode .legend,
     body.dark-mode #toast,
     body.dark-mode .action {
-      background: #222222;
+      background: var(--panel);
     }
 
     body.dark-mode .code-preview {
-      background: #1e1e1e;
+      background: #0d1117;
     }
     body.dark-mode .code-header {
-      background: #2a2a2a;
+      background: var(--panel-raised);
     }
     body.dark-mode .code-content {
-      background: #1e1e1e;
+      background: #0d1117;
     }
 
     * { box-sizing: border-box; }
@@ -113,27 +113,39 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     .brand {
       display: flex;
       align-items: center;
-      gap: 9px;
       color: var(--text);
-      font-family: "Lora", serif;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
       white-space: nowrap;
     }
-    .brand-mark {
-      position: relative;
-      width: 18px;
-      height: 18px;
-      border: 1px solid var(--red);
-      border-radius: 50%;
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .brand-mark::after {
-      content: "";
-      position: absolute;
-      inset: 4px;
-      border-radius: 50%;
-      background: var(--red);
+    .brand-text {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+    }
+    .logo-three {
+      position: relative;
+      display: inline-block;
+      color: var(--red);
+      margin: 0 1px;
+    }
+    .brand-subtitle {
+      font-family: "Inter", sans-serif;
+      font-size: 6px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 5px;
+      line-height: 1;
     }
     .target-summary { min-width: 0; }
     .target-name {
@@ -150,8 +162,8 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       border: 1px solid var(--red);
       border-radius: 4px;
       color: var(--red);
-      background: rgba(204, 90, 63, 0.05);
-      font-family: "Lora", serif;
+      background: var(--line-soft);
+      font-family: "Bricolage Grotesque", sans-serif;
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.02em;
@@ -165,12 +177,12 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       padding: 6px 10px;
       border: 1px solid var(--line);
       border-radius: 4px;
-      background: #ffffff;
+      background: var(--panel);
     }
     .summary-stat span {
       display: block;
       color: var(--muted);
-      font-family: "Lora", serif;
+      font-family: "Bricolage Grotesque", sans-serif;
       font-size: 8px;
       font-weight: 700;
       letter-spacing: 0.08em;
@@ -243,12 +255,12 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       border-radius: 4px;
       outline: none;
       color: var(--text);
-      background: #ffffff;
+      background: var(--panel);
       box-shadow: 0 4px 12px rgba(0,0,0,.03);
       font-family: "JetBrains Mono", monospace;
       font-size: 12px;
     }
-    .search input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(204,90,63,.12); }
+    .search input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(9,105,218,.12); }
     .search kbd {
       position: absolute;
       top: 10px;
@@ -257,7 +269,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       border: 1px solid var(--line);
       border-radius: 4px;
       color: var(--muted);
-      background: var(--space);
+      background: var(--panel);
       font-size: 9px;
     }
     .toolbar-group {
@@ -267,7 +279,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       padding: 4px;
       border: 1px solid var(--line);
       border-radius: 4px;
-      background: #ffffff;
+      background: var(--panel);
       box-shadow: 0 4px 12px rgba(0,0,0,.03);
     }
     .toolbar-spacer { flex: 1; }
@@ -301,7 +313,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       padding: 10px 12px;
       border: 1px solid var(--line);
       border-radius: 4px;
-      background: #ffffff;
+      background: var(--panel);
       box-shadow: 0 4px 16px rgba(0,0,0,.05);
     }
     .depth-control label { color: var(--muted); font-size: 11px; }
@@ -325,7 +337,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       border: 1px solid var(--line);
       border-radius: 4px;
       color: var(--muted);
-      background: #ffffff;
+      background: var(--panel);
       box-shadow: 0 4px 16px rgba(0,0,0,.05);
       font-size: 10px;
     }
@@ -343,21 +355,21 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     .sidebar-header { padding: 18px; border-bottom: 1px solid var(--line); }
     .eyebrow {
       color: var(--red);
-      font-family: "Lora", serif;
+      font-family: "Bricolage Grotesque", sans-serif;
       font-size: 10px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
     }
-    .sidebar-title { margin-top: 7px; font-family: "Lora", serif; font-size: 18px; font-weight: 600; }
+    .sidebar-title { margin-top: 7px; font-family: "Bricolage Grotesque", sans-serif; font-size: 18px; font-weight: 600; }
     .inspector { padding: 16px; }
     .empty-state { padding: 80px 20px; color: var(--muted); text-align: center; }
-    .empty-orbit {
-      width: 50px;
-      height: 50px;
+    .empty-graphic {
+      width: 40px;
+      height: 40px;
       margin: 0 auto 18px;
-      border: 1px solid var(--line);
-      border-radius: 50%;
+      border: 2px dashed var(--line);
+      border-radius: 6px;
     }
     .empty-state p { margin: 0; font-size: 12px; line-height: 1.6; }
     .card {
@@ -365,12 +377,12 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       padding: 14px;
       border: 1px solid var(--line);
       border-radius: 4px;
-      background: #ffffff;
+      background: var(--panel);
     }
     .card-label {
       margin-bottom: 8px;
       color: var(--muted);
-      font-family: "Lora", serif;
+      font-family: "Bricolage Grotesque", sans-serif;
       font-size: 9px;
       font-weight: 700;
       letter-spacing: .08em;
@@ -387,14 +399,14 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       letter-spacing: .04em;
       text-transform: uppercase;
     }
-    .badge.target { color: var(--red); background: rgba(200, 90, 73, 0.08); }
-    .badge.inner { color: var(--cyan); background: rgba(43, 102, 76, 0.08); }
-    .badge.mid { color: var(--amber); background: rgba(163, 106, 24, 0.08); }
-    .badge.outer { color: var(--blue); background: rgba(53, 96, 138, 0.08); }
-    body.dark-mode .badge.target { background: rgba(224, 122, 107, 0.15); }
-    body.dark-mode .badge.inner { background: rgba(89, 179, 135, 0.15); }
-    body.dark-mode .badge.mid { background: rgba(204, 160, 67, 0.15); }
-    body.dark-mode .badge.outer { background: rgba(82, 148, 226, 0.15); }
+    .badge.target { color: var(--red); background: rgba(9, 105, 218, 0.08); }
+    .badge.inner { color: var(--cyan); background: rgba(26, 127, 55, 0.08); }
+    .badge.mid { color: var(--amber); background: rgba(154, 103, 0, 0.08); }
+    .badge.outer { color: var(--blue); background: rgba(33, 139, 255, 0.08); }
+    body.dark-mode .badge.target { background: rgba(88, 166, 255, 0.15); }
+    body.dark-mode .badge.inner { background: rgba(63, 185, 80, 0.15); }
+    body.dark-mode .badge.mid { background: rgba(210, 153, 34, 0.15); }
+    body.dark-mode .badge.outer { background: rgba(47, 129, 247, 0.15); }
     .location {
       color: var(--muted);
       font-family: "JetBrains Mono", monospace;
@@ -408,7 +420,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       border: 1px solid var(--line);
       border-radius: 4px;
       color: var(--text);
-      background: #ffffff;
+      background: var(--panel);
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
@@ -428,7 +440,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       border-radius: 4px;
       opacity: 0;
       color: var(--text);
-      background: #ffffff;
+      background: var(--panel);
       box-shadow: 0 4px 16px rgba(0,0,0,.08);
       font-size: 11px;
       pointer-events: none;
@@ -439,14 +451,14 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     /* Code Preview UI */
     .code-preview {
-      background: #faf8f5;
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 4px;
       overflow: hidden;
       margin-top: 8px;
     }
     .code-header {
-      background: #f3ede2;
+      background: var(--panel-raised);
       padding: 8px 12px;
       border-bottom: 1px solid var(--line);
       display: flex;
@@ -473,7 +485,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     .code-content {
       padding: 12px;
       overflow-x: auto;
-      background: #faf8f5;
+      background: var(--panel);
     }
     .code-line {
       display: flex;
@@ -481,7 +493,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       padding: 2px 0;
     }
     .code-line.highlight {
-      background: rgba(204, 90, 63, 0.06);
+      background: rgba(9, 105, 218, 0.08);
       margin: 0 -12px;
       padding: 2px 12px;
       border-left: 2px solid var(--red);
@@ -513,10 +525,15 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
   <div id="app">
     <header class="topbar">
       <div class="brand-row">
-        <div class="brand"><span class="brand-mark"></span>N3MO</div>
+        <div class="brand">
+          <div class="logo-container">
+            <div class="brand-text">N<span class="logo-three">3</span>MO</div>
+            <div class="brand-subtitle">Code Intelligence Engine</div>
+          </div>
+        </div>
         <div class="target-summary">
           <div class="target-name" id="target-name"></div>
-          <div class="target-meta">Impact orbit / dependency depth</div>
+          <div class="target-meta">Dependency call graph / impact depth</div>
         </div>
         <div class="risk-pill" id="risk-pill">High impact</div>
       </div>
@@ -540,7 +557,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           </div>
           <div class="toolbar-group">
             <select class="tool-select" id="layout-select" aria-label="Graph layout">
-              <option value="solar">Solar system</option>
+              <option value="solar">Radial layout</option>
               <option value="force">Force graph</option>
               <option value="tree">Impact tree</option>
             </select>
@@ -558,10 +575,10 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         </div>
 
         <div class="legend">
-          <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Target sun</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Inner layer</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Mid layer</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Outer layer</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Target node</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Direct callers</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Indirect callers</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Deep callers</div>
         </div>
 
         <div class="depth-control">
@@ -574,14 +591,14 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
       <aside id="sidebar" style="display: flex; flex-direction: column;">
         <div class="sidebar-header" style="flex-shrink: 0;">
-          <div class="eyebrow">Node inspector</div>
-          <div class="sidebar-title" id="sidebar-title-text">Trace a dependency</div>
+          <div class="eyebrow">Symbol Inspector</div>
+          <div class="sidebar-title" id="sidebar-title-text">Dependency Details</div>
         </div>
         <div id="inspector-tab-content" style="flex: 1; overflow-y: auto; padding: 16px;">
           <div class="inspector" id="inspector-content" style="padding: 0;">
             <div class="empty-state">
-              <div class="empty-orbit"></div>
-              <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+              <div class="empty-graphic"></div>
+              <p>Select a node to inspect its call details, source location, and path to the target.</p>
             </div>
           </div>
         </div>
@@ -597,33 +614,33 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     const actualMaxDepth = Math.max(1, ...nodesData.map(node => node.group));
     const themes = {
       light: {
-        text: '#191816',
-        stroke: '#fbf9f6',
-        edge: '#d3c9b9',
-        edgeHover: '#a19685',
-        orbitStroke: 'rgba(27, 24, 22, 0.08)',
-        orbitDash: 'rgba(96, 127, 165, 0.22)',
-        palette: ['#317589', '#c85a49', '#2e7d5c', '#d9822b', '#4a55a4', '#8a5a8f'],
+        text: '#24292f',
+        stroke: '#ffffff',
+        edge: '#cbd5e1',
+        edgeHover: '#57606a',
+        orbitStroke: 'rgba(0, 0, 0, 0.06)',
+        orbitDash: 'rgba(9, 105, 218, 0.15)',
+        palette: ['#0969da', '#218bff', '#1a7f37', '#9a6700', '#8250df', '#bf3989'],
         nodes: {
-          target: { bg: '#fdf6f5', border: '#c85a49', highlightBg: '#c85a49', hoverBg: '#fdf6f5' },
-          inner: { bg: '#f2f7f5', border: '#2b664c', highlightBg: '#e2ece8', hoverBg: '#e2ece8' },
-          mid: { bg: '#fbf6ed', border: '#a36a18', highlightBg: '#f5ead2', hoverBg: '#f5ead2' },
-          outer: { bg: '#f3f7fa', border: '#35608a', highlightBg: '#e4ecf3', hoverBg: '#e4ecf3' }
+          target: { bg: '#ddf4ff', border: '#0969da', highlightBg: '#0969da', hoverBg: '#ddf4ff' },
+          inner: { bg: '#dafbe1', border: '#1a7f37', highlightBg: '#dafbe1', hoverBg: '#dafbe1' },
+          mid: { bg: '#fff8c5', border: '#9a6700', highlightBg: '#fff8c5', hoverBg: '#fff8c5' },
+          outer: { bg: '#f6f8fa', border: '#57606a', highlightBg: '#f6f8fa', hoverBg: '#f6f8fa' }
         }
       },
       dark: {
-        text: '#f7f4ef',
-        stroke: '#191919',
-        edge: '#444444',
-        edgeHover: '#666666',
-        orbitStroke: 'rgba(255, 255, 255, 0.08)',
-        orbitDash: 'rgba(143, 174, 196, 0.25)',
-        palette: ['#7bc0d3', '#e07a6b', '#69b592', '#e3aa6d', '#939cd8', '#c99ece'],
+        text: '#c9d1d9',
+        stroke: '#0d1117',
+        edge: '#30363d',
+        edgeHover: '#8b949e',
+        orbitStroke: 'rgba(255, 255, 255, 0.06)',
+        orbitDash: 'rgba(88, 166, 255, 0.18)',
+        palette: ['#58a6ff', '#2f81f7', '#3fb950', '#d29922', '#bc8cff', '#ff7b72'],
         nodes: {
-          target: { bg: '#3d1d1a', border: '#e07a6b', highlightBg: '#e07a6b', hoverBg: '#542622' },
-          inner: { bg: '#162c22', border: '#59b387', highlightBg: '#2a2a2a', hoverBg: '#234434' },
-          mid: { bg: '#332813', border: '#cca043', highlightBg: '#2a2a2a', hoverBg: '#4a3b1d' },
-          outer: { bg: '#162638', border: '#5294e2', highlightBg: '#2a2a2a', hoverBg: '#223c57' }
+          target: { bg: '#0c2d6b', border: '#58a6ff', highlightBg: '#58a6ff', hoverBg: '#0d3880' },
+          inner: { bg: '#11351e', border: '#3fb950', highlightBg: '#2a2a2a', hoverBg: '#174c2b' },
+          mid: { bg: '#372c10', border: '#d29922', highlightBg: '#2a2a2a', hoverBg: '#4e3f17' },
+          outer: { bg: '#161b22', border: '#8b949e', highlightBg: '#2a2a2a', hoverBg: '#21262d' }
         }
       }
     };
@@ -697,7 +714,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         ...edge,
         id: edge.id || `edge-${index}`,
         arrows: { to: { enabled: true, scaleFactor: .45 } },
-        color: { color: t.edge, highlight: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', hover: t.edgeHover, opacity: .8 },
+        color: { color: t.edge, highlight: t.nodes.target.border, hover: t.edgeHover, opacity: .8 },
         width: 1,
         selectionWidth: 1.5,
         hoverWidth: 1.2,
@@ -933,7 +950,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         return {
           id: edgeId,
           color: isTraced
-            ? { color: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', opacity: 1 }
+            ? { color: t.nodes.target.border, opacity: 1 }
             : { color: t.edge, opacity: 0.1 },
           width: isTraced ? 2 : 1
         };
@@ -958,7 +975,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       const t = themes[currentTheme];
       edges.update(edges.get().map((edge, idx) => ({
         id: edge.id || `edge-${idx}`,
-        color: { color: t.edge, highlight: currentTheme === 'dark' ? '#e0755a' : '#cc5a3f', hover: t.edgeHover, opacity: .8 },
+        color: { color: t.edge, highlight: t.nodes.target.border, hover: t.edgeHover, opacity: .8 },
         width: 1
       })));
     }
@@ -1007,7 +1024,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       selectedId = nodeId;
       traceToTarget(nodeId);
       const classification = node.group === 0 ? 'target' : node.group === 1 ? 'inner' : node.group === 2 ? 'mid' : 'outer';
-      const classText = node.group === 0 ? 'Target sun' : node.group === 1 ? 'Inner layer / Depth 1' : node.group === 2 ? 'Mid layer / Depth 2' : `Outer layer / Depth ${node.group}`;
+      const classText = node.group === 0 ? 'Target node' : node.group === 1 ? 'Direct caller / Depth 1' : node.group === 2 ? 'Indirect caller / Depth 2' : `Deep caller / Depth ${node.group}`;
       const location = node.path ? `${node.path}:${node.line || 1}` : 'Target definition';
       const editorLink = node.path ? `vscode://file/${encodeURI(node.path)}:${node.line || 1}` : '#';
       const codeHtml = renderCodePreview(node);
@@ -1018,7 +1035,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           <div class="symbol-name">${escapeHtml(node.label)}</div>
         </div>
         <div class="card">
-          <div class="card-label">Orbit classification</div>
+          <div class="card-label">Dependency depth</div>
           <span class="badge ${classification}">${classText}</span>
         </div>
         <div class="card">
@@ -1045,8 +1062,8 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         clearTrace();
         document.getElementById('inspector-content').innerHTML = `
           <div class="empty-state">
-            <div class="empty-orbit"></div>
-            <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+            <div class="empty-graphic"></div>
+            <p>Select a node to inspect its call details, source location, and path to the target.</p>
           </div>`;
       };
     }
@@ -1200,8 +1217,8 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       currentLayout === 'solar' ? applySolarLayout() : currentLayout === 'force' ? applyForceLayout() : applyTreeLayout();
       document.getElementById('inspector-content').innerHTML = `
         <div class="empty-state">
-          <div class="empty-orbit"></div>
-          <p>Select a planet to inspect its depth, source location, and path to the target.</p>
+          <div class="empty-graphic"></div>
+          <p>Select a node to inspect its call details, source location, and path to the target.</p>
         </div>`;
     };
     document.getElementById('btn-export').onclick = () => {

@@ -11,8 +11,8 @@ if sys.stdout.encoding != 'utf-8':
     except Exception:
         pass
 #testing
-from src.run_indexer import calculate_sha256, main as run_indexer
-from src.database import (
+from n3mo.run_indexer import calculate_sha256, main as run_indexer
+from n3mo.database import (
     get_connection,
     release_connection,
     get_file_hashes,
@@ -29,7 +29,9 @@ def db_conn():
             if not exists:
                 tests_dir = os.path.dirname(os.path.abspath(__file__))
                 n3mo_root = os.path.dirname(tests_dir)
-                schema_path = os.path.join(n3mo_root, "db", "schema.sql")
+                schema_path = os.path.join(n3mo_root, "n3mo", "db", "schema.sql")
+                if not os.path.exists(schema_path):
+                    schema_path = os.path.join(n3mo_root, "db", "schema.sql")
                 if os.path.exists(schema_path):
                     with open(schema_path, "r", encoding="utf-8") as f:
                         schema_sql = f.read()
@@ -75,7 +77,7 @@ def test_database_hashing_queries(db_conn):
         cur.execute("DELETE FROM files WHERE project_id = %s", (project_id,))
     db_conn.commit()
 
-    from src.database import upsert_file_hash, get_file_hashes, delete_file_index
+    from n3mo.database import upsert_file_hash, get_file_hashes, delete_file_index
     
     # Upsert hash
     upsert_file_hash(project_id, "file_a.py", "hash123")
@@ -139,7 +141,7 @@ def test_incremental_indexing(temp_repo, db_conn):
     assert "file_b.py" not in hashes_run4
 
 def test_multilanguage_parsing(temp_repo):
-    from src.symbol_extractor import extract_symbols
+    from n3mo.symbol_extractor import extract_symbols
     
     # 1. Test JS Parsing
     js_file = os.path.join(temp_repo, "index.js")
@@ -243,7 +245,7 @@ def test_multilanguage_parsing(temp_repo):
     assert "call_helper" in [c["call_name"] for c in calls]
 
 def test_crawler_exclusions(temp_repo):
-    from src.crawler import is_test_or_mock_file, crawl_repo
+    from n3mo.crawler import is_test_or_mock_file, crawl_repo
     
     # Assert on some filename patterns
     assert is_test_or_mock_file("test_helper.py")
