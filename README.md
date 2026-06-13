@@ -18,7 +18,7 @@
 
 <div align="center">
 
-![N3MO Demo](docs/images/n3mo_demo.gif)
+![N3MO Demo](docs/images/n3mo_demo_smooth.gif)
 
 </div>
 
