@@ -23,6 +23,21 @@ from src.database import (
 @pytest.fixture(scope="module")
 def db_conn():
     conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM information_schema.tables WHERE table_name = 'projects'")
+            exists = cur.fetchone()
+            if not exists:
+                tests_dir = os.path.dirname(os.path.abspath(__file__))
+                n3mo_root = os.path.dirname(tests_dir)
+                schema_path = os.path.join(n3mo_root, "db", "schema.sql")
+                if os.path.exists(schema_path):
+                    with open(schema_path, "r", encoding="utf-8") as f:
+                        schema_sql = f.read()
+                    cur.execute(schema_sql)
+                    conn.commit()
+    except Exception as e:
+        print(f"Failed to initialize schema in test setup: {e}")
     yield conn
     release_connection(conn)
 
