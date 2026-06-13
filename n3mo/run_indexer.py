@@ -12,25 +12,13 @@ from n3mo.database import (
 )
 
 # --- CRAWLER IMPORT ---
-try:
-    from crawler import crawl_directory
-except ImportError:
-    from n3mo.crawler import crawl_directory
+from n3mo.crawler import crawl_directory
 
 # --- EXTRACTOR IMPORT ---
-try:
-    from n3mo.symbol_extractor import extract_symbols
-except ImportError:
-    try:
-        from n3mo.symbol_extractor import extract_symbols
-    except ImportError:
-        from extractor import extract_symbols
+from n3mo.symbol_extractor import extract_symbols
 
 # --- RESOLVER IMPORT ---
-try:
-    from n3mo.resolve_calls import resolve_call_links
-except ImportError:
-    from n3mo.resolve_calls import resolve_call_links
+from n3mo.resolve_calls import resolve_call_links
 
 # Create module-level logger
 logger = logging.getLogger("n3mo")
