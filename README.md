@@ -16,6 +16,12 @@
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
+<div align="center">
+
+![N3MO Demo](docs/images/n3mo_demo.gif)
+
+</div>
+
 **📜 Licensed under AGPL-3.0** — Free for personal/internal use • [Contact for commercial licensing](#-license)
 
 [What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)

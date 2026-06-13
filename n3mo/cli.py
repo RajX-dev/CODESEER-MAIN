@@ -753,12 +753,28 @@ def cmd_impact(args):
 
             if file_filter:
                 cur.execute(
-                    "SELECT id, name, file_path, start_line FROM symbols WHERE name = %s AND project_id = %s AND file_path LIKE %s LIMIT 1",
+                    """
+                    SELECT s.id, s.name, s.file_path, s.start_line 
+                    FROM symbols s 
+                    LEFT JOIN (SELECT resolved_symbol_id, COUNT(*) as call_count FROM calls GROUP BY resolved_symbol_id) c 
+                      ON s.id = c.resolved_symbol_id 
+                    WHERE s.name = %s AND s.project_id = %s AND s.file_path LIKE %s 
+                    ORDER BY COALESCE(c.call_count, 0) DESC, s.start_line ASC 
+                    LIMIT 1
+                    """,
                     (symbol_name, project_id, f"%{file_filter}%")
                 )
             else:
                 cur.execute(
-                    "SELECT id, name, file_path, start_line FROM symbols WHERE name = %s AND project_id = %s LIMIT 1",
+                    """
+                    SELECT s.id, s.name, s.file_path, s.start_line 
+                    FROM symbols s 
+                    LEFT JOIN (SELECT resolved_symbol_id, COUNT(*) as call_count FROM calls GROUP BY resolved_symbol_id) c 
+                      ON s.id = c.resolved_symbol_id 
+                    WHERE s.name = %s AND s.project_id = %s 
+                    ORDER BY COALESCE(c.call_count, 0) DESC, s.start_line ASC 
+                    LIMIT 1
+                    """,
                     (symbol_name, project_id)
                 )
             target = cur.fetchone()
