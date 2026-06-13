@@ -52,17 +52,17 @@ def print_ascii_tree(results, target_name):
     print(f"  {WHITE}{BOLD}Target:{R}  {AMBER}{BOLD}{target_name}{R}")
     print(f"{GRAY}  {'─' * W}{R}")
 
-    seen = set()
     sorted_results = sorted(results, key=lambda x: (x[3], x[1]))
 
-    direct = [(s, p, l, d, t) for s, p, l, d, t in sorted_results if d == 1]
-    ripple = [(s, p, l, d, t) for s, p, l, d, t in sorted_results if d > 1]
+    direct = [(s, p, line, d, t) for s, p, line, d, t in sorted_results if d == 1]
+    ripple = [(s, p, line, d, t) for s, p, line, d, t in sorted_results if d > 1]
 
     if direct:
         print(f"\n  {RED}{BOLD}◉ Direct Callers{R}  {GRAY}({len(set(r[0] for r in direct))} symbols){R}\n")
         seen_direct = set()
         for source, path, line, depth, target in direct:
-            if source in seen_direct: continue
+            if source in seen_direct:
+                continue
             seen_direct.add(source)
             short_path = os.path.basename(path)
             print(f"  {RED}▸{R} {WHITE}{BOLD}{source:<28}{R} {GRAY}{short_path}:{line}{R}")
@@ -72,7 +72,8 @@ def print_ascii_tree(results, target_name):
         seen_ripple = set()
         for source, path, line, depth, target in ripple:
             key = (source, path, line)
-            if key in seen_ripple: continue
+            if key in seen_ripple:
+                continue
             seen_ripple.add(key)
             short_path = os.path.basename(path)
             indent = "    " * (depth - 1)
@@ -856,7 +857,8 @@ def cmd_impact(args):
     except Exception as e:
         print(f"\n  {RED}✗  Error:{R} {e}\n")
     finally:
-        if conn: conn.close()
+        if conn:
+            conn.close()
         # Keep the file so the server can actually serve it!
         # if filename and os.path.exists(filename):
         #     os.remove(filename)
@@ -899,7 +901,8 @@ def main():
     parser_clean = subparsers.add_parser('clean')
     parser_clean.set_defaults(func=cmd_clean)
     args = parser.parse_args()
-    if hasattr(args, 'func'): args.func(args)
+    if hasattr(args, 'func'):
+        args.func(args)
 
 
 if __name__ == '__main__':

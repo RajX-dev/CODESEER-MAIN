@@ -211,7 +211,9 @@ def main():
             if isinstance(result, tuple) and len(result) == 3:
                 symbols, imports, calls = result
             else:
-                symbols = result; imports = []; calls = []
+                symbols = result
+                imports = []
+                calls = []
 
             replace_file_index(
                 project_id,
