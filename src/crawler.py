@@ -3,7 +3,8 @@ import os
 # Folders we never want to scan
 IGNORED_DIRS = {
     "node_modules", ".git", "dist", "build", "__pycache__", 
-    ".venv", "venv", "env", ".idea", ".vscode"
+    ".venv", "venv", "env", ".idea", ".vscode",
+    "tests", "test", "__tests__"
 }
 
 def detect_language(filename: str) -> str | None:
@@ -28,6 +29,18 @@ def crawl_repo(repo_path: str):
         dirs[:] = [d for d in dirs if d not in IGNORED_DIRS]
 
         for filename in filenames:
+            # Skip test files
+            name_lower = filename.lower()
+            if (name_lower.startswith("test_") or 
+                name_lower.endswith("_test.py") or 
+                name_lower.endswith(".test.py") or
+                name_lower.endswith("_test.js") or
+                name_lower.endswith(".test.js") or
+                name_lower.endswith("_test.ts") or
+                name_lower.endswith(".test.ts") or
+                name_lower in ("test.py", "test.js", "test.ts")):
+                continue
+
             language = detect_language(filename)
             if not language:
                 continue
