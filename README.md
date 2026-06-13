@@ -363,12 +363,12 @@ python benchmarks/benchmark_indexing.py
 | | `--file` / `--depth` CLI flags | ✅ Complete |
 | | Interactive depth slider | ✅ Complete |
 | **Phase 3 — Correctness & Scaling** | | |
-| | Incremental re-index (file hashing) | 🔵 Next |
+| | Incremental re-index (file hashing) | ✅ Complete |
 | | Multiprocessing (AST parsing) | 🔵 Next |
 | | Scope-aware call resolution | ⏳ Planned |
 | | CTE cycle guard | ⏳ Planned |
 | | Full type annotations + mypy | ⏳ Planned |
-| | pytest suite + CI | ⏳ Planned |
+| | pytest suite + CI | ✅ Complete |
 | **Phase 4 — Distribution** | | |
 | | MCP server (Cursor / Claude Code) | ⏳ Planned |
 | | FastAPI REST layer | ⏳ Planned |
@@ -405,15 +405,15 @@ python benchmarks/benchmark_indexing.py
 </details>
 
 <details>
-<summary><b>Phase 3: Correctness + Scaling</b> ⏳ Planned</summary>
+<summary><b>Phase 3: Correctness + Scaling</b> 🔵 In Progress</summary>
 
-- [ ] SHA-256 file hashing for incremental re-index
+- [x] SHA-256 file hashing for incremental re-index
 - [ ] `ProcessPoolExecutor` for parallel AST parsing
 - [ ] Scope-aware call resolution using imports table
 - [ ] CTE cycle guard (visited node tracking)
 - [ ] Full type annotations, `mypy --strict` clean
-- [ ] pytest unit + integration test suite
-- [ ] GitHub Actions CI pipeline
+- [x] pytest unit + integration test suite
+- [x] GitHub Actions CI pipeline
 
 </details>
 
