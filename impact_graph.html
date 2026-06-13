@@ -18,10 +18,10 @@
       --line-soft: rgba(27, 24, 22, 0.05);
       --text: #191816;
       --muted: #6e6a64;
-      --blue: #5a7f9c;
-      --amber: #bf8e3b;
-      --red: #cc5a3f;
-      --cyan: #385c43;
+      --blue: #35608a;
+      --amber: #a36a18;
+      --red: #c85a49;
+      --cyan: #2b664c;
     }
 
     body.dark-mode {
@@ -33,10 +33,10 @@
       --line-soft: rgba(255, 255, 255, 0.05);
       --text: #f7f4ef;
       --muted: #a39f99;
-      --blue: #8faec4;
-      --amber: #d9ab55;
-      --red: #e0755a;
-      --cyan: #5fa673;
+      --blue: #5294e2;
+      --amber: #cca043;
+      --red: #e07a6b;
+      --cyan: #59b387;
     }
 
     body.dark-mode .card,
@@ -367,10 +367,14 @@
       letter-spacing: .04em;
       text-transform: uppercase;
     }
-    .badge.target { color: var(--red); background: rgba(204, 90, 63, 0.05); }
-    .badge.inner { color: var(--cyan); background: rgba(56, 92, 67, 0.05); }
-    .badge.mid { color: var(--amber); background: rgba(191, 142, 59, 0.05); }
-    .badge.outer { color: var(--blue); background: rgba(90, 127, 156, 0.05); }
+    .badge.target { color: var(--red); background: rgba(200, 90, 73, 0.08); }
+    .badge.inner { color: var(--cyan); background: rgba(43, 102, 76, 0.08); }
+    .badge.mid { color: var(--amber); background: rgba(163, 106, 24, 0.08); }
+    .badge.outer { color: var(--blue); background: rgba(53, 96, 138, 0.08); }
+    body.dark-mode .badge.target { background: rgba(224, 122, 107, 0.15); }
+    body.dark-mode .badge.inner { background: rgba(89, 179, 135, 0.15); }
+    body.dark-mode .badge.mid { background: rgba(204, 160, 67, 0.15); }
+    body.dark-mode .badge.outer { background: rgba(82, 148, 226, 0.15); }
     .location {
       color: var(--muted);
       font-family: "JetBrains Mono", monospace;
@@ -579,12 +583,12 @@
         edgeHover: '#a19685',
         orbitStroke: 'rgba(27, 24, 22, 0.08)',
         orbitDash: 'rgba(96, 127, 165, 0.22)',
-        palette: ['#5a7f9c', '#cc5a3f', '#385c43', '#bf8e3b', '#b07060', '#8372a6'],
+        palette: ['#317589', '#c85a49', '#2e7d5c', '#d9822b', '#4a55a4', '#8a5a8f'],
         nodes: {
-          target: { bg: '#fcf1ee', border: '#cc5a3f', highlightBg: '#cc5a3f', hoverBg: '#fcf1ee' },
-          inner: { bg: '#f4f9f5', border: '#385c43', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' },
-          mid: { bg: '#faf5ec', border: '#bf8e3b', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' },
-          outer: { bg: '#f4f7fa', border: '#5a7f9c', highlightBg: '#f1ebd9', hoverBg: '#e5dfd5' }
+          target: { bg: '#fdf6f5', border: '#c85a49', highlightBg: '#c85a49', hoverBg: '#fdf6f5' },
+          inner: { bg: '#f2f7f5', border: '#2b664c', highlightBg: '#e2ece8', hoverBg: '#e2ece8' },
+          mid: { bg: '#fbf6ed', border: '#a36a18', highlightBg: '#f5ead2', hoverBg: '#f5ead2' },
+          outer: { bg: '#f3f7fa', border: '#35608a', highlightBg: '#e4ecf3', hoverBg: '#e4ecf3' }
         }
       },
       dark: {
@@ -594,12 +598,12 @@
         edgeHover: '#666666',
         orbitStroke: 'rgba(255, 255, 255, 0.08)',
         orbitDash: 'rgba(143, 174, 196, 0.25)',
-        palette: ['#8faec4', '#e0755a', '#5fa673', '#d9ab55', '#cc8c7a', '#a699c7'],
+        palette: ['#7bc0d3', '#e07a6b', '#69b592', '#e3aa6d', '#939cd8', '#c99ece'],
         nodes: {
-          target: { bg: '#3a1e1a', border: '#e0755a', highlightBg: '#e0755a', hoverBg: '#4d2822' },
-          inner: { bg: '#17271c', border: '#5fa673', highlightBg: '#2a2a2a', hoverBg: '#1e3325' },
-          mid: { bg: '#2d2313', border: '#d9ab55', highlightBg: '#2a2a2a', hoverBg: '#3b2e19' },
-          outer: { bg: '#1a2730', border: '#8faec4', highlightBg: '#2a2a2a', hoverBg: '#22333f' }
+          target: { bg: '#3d1d1a', border: '#e07a6b', highlightBg: '#e07a6b', hoverBg: '#542622' },
+          inner: { bg: '#162c22', border: '#59b387', highlightBg: '#2a2a2a', hoverBg: '#234434' },
+          mid: { bg: '#332813', border: '#cca043', highlightBg: '#2a2a2a', hoverBg: '#4a3b1d' },
+          outer: { bg: '#162638', border: '#5294e2', highlightBg: '#2a2a2a', hoverBg: '#223c57' }
         }
       }
     };
