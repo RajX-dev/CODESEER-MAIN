@@ -1,6 +1,6 @@
 # 🔍 N3MO
 
-<!-- mcp-name: io.github.rajx-dev/n3mo -->
+<!-- mcp-name: io.github.RajX-dev/n3mo -->
 <div align="center">
 
 ![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Engine-blue?style=for-the-badge)
