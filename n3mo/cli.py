@@ -1073,7 +1073,7 @@ def cmd_mcp(args):
             asyncio.run(mcp_main())
         except KeyboardInterrupt:
             print(f"\n  {CYAN}◈{R}  MCP Server stopped.")
-        except Exception as e:
+        except Exception:
             import traceback
             print(f"\n  {RED}✗  Error running MCP server:{R}")
             traceback.print_exc()
