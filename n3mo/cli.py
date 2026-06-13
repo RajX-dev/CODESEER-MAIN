@@ -955,76 +955,114 @@ def cmd_mcp(args):
         
         target_dir = args.target_dir or os.getcwd()
         target_dir = os.path.abspath(target_dir)
+        import shutil
+        import json
         
         # 1. Claude Desktop config path
         appdata = os.environ.get("APPDATA")
-        if not appdata:
-            print(f"  {RED}✗{R} Could not resolve %APPDATA% path. Claude Desktop registration is only supported on Windows/macOS/Linux standard layouts.")
-            return
+        if appdata:
+            claude_config_path = os.path.join(appdata, "Claude", "claude_desktop_config.json")
+            claude_dir = os.path.dirname(claude_config_path)
+            os.makedirs(claude_dir, exist_ok=True)
             
-        claude_config_path = os.path.join(appdata, "Claude", "claude_desktop_config.json")
-        claude_dir = os.path.dirname(claude_config_path)
-        os.makedirs(claude_dir, exist_ok=True)
-        
-        # Backup existing config if it exists
-        if os.path.exists(claude_config_path):
-            backup_path = claude_config_path + ".bak"
-            import shutil
-            try:
-                shutil.copy(claude_config_path, backup_path)
-                print(f"  {CYAN}✓{R} Backed up existing Claude config to: {os.path.basename(backup_path)}")
-            except Exception as e:
-                print(f"  {AMBER}⚠️{R} Failed to create backup config: {e}")
+            # Backup existing config if it exists
+            if os.path.exists(claude_config_path):
+                backup_path = claude_config_path + ".bak"
+                try:
+                    shutil.copy(claude_config_path, backup_path)
+                    print(f"  {CYAN}✓{R} Backed up existing Claude config to: {os.path.basename(backup_path)}")
+                except Exception as e:
+                    print(f"  {AMBER}⚠️{R} Failed to create backup Claude config: {e}")
+                    
+            # Read or init config
+            config = {"mcpServers": {}}
+            if os.path.exists(claude_config_path):
+                try:
+                    with open(claude_config_path, "r", encoding="utf-8") as f:
+                        content = f.read().strip()
+                        if content:
+                            config = json.loads(content)
+                except Exception as e:
+                    print(f"  {AMBER}⚠️{R} Failed to parse existing Claude config: {e}. Starting fresh.")
+                    
+            if "mcpServers" not in config:
+                config["mcpServers"] = {}
                 
-        # Read or init config
-        config = {"mcpServers": {}}
-        if os.path.exists(claude_config_path):
+            package_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            # Configure n3mo server entry
+            config["mcpServers"]["n3mo"] = {
+                "command": sys.executable,
+                "args": ["-m", "n3mo.mcp_server"],
+                "cwd": os.path.dirname(package_dir),
+                "env": {
+                    "TARGET_CODE_DIR": target_dir
+                }
+            }
+            
             try:
-                with open(claude_config_path, "r", encoding="utf-8") as f:
+                with open(claude_config_path, "w", encoding="utf-8") as f:
+                    json.dump(config, f, indent=2)
+                print(f"  {CYAN}✓{R} Claude Desktop configuration updated successfully!")
+            except Exception as e:
+                print(f"  {RED}✗{R} Failed to write Claude configuration file: {e}")
+        else:
+            print(f"  {AMBER}⚠️{R} APPDATA environment variable not found. Skipping Claude Desktop setup.")
+
+        # 2. Cursor config path
+        user_home = os.path.expanduser("~")
+        cursor_config_path = os.path.join(user_home, ".cursor", "mcp.json")
+        cursor_dir = os.path.dirname(cursor_config_path)
+        os.makedirs(cursor_dir, exist_ok=True)
+        
+        # Backup Cursor config if it exists
+        if os.path.exists(cursor_config_path):
+            backup_cursor_path = cursor_config_path + ".bak"
+            try:
+                shutil.copy(cursor_config_path, backup_cursor_path)
+                print(f"  {CYAN}✓{R} Backed up existing Cursor config to: {os.path.basename(backup_cursor_path)}")
+            except Exception as e:
+                print(f"  {AMBER}⚠️{R} Failed to create backup Cursor config: {e}")
+                
+        # Read or init Cursor config
+        cursor_config = {"mcpServers": {}}
+        if os.path.exists(cursor_config_path):
+            try:
+                with open(cursor_config_path, "r", encoding="utf-8") as f:
                     content = f.read().strip()
                     if content:
-                        config = json.loads(content)
+                        cursor_config = json.loads(content)
             except Exception as e:
-                print(f"  {AMBER}⚠️{R} Failed to parse existing Claude config: {e}. Starting fresh.")
+                print(f"  {AMBER}⚠️{R} Failed to parse existing Cursor config: {e}. Starting fresh.")
                 
-        if "mcpServers" not in config:
-            config["mcpServers"] = {}
+        if "mcpServers" not in cursor_config:
+            cursor_config["mcpServers"] = {}
             
-        package_dir = os.path.dirname(os.path.abspath(__file__))
-        
-        # Configure n3mo server entry
-        config["mcpServers"]["n3mo"] = {
+        # Configure n3mo server entry for Cursor
+        cursor_config["mcpServers"]["n3mo"] = {
             "command": sys.executable,
             "args": ["-m", "n3mo.mcp_server"],
-            "cwd": os.path.dirname(package_dir),
             "env": {
                 "TARGET_CODE_DIR": target_dir
             }
         }
         
         try:
-            with open(claude_config_path, "w", encoding="utf-8") as f:
-                json.dump(config, f, indent=2)
-            print(f"  {CYAN}✓{R} Claude Desktop configuration updated successfully!")
-            print(f"  File location: {claude_config_path}")
+            with open(cursor_config_path, "w", encoding="utf-8") as f:
+                json.dump(cursor_config, f, indent=2)
+            print(f"  {CYAN}✓{R} Cursor configuration updated successfully!")
+            print(f"  File location: {cursor_config_path}")
         except Exception as e:
-            print(f"  {RED}✗{R} Failed to write Claude configuration file: {e}")
-            return
-            
-        # 2. Print Cursor instructions
+            print(f"  {RED}✗{R} Failed to write Cursor configuration file: {e}")
+
+        # 3. Print success details
         print(f"{GRAY}  {'─' * W}{R}")
         print(f"  {CYAN}🎉{R} {BOLD}{WHITE}N3MO MCP Registration Complete!{R}")
         print(f"{GRAY}  {'─' * W}{R}")
-        print(f"  {BOLD}For Claude Desktop:{R}")
-        print("  - Restart Claude Desktop to apply the new tool.")
-        print("  - Claude will now have tools to search and trace dependencies in:")
+        print(f"  {BOLD}For Claude Desktop / Cursor:{R}")
+        print("  - Restart the application or reload the window to apply the tools.")
+        print("  - N3MO will now have tools to search and trace dependencies in:")
         print(f"    {WHITE}{target_dir}{R}")
-        print()
-        print(f"  {BOLD}For Cursor (Copy settings to Settings -> Models -> MCP):{R}")
-        print(f"  - Name:        {CYAN}n3mo{R}")
-        print(f"  - Type:        {CYAN}command{R}")
-        print(f"  - Command:     {WHITE}{sys.executable} -m n3mo.mcp_server{R}")
-        print(f"  - Environment: {WHITE}TARGET_CODE_DIR={target_dir}{R}")
         print()
         
     else:
@@ -1036,7 +1074,10 @@ def cmd_mcp(args):
         except KeyboardInterrupt:
             print(f"\n  {CYAN}◈{R}  MCP Server stopped.")
         except Exception as e:
-            print(f"\n  {RED}✗  Error running MCP server:{R} {e}\n")
+            import traceback
+            print(f"\n  {RED}✗  Error running MCP server:{R}")
+            traceback.print_exc()
+            print()
 
 
 def main():

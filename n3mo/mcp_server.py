@@ -71,7 +71,7 @@ if Server is not None:
         Execute tool calls requested by the LLM agent.
         """
         if name == "n3mo_index":
-            project_path = arguments.get("project_path")
+            project_path = arguments.get("project_path") or os.getenv("TARGET_CODE_DIR") or os.getcwd()
             if not project_path:
                 return [types.TextContent(type="text", text="Error: project_path is required.")]
             
@@ -85,7 +85,7 @@ if Server is not None:
         elif name == "n3mo_get_blast_radius":
             symbol_name = arguments.get("symbol_name")
             depth = arguments.get("depth", 3)
-            project_path = arguments.get("project_path") or os.getcwd()
+            project_path = arguments.get("project_path") or os.getenv("TARGET_CODE_DIR") or os.getcwd()
 
             from n3mo.database import get_connection, release_connection
             conn = None
@@ -219,6 +219,21 @@ async def main():
     """Run the MCP server over stdio transport."""
     if Server is None or stdio_server is None:
         print("Error: MCP SDK not installed. Please run 'pip install mcp' first.", file=sys.stderr)
+        sys.exit(1)
+
+    if sys.stdin.isatty():
+        print("\n\033[1;33m⚠️  N3MO MCP Server - Interactive Terminal Warning\033[0m", file=sys.stderr)
+        print("----------------------------------------------------------------", file=sys.stderr)
+        print("The MCP server runs over STDIO transport, which expects a JSON-RPC", file=sys.stderr)
+        print("host (like Cursor or Claude Desktop) and cannot be run interactively.", file=sys.stderr)
+        print("\nTo integrate with Cursor:", file=sys.stderr)
+        print("  1. Open Cursor settings: Settings -> Models -> MCP", file=sys.stderr)
+        print("  2. Add a new MCP server:", file=sys.stderr)
+        print("     - Name: n3mo", file=sys.stderr)
+        print("     - Type: command", file=sys.stderr)
+        print(f"     - Command: {sys.executable} -m n3mo.mcp_server", file=sys.stderr)
+        print("\nTo automatically register with Cursor and Claude Desktop, run:", file=sys.stderr)
+        print("  \033[1;36mn3mo mcp install\033[0m\n", file=sys.stderr)
         sys.exit(1)
 
     logger.info("Starting N3MO MCP Server...")

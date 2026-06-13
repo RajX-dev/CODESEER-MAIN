@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="n3mo",
-    version="1.0.1",
+    version="1.0.2",
     description="N3MO: The Impact Tracker",
     packages=find_packages(),
     include_package_data=True,
