@@ -93,7 +93,7 @@ def start_docker_services():
         compose_path = os.path.join(parent_dir, "docker-compose.yml")
         
     if not os.path.exists(compose_path):
-        logger.warning(f"⚠️ Warning: docker-compose.yml not found. Skipping automatic Docker startup.")
+        logger.warning("⚠️ Warning: docker-compose.yml not found. Skipping automatic Docker startup.")
         return
         
     cmd = ["docker", "compose", "-f", compose_path, "up", "-d"]

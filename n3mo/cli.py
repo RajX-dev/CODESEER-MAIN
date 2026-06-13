@@ -895,7 +895,7 @@ def cmd_setup(args):
     except (subprocess.CalledProcessError, FileNotFoundError):
         print(f"\n  {RED}✗{R} {BOLD}Docker not found in system PATH.{R}")
         print("  N3MO requires Docker to run its PostgreSQL (graph storage) and Elasticsearch (search backend) automatically.")
-        print(f"\n  👉 Please download and install Docker Desktop:")
+        print("\n  👉 Please download and install Docker Desktop:")
         print(f"     {BLUE}\033[4mhttps://www.docker.com/products/docker-desktop/\033[0m")
         print("  👉 Once installed, start Docker Desktop and run: n3mo setup\n")
         return
@@ -934,7 +934,7 @@ def cmd_setup(args):
         print(f"{GRAY}  {'─' * W}{R}")
         print(f"  {CYAN}🎉{R} {BOLD}{WHITE}N3MO is fully set up and ready to analyze your repositories!{R}")
         print(f"{GRAY}  {'─' * W}{R}")
-        print(f"  Next Steps:")
+        print("  Next Steps:")
         print(f"  - Run {CYAN}n3mo index{R} in any project folder to map its dependencies.")
         print(f"  - Run {CYAN}n3mo impact <symbol_name>{R} to see the blast radius of changes.")
         print(f"  - Run {CYAN}n3mo mcp install{R} to register N3MO with Claude Desktop.")
@@ -1017,7 +1017,7 @@ def cmd_mcp(args):
         print(f"{GRAY}  {'─' * W}{R}")
         print(f"  {BOLD}For Claude Desktop:{R}")
         print("  - Restart Claude Desktop to apply the new tool.")
-        print(f"  - Claude will now have tools to search and trace dependencies in:")
+        print("  - Claude will now have tools to search and trace dependencies in:")
         print(f"    {WHITE}{target_dir}{R}")
         print()
         print(f"  {BOLD}For Cursor (Copy settings to Settings -> Models -> MCP):{R}")
