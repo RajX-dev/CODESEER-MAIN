@@ -402,7 +402,7 @@ python benchmarks/benchmark_indexing.py
 | | pytest suite + CI | ✅ Complete |
 | | Multi-language support | ✅ Complete |
 | **Phase 4 — Distribution** | | |
-| | MCP server (Cursor / Claude Code) | ⏳ Planned |
+| | MCP server (Cursor / Claude Code) | ✅ Complete |
 | | FastAPI REST layer | ⏳ Planned |
 | | Real-time git-hook indexing | ⏳ Planned |
 | | pgvector semantic search | ⏳ Planned |
@@ -450,9 +450,9 @@ python benchmarks/benchmark_indexing.py
 </details>
 
 <details>
-<summary><b>Phase 4: Distribution</b> ⏳ Planned</summary>
+<summary><b>Phase 4: Distribution</b> 🔵 In Progress</summary>
 
-- [ ] MCP server — N3MO as a tool for Cursor, Claude Code, Windsurf
+- [x] MCP server — N3MO as a tool for Cursor, Claude Code, Windsurf
 - [ ] FastAPI REST layer — `GET /impact/{symbol}`, `POST /index`
 - [ ] Real-time incremental indexing via git hooks
 - [ ] `pgvector` semantic search — "find functions that do X"
