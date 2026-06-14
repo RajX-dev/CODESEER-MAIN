@@ -15,8 +15,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from src.run_indexer import main as run_indexer
-from src.database import get_connection, release_connection
+from n3mo.run_indexer import main as run_indexer
+from n3mo.database import get_connection, release_connection
 
 def create_multilang_project(dir_path):
     os.makedirs(dir_path, exist_ok=True)

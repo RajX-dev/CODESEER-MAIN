@@ -787,20 +787,24 @@ def cmd_impact(args):
 
             query = """
             WITH RECURSIVE impact_chain AS (
-                SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id
+                SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id,
+                       ARRAY[c.source_symbol_id] AS path,
+                       FALSE AS cycle
                 FROM calls c
                 JOIN symbols s ON c.source_symbol_id = s.id
                 JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
                 WHERE c.resolved_symbol_id = %s
                 UNION ALL
-                SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id
+                SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id,
+                       ic.path || c.source_symbol_id,
+                       c.source_symbol_id = ANY(ic.path)
                 FROM impact_chain ic
                 JOIN calls c ON c.resolved_symbol_id = ic.source_id
                 JOIN symbols s ON c.source_symbol_id = s.id
-                WHERE ic.depth < %s + 1
+                WHERE ic.depth < %s + 1 AND NOT ic.cycle
             )
             SELECT DISTINCT source, file_path, line_number, depth, target
-            FROM impact_chain ORDER BY depth ASC, file_path;
+            FROM impact_chain WHERE NOT cycle ORDER BY depth ASC, file_path;
             """
             cur.execute(query, (target_id, args.depth))
             results = cur.fetchall()
@@ -1096,6 +1100,18 @@ def cmd_mcp(args):
             print()
 
 
+def cmd_api(args):
+    from n3mo.api_server import start_server
+    print(f"🚀 Starting N3MO API Server on http://{args.host}:{args.port}...")
+    start_server(host=args.host, port=args.port)
+
+
+def cmd_hook(args):
+    from n3mo.git_hooks import install_git_hook
+    target_dir = args.target_dir or os.getenv("TARGET_CODE_DIR", os.getcwd())
+    install_git_hook(target_dir)
+
+
 def main():
     if sys.stdout.encoding != 'utf-8':
         try:
@@ -1105,6 +1121,19 @@ def main():
 
     parser = argparse.ArgumentParser(prog="n3mo")
     subparsers = parser.add_subparsers(dest='command')
+    
+    parser_api = subparsers.add_parser('api')
+    parser_api.add_argument('--host', default="127.0.0.1", help="API bind host")
+    parser_api.add_argument('--port', type=int, default=8000, help="API bind port")
+    parser_api.set_defaults(func=cmd_api)
+
+    parser_hook = subparsers.add_parser('git-hook')
+    hook_subparsers = parser_hook.add_subparsers(dest='hook_command')
+    parser_hook_install = hook_subparsers.add_parser('install')
+    parser_hook_install.add_argument('--target-dir', help="Path to project directory (default: current directory)", default=None)
+    parser_hook_install.set_defaults(func=cmd_hook)
+    parser_hook.set_defaults(func=cmd_hook)
+
     parser_impact = subparsers.add_parser('impact')
     parser_impact.add_argument('symbol')
     parser_impact.add_argument('--graph', action='store_true')

@@ -142,20 +142,24 @@ if Server is not None:
 
                     query = """
                     WITH RECURSIVE impact_chain AS (
-                        SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id
+                        SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id,
+                               ARRAY[c.source_symbol_id] AS path,
+                               FALSE AS cycle
                         FROM calls c
                         JOIN symbols s ON c.source_symbol_id = s.id
                         JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
                         WHERE c.resolved_symbol_id = %s
                         UNION ALL
-                        SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id
+                        SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id,
+                               ic.path || c.source_symbol_id,
+                               c.source_symbol_id = ANY(ic.path)
                         FROM impact_chain ic
                         JOIN calls c ON c.resolved_symbol_id = ic.source_id
                         JOIN symbols s ON c.source_symbol_id = s.id
-                        WHERE ic.depth < %s + 1
+                        WHERE ic.depth < %s + 1 AND NOT ic.cycle
                     )
                     SELECT DISTINCT source, file_path, line_number, depth, target
-                    FROM impact_chain ORDER BY depth ASC, file_path;
+                    FROM impact_chain WHERE NOT cycle ORDER BY depth ASC, file_path;
                     """
                     cur.execute(query, (target_id, depth))
                     results = cur.fetchall()

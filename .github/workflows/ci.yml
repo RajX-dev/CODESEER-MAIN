@@ -44,6 +44,11 @@ jobs:
       run: |
         ruff check n3mo/
 
+    - name: Type check with Mypy
+      run: |
+        pip install mypy types-psycopg2
+        mypy --ignore-missing-imports n3mo/
+
     - name: Run Pytest
       env:
         POSTGRES_HOST: localhost

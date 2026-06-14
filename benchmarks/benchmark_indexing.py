@@ -10,8 +10,8 @@ if sys.stdout.encoding != 'utf-8':
     except Exception:
         pass
 
-from src.run_indexer import main as run_indexer
-from src.database import get_connection, release_connection
+from n3mo.run_indexer import main as run_indexer
+from n3mo.database import get_connection, release_connection
 
 
 def create_dummy_repo(repo_dir):

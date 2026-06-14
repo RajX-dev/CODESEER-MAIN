@@ -352,3 +352,113 @@ def test_no_impact_file_exclusions(temp_repo, db_conn):
     with db_conn.cursor() as cur:
         cur.execute("SELECT COUNT(*) FROM symbols WHERE project_id = %s AND file_path = 'impact.py'", (project_id,))
         assert cur.fetchone()[0] == 0
+
+
+def test_cte_cycle_guard(temp_repo, db_conn):
+    # Verify cyclic dependencies are safely tracked and do not loop infinitely
+    project_id = ensure_project("test-cycle-proj", temp_repo)
+    
+    import uuid
+    id_a = str(uuid.uuid4())
+    id_b = str(uuid.uuid4())
+    
+    with db_conn.cursor() as cur:
+        cur.execute("DELETE FROM symbols WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM calls WHERE project_id = %s", (project_id,))
+        
+        cur.execute(
+            "INSERT INTO symbols (id, project_id, name, file_path, kind, start_line) VALUES (%s, %s, %s, %s, %s, %s)",
+            (id_a, project_id, "func_a", "file_a.py", "FUNCTION", 1)
+        )
+        cur.execute(
+            "INSERT INTO symbols (id, project_id, name, file_path, kind, start_line) VALUES (%s, %s, %s, %s, %s, %s)",
+            (id_b, project_id, "func_b", "file_b.py", "FUNCTION", 1)
+        )
+        
+        cur.execute(
+            "INSERT INTO calls (id, project_id, source_symbol_id, call_name, line_number, resolved_symbol_id) VALUES (%s, %s, %s, %s, %s, %s)",
+            (str(uuid.uuid4()), project_id, id_a, "func_b", 2, id_b)
+        )
+        cur.execute(
+            "INSERT INTO calls (id, project_id, source_symbol_id, call_name, line_number, resolved_symbol_id) VALUES (%s, %s, %s, %s, %s, %s)",
+            (str(uuid.uuid4()), project_id, id_b, "func_a", 2, id_a)
+        )
+        db_conn.commit()
+        
+    with db_conn.cursor() as cur:
+        query = """
+        WITH RECURSIVE impact_chain AS (
+            SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id,
+                   ARRAY[c.source_symbol_id] AS path,
+                   FALSE AS cycle
+            FROM calls c
+            JOIN symbols s ON c.source_symbol_id = s.id
+            JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
+            WHERE c.resolved_symbol_id = %s
+            UNION ALL
+            SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id,
+                   ic.path || c.source_symbol_id,
+                   c.source_symbol_id = ANY(ic.path)
+            FROM impact_chain ic
+            JOIN calls c ON c.resolved_symbol_id = ic.source_id
+            JOIN symbols s ON c.source_symbol_id = s.id
+            WHERE ic.depth < 5 AND NOT ic.cycle
+        )
+        SELECT DISTINCT source, file_path, line_number, depth, target
+        FROM impact_chain WHERE NOT cycle ORDER BY depth ASC, file_path;
+        """
+        cur.execute(query, (id_a,))
+        results = cur.fetchall()
+        
+        assert len(results) >= 1
+
+
+def test_scope_aware_call_resolution(temp_repo, db_conn):
+    # Verify that calls to imported functions resolve to the correct target files
+    os.makedirs(os.path.join(temp_repo, "src"), exist_ok=True)
+    
+    file_a = os.path.join(temp_repo, "src", "utils_a.py")
+    with open(file_a, "w", encoding="utf-8") as f:
+        f.write("def hello():\n    pass\n")
+        
+    file_b = os.path.join(temp_repo, "src", "utils_b.py")
+    with open(file_b, "w", encoding="utf-8") as f:
+        f.write("def hello():\n    pass\n")
+        
+    file_main = os.path.join(temp_repo, "src", "main.py")
+    with open(file_main, "w", encoding="utf-8") as f:
+        f.write("from utils_a import hello\n\ndef run():\n    hello()\n")
+        
+    temp_repo_abs = os.path.abspath(temp_repo)
+    os.environ["TARGET_CODE_DIR"] = temp_repo_abs
+    
+    with db_conn.cursor() as cur:
+        cur.execute("DELETE FROM projects WHERE repo_url = %s", (temp_repo_abs,))
+    db_conn.commit()
+    
+    run_indexer()
+    
+    project_id = ensure_project(os.path.basename(temp_repo), temp_repo_abs)
+    
+    with db_conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT c.resolved_symbol_id, s.file_path, s.name 
+            FROM calls c 
+            JOIN symbols s ON c.resolved_symbol_id = s.id 
+            WHERE c.project_id = %s AND c.call_name = 'hello'
+            """,
+            (project_id,)
+        )
+        row = cur.fetchone()
+        assert row is not None
+        resolved_file = row[1].replace("\\", "/")
+        assert "utils_a.py" in resolved_file
+        assert "utils_b.py" not in resolved_file
+
+
+def test_api_server_endpoints():
+    from n3mo.api_server import health
+    res = health()
+    assert res == {"status": "healthy", "service": "n3mo-api"}
+

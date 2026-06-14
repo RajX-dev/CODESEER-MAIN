@@ -43,3 +43,7 @@ build/
 mcp-publisher.exe
 mcp-publisher
 *.tar.gz
+
+# Graph visualizer output
+impact_graph.html
+
