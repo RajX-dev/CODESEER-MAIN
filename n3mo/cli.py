@@ -5,11 +5,15 @@ import json
 from n3mo.database import get_connection
 from n3mo.graph_visualizer import generate_solar_graph_html
 
+from typing import Any
+
 # Try to import the indexer logic
+run_indexer_logic: Any = None
 try:
-    from n3mo.run_indexer import main as run_indexer_logic
+    from n3mo.run_indexer import main as run_indexer_logic_impl
+    run_indexer_logic = run_indexer_logic_impl
 except ImportError:
-    run_indexer_logic = None
+    pass
 
 # ==========================================
 # 🛠️ HELPER FUNCTIONS

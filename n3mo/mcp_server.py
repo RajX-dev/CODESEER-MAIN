@@ -1,18 +1,24 @@
 import sys
 import logging
 import os
-from typing import List
+from typing import List, Any
 
 # Setup simple logger
 logger = logging.getLogger("n3mo.mcp")
 
+Server: Any = None
+stdio_server: Any = None
+types: Any = None
+server: Any = None
+
 try:
-    from mcp.server import Server
-    from mcp.server.stdio import stdio_server
-    import mcp.types as types
+    from mcp.server import Server as MCPServer # type: ignore
+    from mcp.server.stdio import stdio_server as MCPStdioServer # type: ignore
+    import mcp.types as MCPTypes # type: ignore
+    Server = MCPServer
+    stdio_server = MCPStdioServer
+    types = MCPTypes
 except ImportError:
-    Server = None
-    stdio_server = None
     logger.error("The 'mcp' SDK is not installed. Run 'pip install mcp' to use the MCP Server.")
 
 

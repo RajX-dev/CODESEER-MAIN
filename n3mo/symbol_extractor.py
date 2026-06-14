@@ -3,7 +3,7 @@ import uuid
 import os
 
 # --- MULTI-LANGUAGE BINDINGS LOAD ---
-LANGUAGES = {}
+LANGUAGES: dict[str, Language] = {}
 
 def load_lang(name, module_name, lang_func_name="language"):
     try:
