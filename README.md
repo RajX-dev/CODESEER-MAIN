@@ -1,4 +1,3 @@
-# 🔍 N3MO
 
 <!-- mcp-name: io.github.RajX-dev/n3mo -->
 <div align="center">
