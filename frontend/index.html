@@ -201,17 +201,22 @@
             <div class="docs-grid">
                 <div class="docs-content">
                     <div class="step-item">
-                        <h4>1. Setup Database & Crawler</h4>
+                        <h4>1. Installation</h4>
+                        <p>Install the N3MO CLI package directly from PyPI.</p>
+                        <pre><code>pip install n3mo</code></pre>
+                    </div>
+                    <div class="step-item">
+                        <h4>2. Setup Database & Crawler</h4>
                         <p>Spin up N3MO's PostgreSQL docker container and verify local variables in one command.</p>
                         <pre><code>n3mo setup</code></pre>
                     </div>
                     <div class="step-item">
-                        <h4>2. Index the Workspace</h4>
+                        <h4>3. Index the Workspace</h4>
                         <p>Index AST structures and build the relational call links inside Postgres.</p>
                         <pre><code>n3mo index</code></pre>
                     </div>
                     <div class="step-item">
-                        <h4>3. Run Impact Queries</h4>
+                        <h4>4. Run Impact Queries</h4>
                         <p>Trace the impact chain and launch the orbital interactive visualizer in your local browser.</p>
                         <pre><code>n3mo impact "symbol_name" --graph</code></pre>
                     </div>
