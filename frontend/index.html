@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N3MO — Structural Code Intelligence Engine</title>
+    <meta name="description" content="N3MO is a symbol-centric code intelligence engine. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesque:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header / Nav -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fa-solid fa-anchor logo-icon"></i>
+                <span class="logo-text">N3MO</span>
+            </div>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#docs">CLI & Docs</a>
+                <a href="#privacy">Privacy</a>
+            </nav>
+            <div class="nav-cta">
+                <a href="https://github.com/marketplace/new" class="btn btn-secondary">Get GitHub App</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-glow-1"></div>
+        <div class="hero-glow-2"></div>
+        
+        <div class="container hero-content">
+            <div class="badge">
+                <i class="fa-solid fa-bolt"></i> Symbol-Centric Code Analytics
+            </div>
+            <h1>Know exactly what breaks<br><span class="gradient-text">before it does</span></h1>
+            <p class="subtitle">N3MO maps your repository's ASTs, call graphs, and dependencies into a relational database to compute the transitive blast radius of any code change instantly.</p>
+            
+            <div class="hero-actions">
+                <a href="https://github.com/marketplace/new" class="btn btn-primary"><i class="fa-brands fa-github"></i> Install GitHub App</a>
+                <a href="#docs" class="btn btn-outline"><i class="fa-solid fa-terminal"></i> Try Local CLI</a>
+            </div>
+
+            <!-- Terminal Copy Widget -->
+            <div class="terminal-widget">
+                <div class="terminal-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="terminal-title">Quick Installation</span>
+                </div>
+                <div class="terminal-body">
+                    <span class="prompt">$</span> <code id="install-cmd">pip install n3mo</code>
+                    <button class="copy-btn" onclick="copyCommand()" aria-label="Copy Command">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualizer Showcase -->
+    <section class="showcase">
+        <div class="container">
+            <div class="showcase-card">
+                <div class="showcase-header">
+                    <h3>Interactive Dependency Visualizer</h3>
+                    <p>Observe your code dependencies stagger on concentric orbits. Highlight nodes to trace exact call paths and deep-link directly into your local IDE.</p>
+                </div>
+                <!-- CSS Orbit Mockup -->
+                <div class="orbit-visualizer">
+                    <div class="orbit-center">
+                        <span class="node-label">authenticate_user</span>
+                    </div>
+                    <div class="orbit ring-1">
+                        <div class="node n-1" style="--angle: 0deg;"><span class="label">login_endpoint</span></div>
+                        <div class="node n-2" style="--angle: 120deg;"><span class="label">refresh_token</span></div>
+                        <div class="node n-3" style="--angle: 240deg;"><span class="label">validate_session</span></div>
+                    </div>
+                    <div class="orbit ring-2">
+                        <div class="node n-4" style="--angle: 45deg;"><span class="label">POST /login</span></div>
+                        <div class="node n-5" style="--angle: 165deg;"><span class="label">admin_login</span></div>
+                        <div class="node n-6" style="--angle: 285deg;"><span class="label">require_auth</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Engineered for Structural Confidence</h2>
+            <p class="section-subtitle">Ditch simple text matchers. N3MO builds a relational knowledge graph of codebases to empower engineering teams.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-burst"></i></div>
+                    <h3>Transitive Blast Radius</h3>
+                    <p>Traces calls recursively to arbitrary depth, showing you direct and indirect downstream impacts of any refactor or deletion.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
+                    <h3>27 Languages Supported</h3>
+                    <p>Powered by Tree-sitter for error-tolerant AST parsing across Python, TypeScript, Go, Rust, Java, C/C++, C#, Swift, and more.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+                    <h3>Native MCP Server</h3>
+                    <p>Integrate N3MO directly into Cursor, Claude Desktop, or Windsurf. AI agents can query the codebase structure to refactor code without hallucinations.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-git-pull-request"></i></div>
+                    <h3>GitHub App Webhook</h3>
+                    <p>Enforce codebase size-aware checkpoints on every Pull Request, posting a comprehensive impact markdown report directly to PR comments in under 2 seconds.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="pricing-glow"></div>
+        <div class="container">
+            <h2 class="section-title">Plans & Pricing</h2>
+            <p class="section-subtitle">Scale N3MO's PR impact check capabilities dynamically to fit the size of your team's codebases.</p>
+            
+            <div class="pricing-grid">
+                <!-- Free Tier -->
+                <div class="price-card">
+                    <div class="price-header">
+                        <h4>Free Plan</h4>
+                        <div class="price-amount">$0<span>/month</span></div>
+                        <p>Perfect for open-source and small projects.</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> Up to <strong>15,000 LOC</strong> check limit</li>
+                        <li><i class="fa-solid fa-check"></i> Automated PR Webhook checks</li>
+                        <li><i class="fa-solid fa-check"></i> Concentric local visualizer</li>
+                        <li><i class="fa-solid fa-check"></i> Native MCP server tools</li>
+                    </ul>
+                    <a href="https://github.com/marketplace/new" class="btn btn-outline btn-full">Get Started</a>
+                </div>
+
+                <!-- Pro Tier -->
+                <div class="price-card featured">
+                    <div class="featured-badge"><i class="fa-solid fa-star"></i> Popular</div>
+                    <div class="price-header">
+                        <h4>Pro Plan</h4>
+                        <div class="price-amount">$19<span>/month</span></div>
+                        <p>Best for growing engineering teams.</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> Up to <strong>100,000 LOC</strong> check limit</li>
+                        <li><i class="fa-solid fa-check"></i> Everything in Free Plan</li>
+                        <li><i class="fa-solid fa-check"></i> High-priority index queues</li>
+                        <li><i class="fa-solid fa-check"></i> Email & community support</li>
+                    </ul>
+                    <a href="https://github.com/marketplace/new" class="btn btn-primary btn-full">Upgrade Now</a>
+                </div>
+
+                <!-- Enterprise Tier -->
+                <div class="price-card">
+                    <div class="price-header">
+                        <h4>Enterprise</h4>
+                        <div class="price-amount">Custom</div>
+                        <p>Designed for security-first organizations.</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> <strong>Unlimited</strong> repository LOC</li>
+                        <li><i class="fa-solid fa-check"></i> Self-hosted private Docker setup</li>
+                        <li><i class="fa-solid fa-check"></i> Offline signed JWT License Keys</li>
+                        <li><i class="fa-solid fa-check"></i> Dedicated support & Custom SLA</li>
+                    </ul>
+                    <a href="https://github.com/marketplace/new" class="btn btn-outline btn-full">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CLI Section -->
+    <section id="docs" class="docs-section">
+        <div class="container">
+            <h2 class="section-title">Local CLI Reference</h2>
+            <p class="section-subtitle">N3MO is fully functional locally right from your terminal.</p>
+            
+            <div class="docs-grid">
+                <div class="docs-content">
+                    <div class="step-item">
+                        <h4>1. Setup Database & Crawler</h4>
+                        <p>Spin up N3MO's PostgreSQL docker container and verify local variables in one command.</p>
+                        <pre><code>n3mo setup</code></pre>
+                    </div>
+                    <div class="step-item">
+                        <h4>2. Index the Workspace</h4>
+                        <p>Index AST structures and build the relational call links inside Postgres.</p>
+                        <pre><code>n3mo index</code></pre>
+                    </div>
+                    <div class="step-item">
+                        <h4>3. Run Impact Queries</h4>
+                        <p>Trace the impact chain and launch the orbital interactive visualizer in your local browser.</p>
+                        <pre><code>n3mo impact "symbol_name" --graph</code></pre>
+                    </div>
+                </div>
+                <div class="docs-code-preview">
+                    <!-- Static mockup code block preview -->
+                    <div class="code-terminal">
+                        <div class="code-header">
+                            <span>n3mo impact output</span>
+                        </div>
+                        <div class="code-body">
+                            <span class="c-blue">◈ IMPACT ANALYSIS</span><br>
+                            ──────────────────────────────────────────────────<br>
+                            Target: <span class="c-yellow">authenticate_user</span><br>
+                            ──────────────────────────────────────────────────<br>
+                            <br>
+                            <span class="c-green">◉ Direct Callers (3 symbols)</span><br>
+                            &nbsp;&nbsp;▸ login_endpoint &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;api/auth.py:12<br>
+                            &nbsp;&nbsp;▸ refresh_token &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;api/token.py:23<br>
+                            &nbsp;&nbsp;▸ validate_session &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;middleware/auth.py:89<br>
+                            <br>
+                            <span class="c-purple">◎ Ripple Effects (5 symbols)</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ POST /login &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;routes.py:67<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ admin_login &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;admin/views.py:34<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ require_auth &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;decorators.py:12<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ dashboard_view &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;views/dashboard.py:8<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ settings_view &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;views/settings.py:22<br>
+                            ──────────────────────────────────────────────────<br>
+                            Total impacted: 8 references │ depth &le; 3
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy Policy Section -->
+    <section id="privacy" class="privacy-section">
+        <div class="container">
+            <div class="privacy-card">
+                <h2>Privacy and Code Governance</h2>
+                <p>We believe code should be analyzed where it lives. N3MO is designed from the ground up to respect security boundaries and data governance rules:</p>
+                <div class="privacy-grid-details">
+                    <div class="p-item">
+                        <h5>Zero External API Calls</h5>
+                        <p>N3MO parses everything locally using Tree-sitter and executes SQL queries on your PostgreSQL instance. Your code never leaves your network bounds.</p>
+                    </div>
+                    <div class="p-item">
+                        <h5>Private Deployments</h5>
+                        <p>Enterprise users run N3MO inside isolated self-hosted Docker containers, authenticated locally via JWT keys. Perfect for high-compliance environments.</p>
+                    </div>
+                </div>
+                <div class="p-link-container">
+                    Read the full <a href="https://github.com/RajX-dev/N3MO/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">N3MO Privacy Policy <i class="fa-solid fa-arrow-up-right-from-square"></i></a>.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-left">
+                <p>&copy; 2026 N3MO Code Intelligence. Licensed under AGPL-3.0.</p>
+            </div>
+            <div class="footer-right">
+                <a href="https://github.com/RajX-dev/N3MO" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i> GitHub</a>
+                <a href="https://github.com/RajX-dev/N3MO/blob/main/LICENSE" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-scale-balanced"></i> License</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS script -->
+    <script src="script.js"></script>
+</body>
+</html>
