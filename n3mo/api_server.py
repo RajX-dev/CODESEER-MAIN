@@ -1,3 +1,18 @@
+# Copyright (C) 2026 Raj shekhar
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
@@ -5,12 +20,16 @@ from pydantic import BaseModel
 from n3mo.run_indexer import run_indexer_for_path
 from n3mo.database import get_connection, release_connection
 from n3mo.cli import get_code_context
+from n3mo.api.webhook_handler import router as webhook_router
 
 app = FastAPI(
     title="N3MO Code Intelligence API Server",
     description="REST endpoints for repository indexing and impact analysis",
     version="1.0.0"
 )
+
+app.include_router(webhook_router, prefix="/github")
+
 
 class IndexRequest(BaseModel):
     target_dir: str
