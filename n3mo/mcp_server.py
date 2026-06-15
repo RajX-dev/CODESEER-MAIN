@@ -273,6 +273,3 @@ async def main():
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
-else:
-    # Basic fallback module definition if imported
-    server = None
