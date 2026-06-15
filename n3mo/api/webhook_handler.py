@@ -221,7 +221,15 @@ def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int,
     markdown += "\n".join(details_sections)
     return markdown
 
-def get_github_app_installation_token(app_id: str, private_key_env: str, private_key_path: str, installation_id: str) -> str:
+def get_github_app_installation_token(
+    app_id: str | None,
+    private_key_env: str | None,
+    private_key_path: str | None,
+    installation_id: str | int | None
+) -> str:
+    if not app_id:
+        raise HTTPException(status_code=500, detail="Missing GITHUB_APP_ID")
+        
     try:
         import jwt
         import time
@@ -272,7 +280,12 @@ def get_github_app_installation_token(app_id: str, private_key_env: str, private
         logger.error(f"Failed to get App installation token: {e.code} - {err_msg}")
         raise HTTPException(status_code=e.code, detail=f"GitHub App Token Error: {err_msg}")
 
-def post_github_comment(repo_name: str, pr_number: int, body_markdown: str, installation_id: str = None):
+def post_github_comment(
+    repo_name: str,
+    pr_number: int,
+    body_markdown: str,
+    installation_id: str | int | None = None
+) -> dict:
     token = os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_PAT")
     
     app_id = os.getenv("GITHUB_APP_ID")
@@ -308,6 +321,7 @@ def post_github_comment(repo_name: str, pr_number: int, body_markdown: str, inst
             data = json.loads(resp.read().decode())
             logger.info(f"Successfully posted comment to PR #{pr_number}")
             return {"status": "posted", "comment_id": data.get("id")}
+
     except urllib.error.HTTPError as e:
         err_msg = e.read().decode()
         logger.error(f"Failed to post comment: {e.code} - {err_msg}")
@@ -349,12 +363,20 @@ async def github_webhook(
     return {"message": f"Event '{x_github_event}' ignored"}
 
 def handle_pull_request(payload: dict) -> dict:
-    pr_number = payload.get("number")
+    pr_number_raw = payload.get("number")
+    if pr_number_raw is None:
+        logger.error("Missing PR number in payload")
+        return {"status": "error", "message": "Missing pull request number."}
+    pr_number = int(pr_number_raw)
+    
     repo_name = payload.get("repository", {}).get("full_name")
     clone_url = payload.get("repository", {}).get("clone_url")
     base_sha = payload.get("pull_request", {}).get("base", {}).get("sha")
     head_sha = payload.get("pull_request", {}).get("head", {}).get("sha")
-    installation_id = payload.get("installation", {}).get("id")
+    
+    installation = payload.get("installation")
+    installation_id = installation.get("id") if isinstance(installation, dict) else None
+
 
     logger.info(f"Analyzing PR #{pr_number} for {repo_name} (from {base_sha} to {head_sha})")
 

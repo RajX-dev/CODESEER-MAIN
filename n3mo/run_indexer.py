@@ -33,6 +33,7 @@ from n3mo.crawler import crawl_directory
 from n3mo.symbol_extractor import extract_symbols
 
 # --- RESOLVER IMPORT ---
+from n3mo.resolve_imports import resolve_import_links
 from n3mo.resolve_calls import resolve_call_links
 
 # Create module-level logger
@@ -307,6 +308,8 @@ def run_indexer_for_path(target_dir):
                         logger.warning(f"Warning: failed to index {rpath}: {exc}")
 
         # --- RUN THE LINKER ---
+        logger.info("🔗 resolving imports...")
+        resolve_import_links(project_id)
         logger.info("🔗 resolving calls...")
         resolve_call_links(project_id)
 
