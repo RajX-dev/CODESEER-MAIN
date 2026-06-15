@@ -21,11 +21,13 @@ import subprocess
 import urllib.request
 import urllib.error
 import json
-from fastapi import APIRouter, FastAPI, Request, Header, HTTPException
+from fastapi import APIRouter, FastAPI, Request, Header, HTTPException, BackgroundTasks
 
 from n3mo.run_indexer import run_indexer_for_path
 from n3mo.database import get_connection, release_connection
 from n3mo.crawler import crawl_directory
+from n3mo.saas_db import upsert_user, upsert_organization, get_subscription
+from n3mo.license_validator import verify_license_key
 
 logger = logging.getLogger("n3mo.api")
 
@@ -334,6 +336,7 @@ def health_check():
 @router.post("/webhook")
 async def github_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     x_github_event: str = Header(None),
     x_hub_signature_256: str = Header(None)
 ):
@@ -358,7 +361,9 @@ async def github_webhook(
     if x_github_event == "pull_request":
         action = payload.get("action")
         if action in ["opened", "synchronize"]:
-            return handle_pull_request(payload)
+            # Run the checkout and analysis in a background task to respond instantly
+            background_tasks.add_task(handle_pull_request, payload)
+            return {"status": "accepted", "message": "PR impact analysis queued in background"}
 
     return {"message": f"Event '{x_github_event}' ignored"}
 
@@ -383,25 +388,63 @@ def handle_pull_request(payload: dict) -> dict:
     # 1. Checkout repository to get current files
     repo_dir = checkout_repo(clone_url, repo_name, head_sha)
 
-    # 2. Check 15k lines of code limit
-    total_lines = calculate_repo_loc(repo_dir)
-    is_licensed = bool(N3MO_LICENSE_KEY) or N3MO_SUBSCRIPTION_ACTIVE
+    # 2. Check limits based on self-hosted license or SaaS subscription
+    license_key = os.getenv("N3MO_LICENSE_KEY")
+    license_info = verify_license_key(license_key) if license_key else {"valid": False, "plan_type": "free", "max_loc": 15000}
     
-    if total_lines > 15000 and not is_licensed:
-        logger.warning(f"Free tier limit exceeded for {repo_name}: {total_lines} LOC")
+    max_loc = 15000
+    plan_name = "Free Tier"
+    is_licensed = False
+    
+    if license_info["valid"]:
+        is_licensed = True
+        max_loc = license_info["max_loc"]
+        plan_name = f"Self-Hosted {license_info['plan_type'].capitalize()}"
+    else:
+        # Fallback to SaaS database subscription lookup
+        repo_owner_name = payload.get("repository", {}).get("owner", {}).get("login")
+        repo_owner_id = payload.get("repository", {}).get("owner", {}).get("id")
+        repo_owner_type = payload.get("repository", {}).get("owner", {}).get("type") # "User" or "Organization"
+        
+        db_owner_id = None
+        if repo_owner_id:
+            if repo_owner_type == "User":
+                user_rec = upsert_user(github_id=repo_owner_id, username=repo_owner_name)
+                db_owner_id = user_rec.get("id")
+                owner_cat = "user"
+            elif repo_owner_type == "Organization":
+                org_rec = upsert_organization(github_id=repo_owner_id, name=repo_owner_name)
+                db_owner_id = org_rec.get("id")
+                owner_cat = "organization"
+                
+            if db_owner_id:
+                sub = get_subscription(db_owner_id, owner_cat)
+                if sub.get("status") == "active":
+                    plan_name = f"SaaS {sub.get('plan_type').capitalize()}"
+                    if sub.get("plan_type") == "enterprise":
+                        is_licensed = True
+                        max_loc = -1 # Unlimited
+                    elif sub.get("plan_type") == "pro":
+                        is_licensed = True
+                        max_loc = 100000 # 100k LOC for Pro
+    
+    total_lines = calculate_repo_loc(repo_dir)
+    # Check limit if max_loc is positive (not -1 for unlimited)
+    if max_loc > 0 and total_lines > max_loc:
+        logger.warning(f"LOC limit exceeded for {repo_name}: {total_lines} LOC (Limit: {max_loc} for {plan_name})")
         warning_msg = (
-            f"### ⚠️ N3MO Tier Limit Reached\n\n"
-            f"This repository contains **{total_lines:,} lines of code**, which exceeds N3MO's free tier limit of **15,000 lines**.\n\n"
+            f"### ⚠️ N3MO Tier Limit Reached ({plan_name})\n\n"
+            f"This repository contains **{total_lines:,} lines of code**, which exceeds N3MO's limit of **{max_loc:,} lines** for this plan.\n\n"
             f"To enable PR checks on this repository, please:\n"
-            f"1. **Upgrade your plan** on our SaaS platform to activate your subscription, or\n"
-            f"2. Configure your own **Self-Hosted N3MO edition** on private infrastructure.\n\n"
-            f"*Already upgraded? Configure the `N3MO_LICENSE_KEY` environment variable in your app deployment.*"
+            f"1. **Upgrade your plan** on our SaaS platform to activate a Pro or Enterprise subscription, or\n"
+            f"2. Configure your own **Self-Hosted N3MO Enterprise edition** on your private infrastructure.\n\n"
+            f"*Already upgraded? Configure your `N3MO_LICENSE_KEY` environment variable in your deployment.*"
         )
         post_github_comment(repo_name, pr_number, warning_msg, installation_id)
         return {
             "status": "limit_exceeded",
             "loc": total_lines,
-            "message": "Repository exceeds free tier limit of 15,000 lines."
+            "message": f"Repository exceeds plan limit of {max_loc} lines."
         }
 
     # 3. Get list of changed files

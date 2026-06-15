@@ -42,9 +42,10 @@ services:
       PGPASSWORD: n3mo
     entrypoint: >
       bash -c "
-      echo 'N3MO: Applying database schema...' &&
+      echo 'N3MO: Applying database schemas...' &&
       ls -l /schema &&
-      psql -h postgres -U n3mo -d n3mo -f /schema/schema.sql
+      psql -h postgres -U n3mo -d n3mo -f /schema/schema.sql &&
+      psql -h postgres -U n3mo -d n3mo -f /schema/saas_schema.sql
       "
 
 volumes:
