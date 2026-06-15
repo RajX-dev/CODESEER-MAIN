@@ -394,10 +394,8 @@ def handle_pull_request(payload: dict) -> dict:
     
     max_loc = 15000
     plan_name = "Free Tier"
-    is_licensed = False
     
     if license_info["valid"]:
-        is_licensed = True
         max_loc = license_info["max_loc"]
         plan_name = f"Self-Hosted {license_info['plan_type'].capitalize()}"
     else:
@@ -422,10 +420,8 @@ def handle_pull_request(payload: dict) -> dict:
                 if sub.get("status") == "active":
                     plan_name = f"SaaS {sub.get('plan_type').capitalize()}"
                     if sub.get("plan_type") == "enterprise":
-                        is_licensed = True
                         max_loc = -1 # Unlimited
                     elif sub.get("plan_type") == "pro":
-                        is_licensed = True
                         max_loc = 100000 # 100k LOC for Pro
     
     total_lines = calculate_repo_loc(repo_dir)
