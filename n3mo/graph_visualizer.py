@@ -358,6 +358,17 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
     .legend-item { display: flex; align-items: center; gap: 6px; }
     .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .copyright {
+      z-index: 10;
+      position: absolute;
+      left: 20px;
+      bottom: 5px;
+      font-size: 8px;
+      color: var(--muted);
+      opacity: 0.5;
+      font-family: sans-serif;
+      pointer-events: none;
+    }
 
     #sidebar {
       z-index: 12;
@@ -595,6 +606,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Indirect callers</div>
           <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Deep callers</div>
         </div>
+        <div class="copyright">&copy; 2026 Raj shekhar</div>
 
         <div class="depth-control">
           <label for="depth-slider">Visible depth</label>
