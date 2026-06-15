@@ -129,4 +129,4 @@ def verify_license_key(license_key_str: str) -> dict:
             "reason": f"Decoding error: {str(e)}"
         }
 
-print("License validator loaded successfully")
+print("License validator loaded successfully 200 ok")
