@@ -18,6 +18,7 @@ import logging
 import hmac
 import hashlib
 import subprocess
+import shutil
 import urllib.request
 import urllib.error
 import json
@@ -165,11 +166,11 @@ def merge_impacts(base_impacts: dict, head_impacts: dict) -> dict:
 
 def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int, total_lines: int) -> str:
     if not merged_impacts:
-        return "### ◈ N3MO Pull Request Impact Analysis\n\n✓ **Safe to change:** No active symbols were modified/affected in this Pull Request."
+        return f"### ◈ N3MO Pull Request Impact Analysis\n\n✓ **Safe to change:** No active symbols were modified/affected in this Pull Request."
 
     sorted_symbols = sorted(merged_impacts.items(), key=lambda x: (x[1]["status"], x[0]))
     
-    markdown = "### ◈ N3MO Pull Request Impact Analysis\n\n"
+    markdown = f"### ◈ N3MO Pull Request Impact Analysis\n\n"
     markdown += f"Analyzed {total_lines:,} lines of code. Below is the blast radius report for changes in PR #{pr_number}.\n\n"
     markdown += "| File | Symbol | Status | Direct Callers | Total Impacted | Details |\n"
     markdown += "| :--- | :--- | :--- | :---: | :---: | :--- |\n"
@@ -200,17 +201,17 @@ def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int,
         details += f"#### ◉ `{name}` ({status})\n"
         details += f"*   **Location:** `{file_path}:{line}`\n"
         if not callers:
-            details += "*   **Blast Radius:** 0 callers (safe to change, no dependencies found).\n"
+            details += f"*   **Blast Radius:** 0 callers (safe to change, no dependencies found).\n"
         else:
             direct_callers = [c for c in callers if c["depth"] == 1]
             ripple_callers = [c for c in callers if c["depth"] > 1]
             
             if direct_callers:
-                details += "*   **Direct Callers:**\n"
+                details += f"*   **Direct Callers:**\n"
                 for c in direct_callers:
                     details += f"    *   `{c['source']}` (`{c['file_path']}:{c['line']}`)\n"
             if ripple_callers:
-                details += "*   **Ripple Effects:**\n"
+                details += f"*   **Ripple Effects:**\n"
                 for c in sorted(ripple_callers, key=lambda x: x["depth"]):
                     indent = "  " * (c["depth"] - 1)
                     details += f"    *{indent}─▸ `{c['source']}` (`{c['file_path']}:{c['line']}`)\n"
