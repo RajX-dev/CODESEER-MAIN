@@ -26,3 +26,5 @@ tree-sitter-swift==0.7.3
 fastapi
 uvicorn
 mcp
+PyJWT
+cryptography

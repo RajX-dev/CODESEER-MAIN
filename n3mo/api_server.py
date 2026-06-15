@@ -21,6 +21,8 @@ from n3mo.run_indexer import run_indexer_for_path
 from n3mo.database import get_connection, release_connection
 from n3mo.cli import get_code_context
 from n3mo.api.webhook_handler import router as webhook_router
+from n3mo.api.auth import router as auth_router
+from n3mo.api.marketplace import router as marketplace_router
 
 app = FastAPI(
     title="N3MO Code Intelligence API Server",
@@ -29,6 +31,8 @@ app = FastAPI(
 )
 
 app.include_router(webhook_router, prefix="/github")
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])
 
 
 class IndexRequest(BaseModel):
