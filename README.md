@@ -135,40 +135,40 @@ graph TD
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant CLI
-    participant Docker
-    participant Parser
-    participant DB as PostgreSQL
-    participant MCP as MCP Server
-    participant API as REST API
-    participant Viz as Visualizer
+    participant User as User / CI
+    participant CLI as N3MO CLI
+    participant DB as PostgreSQL (Docker)
+    participant API as REST API / Webhook
+    participant Viz as Graph Visualizer
 
     rect rgb(26, 27, 46)
-    Note over User, DB: Indexing Flow
+    Note over User, DB: Indexing Flow (Local CLI)
     User->>CLI: n3mo index
-    CLI->>Docker: Start containers
-    Docker->>Parser: Mount repository
-    Parser->>Parser: Walk file tree (SHA-256 hash check)
-    Parser->>Parser: Parse AST (Tree-sitter, multiprocessing)
-    Parser->>DB: Batch insert symbols, calls, imports
-    DB-->>Parser: Confirm storage
+    CLI->>DB: Start PostgreSQL container (if not running)
+    CLI->>CLI: Walk file tree (SHA-256 hash checks)
+    CLI->>CLI: Parse AST (Tree-sitter, multiprocessing)
+    CLI->>DB: Batch insert symbols, calls, imports
+    CLI->>DB: Resolve imports & call links
+    DB-->>CLI: Success
+    CLI-->>User: Complete summary
     end
 
     rect rgb(26, 27, 46)
-    Note over User, Viz: Query Flow
-    User->>CLI: n3mo impact "function_name"
-    CLI->>DB: Recursive CTE traversal
-    DB-->>Viz: Return dependency tree
-    Viz-->>User: Interactive graph (HTML/JS)
+    Note over User, Viz: Query & Visualization Flow
+    User->>CLI: n3mo impact "symbol" --graph
+    CLI->>DB: Recursive CTE traversal (depth & file filters)
+    DB-->>CLI: Blast radius subgraph
+    CLI->>Viz: Generate orbital vis.js HTML
+    CLI->>User: Launch local web server & open browser
     end
 
     rect rgb(26, 27, 46)
-    Note over MCP, API: Integration Flow
-    MCP->>DB: AI agent queries blast radius
-    DB-->>MCP: Structured graph response
-    API->>DB: REST client queries impact
-    DB-->>API: JSON response
+    Note over API, DB: Webhook / API Flow
+    API->>API: Receive POST /index or GitHub webhook
+    API->>API: Clone/checkout repo
+    API->>API: Parse AST (Tree-sitter, multiprocessing)
+    API->>DB: Batch insert & resolve links
+    API-->>User: Response / PR comment
     end
 ```
 
@@ -378,7 +378,7 @@ Start the API server on your deployment instance, and configure the webhook payl
 Set the following environment variables on your server:
 *   `GITHUB_TOKEN` (or `GITHUB_PAT`): A GitHub personal access token with permissions to read repository contents and post comments.
 *   `GITHUB_WEBHOOK_SECRET`: Secure webhook verification token matching the GitHub App secret.
-*   *For GitHub App installations*: Configure `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` (or `GITHUB_APP_PRIVATE_KEY_PATH`) along with the installation ID to automatically authenticate as an App.
+*   *For GitHub App installations*: Configure `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` (or `GITHUB_APP_PRIVATE_KEY_PATH` / `GITHUB_PRIVATE_KEY_PATH`) along with the installation ID to automatically authenticate as an App.
 
 ---
 
