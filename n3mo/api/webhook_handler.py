@@ -396,7 +396,8 @@ def handle_pull_request(payload: dict) -> dict:
     plan_name = "Free Tier"
     
     if license_info["valid"]:
-        max_loc = int(license_info["max_loc"])
+        max_loc_val = license_info["max_loc"]
+        max_loc = max_loc_val if isinstance(max_loc_val, int) else 15000
         plan_name = f"Self-Hosted {str(license_info['plan_type']).capitalize()}"
     else:
         # Fallback to SaaS database subscription lookup
