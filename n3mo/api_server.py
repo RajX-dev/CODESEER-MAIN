@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import logging
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
@@ -23,6 +24,8 @@ from n3mo.cli import get_code_context
 from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(
     title="N3MO Code Intelligence API Server",
