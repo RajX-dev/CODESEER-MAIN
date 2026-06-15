@@ -254,7 +254,7 @@ def get_github_app_installation_token(
     payload = {
         "iat": now - 60,
         "exp": now + 600,
-        "iss": int(app_id)
+        "iss": str(app_id)
     }
     
     token_jwt = jwt.encode(payload, private_key, algorithm="RS256")
