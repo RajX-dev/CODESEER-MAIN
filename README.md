@@ -401,6 +401,15 @@ n3mo index
 - ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
 - ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
 
+### Git Hook Integration
+
+To automatically run incremental indexing on every commit, you can install the N3MO post-commit git hook:
+
+```bash
+# Install the post-commit hook in the current repository
+n3mo git-hook install
+```
+
 ### Blast radius analysis
 
 ```bash
