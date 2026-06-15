@@ -729,7 +729,7 @@ See [LICENSE](LICENSE) for full legal details.
 
 <div align="center">
 
-**⭐ Star this repo if you find it useful!**
+**⭐ Star this repo if you find it useful! thanks for visiting**
 
 *Building tools for understanding code at scale.*
 

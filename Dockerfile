@@ -2,6 +2,9 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# Install git (required to clone and diff repositories)
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
 # 1. Install Dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

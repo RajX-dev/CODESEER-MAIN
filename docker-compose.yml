@@ -26,10 +26,13 @@ services:
     command: uvicorn n3mo.api_server:app --host 0.0.0.0 --port 8000
     env_file:
       - .env
+    environment:
+      - POSTGRES_HOST=postgres
     ports:
       - "8000:8000"        # <--- VITAL: Keeps the Graph Server accessible!
     volumes:
       - ./n3mo:/app/n3mo:ro  # Maps the local source code
+      - ./secrets:/app/secrets:ro  # Maps the secrets folder
       # This defaults to scanning the current folder (.) unless you set TARGET_CODE_DIR
       - ${TARGET_CODE_DIR:-.}:/app/target_code
 

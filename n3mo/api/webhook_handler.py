@@ -254,7 +254,7 @@ def get_github_app_installation_token(
     payload = {
         "iat": now - 60,
         "exp": now + 600,
-        "iss": int(app_id)
+        "iss": str(app_id)
     }
     
     token_jwt = jwt.encode(payload, private_key, algorithm="RS256")
@@ -292,7 +292,7 @@ def post_github_comment(
     
     app_id = os.getenv("GITHUB_APP_ID")
     private_key_env = os.getenv("GITHUB_APP_PRIVATE_KEY")
-    private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH")
+    private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH") or os.getenv("GITHUB_PRIVATE_KEY_PATH")
     
     if not token and app_id and (private_key_env or private_key_path) and installation_id:
         logger.info("Authenticating as GitHub App...")
