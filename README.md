@@ -21,7 +21,7 @@
 
 **📜 Licensed under AGPL-3.0** — Free for personal/internal use • [Contact for commercial licensing](#-license)
 
-[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [Usage](#-usage) • [REST API](#-rest-api-server) • [GitHub Webhook](#-github-app-webhook-integration) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub App & Pricing](#-github-app-and-commercial-tiers) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
 
 </div>
 
@@ -116,7 +116,7 @@ graph TD
     H --> I
 
     F --> J["🤖 MCP Server"]
-    F --> K["🌐 REST API"]
+    F --> K["⚓ GitHub Webhook"]
 
     style A fill:#6c63ff,stroke:#4a3fbf,color:#fff
     style B fill:#7c74ff,stroke:#4a3fbf,color:#fff
@@ -138,7 +138,7 @@ sequenceDiagram
     participant User as User / CI
     participant CLI as N3MO CLI
     participant DB as PostgreSQL (Docker)
-    participant API as REST API / Webhook
+    participant API as GitHub Webhook API
     participant Viz as Graph Visualizer
 
     rect rgb(26, 27, 46)
@@ -163,12 +163,13 @@ sequenceDiagram
     end
 
     rect rgb(26, 27, 46)
-    Note over API, DB: Webhook / API Flow
-    API->>API: Receive POST /index or GitHub webhook
-    API->>API: Clone/checkout repo
-    API->>API: Parse AST (Tree-sitter, multiprocessing)
-    API->>DB: Batch insert & resolve links
-    API-->>User: Response / PR comment
+    Note over API, DB: Webhook / PR Flow
+    API->>API: Receive GitHub webhook on PR open/update
+    API->>API: Clone/checkout head & base commit
+    API->>API: Check LOC limit vs Subscription tier
+    API->>DB: Index changes (multiprocessing AST parsing)
+    API->>DB: Resolve call graph impacts
+    API-->>User: Post markdown report comment on PR
     end
 ```
 
@@ -257,7 +258,6 @@ erDiagram
 - **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
 - **Premium styling** — sleek orbital interface with `Bricolage Grotesque` and `Inter` typography
 - **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
-- **FastAPI REST layer** — `GET /impact/{symbol}`, `POST /index` for programmatic access
 - **Git hooks** — automatic re-indexing on every commit
 - **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
 
@@ -336,48 +336,31 @@ To use N3MO in Cursor:
 
 ---
 
-## 🌐 REST API Server
+## ⚓ GitHub App and Commercial Tiers
 
-N3MO includes a built-in FastAPI REST server that enables programmatic indexing, impact querying, and CI/CD integrations.
+N3MO is free for local CLI usage and single-developer MCP server integrations. For team collaboration and automated pull-request analysis, N3MO integrates as a **GitHub App webhook service** that comments impact reports directly on pull requests.
 
-### Start the API Server
-To launch the FastAPI server:
-```bash
-n3mo api --host 127.0.0.1 --port 8000
-```
+### 💰 Pricing & LOC Limits
 
-### API Endpoints
+We monetize based on the size of the repository (Lines of Code) analyzed in automated CI/CD runs:
 
-*   **`GET /health`**: Returns the health status of the API server.
-*   **`POST /index`**: Triggers indexing of a repository.
-    *   **Body**: `{"target_dir": "/absolute/path/to/repo"}`
-*   **`GET /impact/{symbol}`**: Runs blast radius analysis for a symbol and returns a JSON payload formatted with vis.js nodes and edges, along with statistics.
-    *   **Parameters**:
-        *   `depth` (optional): Traverse callers to a maximum depth (default: 3, max: 5).
-        *   `file` (optional): Filter the starting symbol by matching file name/path.
-        *   `project_path` (optional): Absolute path to the repository directory.
+| Tier | LOC Limit | Deployment | Description |
+| :--- | :--- | :--- | :--- |
+| **Free Plan** | Up to 15,000 LOC | SaaS Webhook | Ideal for open-source and small projects. |
+| **Pro Plan** | Up to 100,000 LOC | SaaS Webhook | For professional teams and medium codebases. |
+| **Enterprise Plan** | **Unlimited** | Self-Hosted / SaaS | Cryptographically signed offline license key (`N3MO_LICENSE_KEY`) for secure environments. |
 
----
+*If a repository exceeds your tier's LOC limit, N3MO will comment on the PR prompting the team to upgrade or configure an enterprise license key.*
 
-## ⚓ GitHub App Webhook Integration
+### ⚙️ GitHub Webhook Setup (SaaS & Self-Hosted)
 
-N3MO supports automatic pull request impact analysis. When set up as a GitHub webhook, it listens for PR events, checks out the base and head commits, indexes them, runs a delta blast radius report, and comments the detailed impact analysis directly on the pull request!
-
-### How it works
-The server exposes a GitHub App-compatible endpoint at `/github/webhook`.
-When a pull request is opened or updated, N3MO:
-1. Clones/fetches the repository.
-2. Checks out the `base` and `head` commits and runs the indexer.
-3. Computes the transitive blast radius for any added, modified, or deleted symbols.
-4. Generates a markdown report summarizing the direct callers and transitive ripple effects.
-5. Posts the report as a comment on the GitHub PR.
-
-### Setup and Configuration
 Start the API server on your deployment instance, and configure the webhook payload URL on your GitHub App or repository settings to point to `http://<your-server-ip>:8000/github/webhook`.
 
 Set the following environment variables on your server:
+
 *   `GITHUB_TOKEN` (or `GITHUB_PAT`): A GitHub personal access token with permissions to read repository contents and post comments.
 *   `GITHUB_WEBHOOK_SECRET`: Secure webhook verification token matching the GitHub App secret.
+*   `N3MO_LICENSE_KEY`: Set this to your cryptographically signed JWT license key (offered to Enterprise subscribers) to unlock unlimited LOC checks.
 *   *For GitHub App installations*: Configure `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` (or `GITHUB_APP_PRIVATE_KEY_PATH` / `GITHUB_PRIVATE_KEY_PATH`) along with the installation ID to automatically authenticate as an App.
 
 ---
@@ -486,7 +469,7 @@ graph LR
 | **Parser** | ![Tree-sitter](https://img.shields.io/badge/Tree--sitter-AST-orange) | Error-tolerant syntax analysis across 27 languages |
 | **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql) | Relational graph storage + recursive CTE queries |
 | **Runtime** | ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python) | Core logic + multiprocessing |
-| **API** | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) | REST layer for programmatic access |
+| **Webhook API** | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) | Webhook server for PR checks |
 | **Infrastructure** | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker) | Containerization |
 | **Visualization** | ![JavaScript](https://img.shields.io/badge/vis.js-Graph-yellow) | Interactive impact graph |
 | **AI Integration** | ![MCP](https://img.shields.io/badge/MCP-Server-purple) | Native tool for LLM agents |
@@ -595,7 +578,7 @@ All four development phases have been completed. N3MO is stable and actively mai
 | | Multi-language support (27 languages) | ✅ Complete |
 | **Phase 4 — Distribution** | | |
 | | MCP server (Cursor / Claude / Windsurf) | ✅ Complete |
-| | FastAPI REST layer | ✅ Complete |
+| | GitHub Webhook API | ✅ Complete |
 | | Real-time git-hook indexing | ✅ Complete |
 
 <details>
@@ -642,7 +625,7 @@ All four development phases have been completed. N3MO is stable and actively mai
 <summary><b>Phase 4: Distribution</b> ✅ Complete</summary>
 
 - [x] MCP server — N3MO as a tool for Cursor, Claude Code, Windsurf
-- [x] FastAPI REST layer — `GET /impact/{symbol}`, `POST /index`
+- [x] GitHub Webhook API — automated PR blast radius reports
 - [x] Real-time incremental indexing via git hooks
 
 </details>

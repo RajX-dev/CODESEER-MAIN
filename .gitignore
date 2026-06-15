@@ -47,3 +47,6 @@ mcp-publisher
 # Graph visualizer output
 impact_graph.html
 
+# Secrets and RSA keys
+secrets/
+
