@@ -128,3 +128,5 @@ def verify_license_key(license_key_str: str) -> dict:
             "owner": "Unknown",
             "reason": f"Decoding error: {str(e)}"
         }
+
+print("License validator loaded successfully")
