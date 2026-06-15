@@ -18,7 +18,7 @@ from n3mo.database import get_connection, release_connection
 
 logger = logging.getLogger("n3mo.saas_db")
 
-def upsert_user(github_id: int, username: str, email: str = None, avatar_url: str = None, github_token: str = None) -> dict:
+def upsert_user(github_id: int, username: str, email: str | None = None, avatar_url: str | None = None, github_token: str | None = None) -> dict:
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -54,7 +54,7 @@ def upsert_user(github_id: int, username: str, email: str = None, avatar_url: st
     finally:
         release_connection(conn)
 
-def upsert_organization(github_id: int, name: str, installation_id: int = None, owner_user_id: str = None) -> dict:
+def upsert_organization(github_id: int, name: str, installation_id: int | None = None, owner_user_id: str | None = None) -> dict:
     conn = get_connection()
     try:
         with conn.cursor() as cur:

@@ -396,8 +396,8 @@ def handle_pull_request(payload: dict) -> dict:
     plan_name = "Free Tier"
     
     if license_info["valid"]:
-        max_loc = license_info["max_loc"]
-        plan_name = f"Self-Hosted {license_info['plan_type'].capitalize()}"
+        max_loc = int(license_info["max_loc"])
+        plan_name = f"Self-Hosted {str(license_info['plan_type']).capitalize()}"
     else:
         # Fallback to SaaS database subscription lookup
         repo_owner_name = payload.get("repository", {}).get("owner", {}).get("login")
@@ -418,7 +418,8 @@ def handle_pull_request(payload: dict) -> dict:
             if db_owner_id:
                 sub = get_subscription(db_owner_id, owner_cat)
                 if sub.get("status") == "active":
-                    plan_name = f"SaaS {sub.get('plan_type').capitalize()}"
+                    plan_type_str = str(sub.get("plan_type") or "free")
+                    plan_name = f"SaaS {plan_type_str.capitalize()}"
                     if sub.get("plan_type") == "enterprise":
                         max_loc = -1 # Unlimited
                     elif sub.get("plan_type") == "pro":
