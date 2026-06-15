@@ -21,7 +21,7 @@
 
 **📜 Licensed under AGPL-3.0** — Free for personal/internal use • [Contact for commercial licensing](#-license)
 
-[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [Usage](#-usage) • [REST API](#-rest-api-server) • [GitHub Webhook](#-github-app-webhook-integration) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
 
 </div>
 
@@ -255,7 +255,7 @@ erDiagram
 
 - **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
 - **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
-- **Premium styling** — warm beige editorial layout with `Lora` serif and `Inter` sans-serif typography
+- **Premium styling** — sleek orbital interface with `Bricolage Grotesque` and `Inter` typography
 - **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
 - **FastAPI REST layer** — `GET /impact/{symbol}`, `POST /index` for programmatic access
 - **Git hooks** — automatic re-indexing on every commit
@@ -336,6 +336,52 @@ To use N3MO in Cursor:
 
 ---
 
+## 🌐 REST API Server
+
+N3MO includes a built-in FastAPI REST server that enables programmatic indexing, impact querying, and CI/CD integrations.
+
+### Start the API Server
+To launch the FastAPI server:
+```bash
+n3mo api --host 127.0.0.1 --port 8000
+```
+
+### API Endpoints
+
+*   **`GET /health`**: Returns the health status of the API server.
+*   **`POST /index`**: Triggers indexing of a repository.
+    *   **Body**: `{"target_dir": "/absolute/path/to/repo"}`
+*   **`GET /impact/{symbol}`**: Runs blast radius analysis for a symbol and returns a JSON payload formatted with vis.js nodes and edges, along with statistics.
+    *   **Parameters**:
+        *   `depth` (optional): Traverse callers to a maximum depth (default: 3, max: 5).
+        *   `file` (optional): Filter the starting symbol by matching file name/path.
+        *   `project_path` (optional): Absolute path to the repository directory.
+
+---
+
+## ⚓ GitHub App Webhook Integration
+
+N3MO supports automatic pull request impact analysis. When set up as a GitHub webhook, it listens for PR events, checks out the base and head commits, indexes them, runs a delta blast radius report, and comments the detailed impact analysis directly on the pull request!
+
+### How it works
+The server exposes a GitHub App-compatible endpoint at `/github/webhook`.
+When a pull request is opened or updated, N3MO:
+1. Clones/fetches the repository.
+2. Checks out the `base` and `head` commits and runs the indexer.
+3. Computes the transitive blast radius for any added, modified, or deleted symbols.
+4. Generates a markdown report summarizing the direct callers and transitive ripple effects.
+5. Posts the report as a comment on the GitHub PR.
+
+### Setup and Configuration
+Start the API server on your deployment instance, and configure the webhook payload URL on your GitHub App or repository settings to point to `http://<your-server-ip>:8000/github/webhook`.
+
+Set the following environment variables on your server:
+*   `GITHUB_TOKEN` (or `GITHUB_PAT`): A GitHub personal access token with permissions to read repository contents and post comments.
+*   `GITHUB_WEBHOOK_SECRET`: Secure webhook verification token matching the GitHub App secret.
+*   *For GitHub App installations*: Configure `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` (or `GITHUB_APP_PRIVATE_KEY_PATH`) along with the installation ID to automatically authenticate as an App.
+
+---
+
 ## 💻 Usage
 
 ### Index a repository
@@ -354,6 +400,15 @@ n3mo index
 - ❌ Dependencies (`node_modules/`, `site-packages/`)
 - ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
 - ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
+
+### Git Hook Integration
+
+To automatically run incremental indexing on every commit, you can install the N3MO post-commit git hook:
+
+```bash
+# Install the post-commit hook in the current repository
+n3mo git-hook install
+```
 
 ### Blast radius analysis
 
