@@ -13,11 +13,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-
-
-##tested the github app
-
 from setuptools import setup, find_packages
 
 with open("requirements.txt") as f:
@@ -28,7 +23,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="n3mo",
-    version="1.2.1",
+    version="1.2.2",
     description="N3MO: The Impact Tracker",
     long_description=long_description,
     long_description_content_type="text/markdown",
