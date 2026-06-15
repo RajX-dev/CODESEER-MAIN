@@ -10,5 +10,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN pip install -e .
 
-# Default command (keeps container running if needed)
-CMD ["tail", "-f", "/dev/null"]
+# Run the FastAPI server using Uvicorn
+CMD ["uvicorn", "n3mo.api_server:app", "--host", "0.0.0.0", "--port", "8000"]
