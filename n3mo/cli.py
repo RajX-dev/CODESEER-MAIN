@@ -16,7 +16,6 @@
 import sys
 import os
 import argparse
-import json
 from n3mo.database import get_connection
 from n3mo.graph_visualizer import generate_solar_graph_html
 
