@@ -15,6 +15,10 @@
 
 import os
 import logging
+import threading
+import time
+import math
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # --- DATABASE IMPORTS ---
@@ -63,6 +67,146 @@ def setup_logging(target_dir):
     console_formatter = logging.Formatter("%(message)s")
     console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
+
+class SolarSystemAnimation:
+    def __init__(self, message="Indexing repository..."):
+        self.message = message
+        self.running = False
+        self.thread = None
+        self.height = 13
+        self.width = 50
+        self.buffered_logs = []
+        self._lock = threading.Lock()
+        
+    def start(self):
+        self.running = True
+        try:
+            sys.stdout.write("\033[?25l") # Hide cursor
+            sys.stdout.flush()
+        except Exception:
+            pass
+        self.thread = threading.Thread(target=self._animate, daemon=True)
+        self.thread.start()
+        
+    def stop(self):
+        if self.running:
+            self.running = False
+            if self.thread:
+                self.thread.join()
+            self._clear_animation()
+            try:
+                sys.stdout.write("\033[?25h") # Show cursor
+                sys.stdout.flush()
+            except Exception:
+                pass
+            
+            # Print any logs that were buffered
+            with self._lock:
+                for log_msg in self.buffered_logs:
+                    sys.stdout.write(log_msg + "\n")
+                self.buffered_logs.clear()
+                
+    def add_log(self, msg):
+        with self._lock:
+            if self.running:
+                self.buffered_logs.append(msg)
+            else:
+                sys.stdout.write(msg + "\n")
+
+    def _clear_animation(self):
+        lines_to_clear = self.height + 2
+        try:
+            sys.stdout.write("\r" + "\033[A" * lines_to_clear + "\033[J")
+            sys.stdout.flush()
+        except Exception:
+            pass
+
+    def _animate(self):
+        # Initial space allocation
+        try:
+            sys.stdout.write("\n" * (self.height + 2))
+            sys.stdout.flush()
+        except Exception:
+            pass
+        
+        angle = 0.0
+        cx, cy = self.width // 2, self.height // 2
+        
+        C_SUN = "\033[38;2;255;189;46m"
+        C_MERCURY = "\033[38;2;170;170;170m"
+        C_VENUS = "\033[38;2;255;223;128m"
+        C_EARTH = "\033[38;2;88;166;255m"
+        C_MARS = "\033[38;2;255;85;85m"
+        C_JUPITER = "\033[38;2;240;196;140m"
+        C_SATURN = "\033[38;2;218;165;32m"
+        C_ORBIT = "\033[38;2;45;45;45m"
+        R_RESET = "\033[0m"
+        
+        planets = [
+            (".", 1.8, 1.8, C_MERCURY),
+            ("o", 3.0, 1.3, C_VENUS),
+            ("O", 4.5, 0.9, C_EARTH),
+            ("x", 6.0, 0.7, C_MARS),
+            ("@", 7.8, 0.4, C_JUPITER),
+            ("⊚", 9.8, 0.2, C_SATURN)
+        ]
+        
+        x_scale = 2.0
+        
+        while self.running:
+            grid = [[" " for _ in range(self.width)] for _ in range(self.height)]
+            
+            # Draw orbits
+            for _, r, _, _ in planets:
+                for a_deg in range(0, 360, 5):
+                    rad = math.radians(a_deg)
+                    ox = int(cx + r * math.cos(rad) * x_scale)
+                    oy = int(cy + r * math.sin(rad))
+                    if 0 <= ox < self.width and 0 <= oy < self.height:
+                        grid[oy][ox] = C_ORBIT + "." + R_RESET
+
+            # Draw Sun
+            if 0 <= cx < self.width and 0 <= cy < self.height:
+                grid[cy][cx] = C_SUN + "☼" + R_RESET
+                
+            # Draw planets
+            for char, r, speed, color in planets:
+                theta = angle * speed
+                px = int(cx + r * math.cos(theta) * x_scale)
+                py = int(cy + r * math.sin(theta))
+                if 0 <= px < self.width and 0 <= py < self.height:
+                    grid[py][px] = color + char + R_RESET
+                    
+            output = []
+            output.append(f"\033[36m  ◈ {self.message}\033[0m")
+            for row in grid:
+                output.append("   " + "".join(row))
+            dots = "." * (int(angle * 2.5) % 4)
+            output.append(f"   \033[90mCalculating orbits{dots:<3}\033[0m")
+            
+            frame_str = "\n".join(output) + "\n"
+            
+            try:
+                # Move cursor and print frame in a single write operation to prevent tearing/flickering
+                sys.stdout.write("\033[A" * (self.height + 2) + frame_str)
+                sys.stdout.flush()
+            except Exception:
+                pass
+            
+            angle += 0.05
+            time.sleep(0.04)
+
+class BufferHandler(logging.Handler):
+    def __init__(self, animation):
+        super().__init__()
+        self.animation = animation
+        
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            self.animation.add_log(msg)
+        except Exception:
+            self.handleError(record)
 
 def parse_single_file(file_path):
     """
@@ -201,6 +345,39 @@ def calculate_sha256(file_path):
 
 def run_indexer_for_path(target_dir):
     setup_logging(target_dir)
+
+    # Configure Windows Console / UTF-8
+    if os.name == 'nt':
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            hStdOut = kernel32.GetStdHandle(-11) # STD_OUTPUT_HANDLE
+            mode = ctypes.c_ulong()
+            if kernel32.GetConsoleMode(hStdOut, ctypes.byref(mode)):
+                kernel32.SetConsoleMode(hStdOut, mode.value | 0x0004)
+        except Exception:
+            pass
+
+    if sys.stdout.encoding != 'utf-8':
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
+    # Redirect console handlers to buffer during animation
+    console_handlers = []
+    for h in list(logger.handlers):
+        if isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler):
+            console_handlers.append(h)
+            logger.removeHandler(h)
+            
+    animation = SolarSystemAnimation("Indexing repository...")
+    buffer_handler = BufferHandler(animation)
+    buffer_handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(buffer_handler)
+    
+    animation.start()
+
     try:
         logger.info(f"\n🌊 N3MO: Starting Analysis on {target_dir}...")
 
@@ -333,6 +510,23 @@ def run_indexer_for_path(target_dir):
         )
         return True, summary
     finally:
+        # Stop animation and restore original console logger handlers
+        if 'animation' in locals():
+            try:
+                animation.stop()
+            except Exception:
+                pass
+        if 'buffer_handler' in locals():
+            try:
+                logger.removeHandler(buffer_handler)
+            except Exception:
+                pass
+        if 'console_handlers' in locals():
+            for h in console_handlers:
+                try:
+                    logger.addHandler(h)
+                except Exception:
+                    pass
         # Shutdown logger handlers to release file handles (important on Windows)
         for handler in list(logger.handlers):
             try:

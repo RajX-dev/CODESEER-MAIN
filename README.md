@@ -336,23 +336,23 @@ To use N3MO in Cursor:
 
 ---
 
-## ⚓ GitHub App and Commercial Tiers
+## ⚓ GitHub App Integration (Self-Hosted)
 
-N3MO is free for local CLI usage and single-developer MCP server integrations. For team collaboration and automated pull-request analysis, N3MO integrates as a **GitHub App webhook service** that comments impact reports directly on pull requests.
+N3MO is designed to run entirely locally on your machine for maximum privacy, security, and speed. There is **no hosted SaaS/cloud server**; all code parsing, graph queries, and visualizations are processed offline in your local PostgreSQL container.
 
-### 💰 Pricing & LOC Limits
+If you wish to use N3MO for team collaboration and automated pull-request analysis in your CI/CD pipeline, you can self-host the N3MO webhook API server and configure a custom GitHub App.
 
-We monetize based on the size of the repository (Lines of Code) analyzed in automated CI/CD runs:
+### 💰 Pricing & Licensing
 
-| Tier | LOC Limit | Deployment | Description |
-| :--- | :--- | :--- | :--- |
-| **Free Plan** | Up to 15,000 LOC | SaaS Webhook | Ideal for open-source and small projects. |
-| **Pro Plan** | Up to 100,000 LOC | SaaS Webhook | For professional teams and medium codebases. |
-| **Enterprise Plan** | **Unlimited** | Self-Hosted / SaaS | Cryptographically signed offline license key (`N3MO_LICENSE_KEY`) for secure environments. |
+N3MO is fully open-source and free under the **AGPL-3.0 License** for local usage, single-developer MCP integrations, and self-hosted team setups. 
 
-*If a repository exceeds your tier's LOC limit, N3MO will comment on the PR prompting the team to upgrade or configure an enterprise license key.*
+*   **100% Free & Local:** Run CLI queries, local MCP integrations, and the visualizer with zero limits.
+*   **Self-Hosted Webhook:** Set up your own instance of the webhook API server to run automated PR reviews for your team.
+*   **Offline Enterprise Licensing:** For large-scale organization deployments needing offline JWT license verification (`N3MO_LICENSE_KEY`) or commercial licensing terms, please reach out to the author.
 
-### ⚙️ GitHub Webhook Setup (SaaS & Self-Hosted)
+*If a self-hosted repository check exceeds the configured limits in your licensing setup, N3MO will comment on the PR prompting the team to update or configure an enterprise license key.*
+
+### ⚙️ GitHub Webhook Setup (Self-Hosted)
 
 Start the API server on your deployment instance, and configure the webhook payload URL on your GitHub App or repository settings to point to `http://<your-server-ip>:8000/github/webhook`.
 
