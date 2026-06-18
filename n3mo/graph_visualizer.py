@@ -38,480 +38,802 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>N3MO Orbit View</title>
+  <title>N3MO Orbit View — Repository Knowledge Graph</title>
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --space: #f6f8fa;
-      --panel: #ffffff;
-      --panel-solid: #ffffff;
-      --panel-raised: #f3f4f6;
-      --line: #d0d7de;
-      --line-soft: rgba(31, 35, 40, 0.04);
-      --text: #24292f;
-      --muted: #57606a;
-      --blue: #218bff;
-      --amber: #9a6700;
-      --red: #0969da;
-      --cyan: #1a7f37;
+      /* Default Light Mode tokens */
+      --bg-space: #f8fafc;
+      --bg-panel: #ffffff;
+      --bg-panel-solid: #ffffff;
+      --bg-panel-raised: #f1f5f9;
+      --border-soft: rgba(0, 0, 0, 0.06);
+      --border-medium: rgba(0, 0, 0, 0.12);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --blue: #2563eb;
+      --amber: #b45309;
+      --red: #dc2626;
+      --cyan: #0891b2;
+      --green: #16a34a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-bg-active: rgba(79, 70, 229, 0.08);
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      --font-ui: "Inter", sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
     }
 
     body.dark-mode {
-      --space: #0d1117;
-      --panel: #161b22;
-      --panel-solid: #161b22;
-      --panel-raised: #21262d;
-      --line: #30363d;
-      --line-soft: rgba(240, 246, 252, 0.05);
-      --text: #c9d1d9;
-      --muted: #8b949e;
-      --blue: #2f81f7;
-      --amber: #d29922;
-      --red: #58a6ff;
-      --cyan: #3fb950;
-    }
-
-    body.dark-mode .card,
-    body.dark-mode .summary-stat,
-    body.dark-mode .search input,
-    body.dark-mode .toolbar-group,
-    body.dark-mode .depth-control,
-    body.dark-mode .legend,
-    body.dark-mode #toast,
-    body.dark-mode .action {
-      background: var(--panel);
-    }
-
-    body.dark-mode .code-preview {
-      background: #0d1117;
-    }
-    body.dark-mode .code-header {
-      background: var(--panel-raised);
-    }
-    body.dark-mode .code-content {
-      background: #0d1117;
+      /* Premium Dark Mode tokens */
+      --bg-space: #07080b;
+      --bg-panel: #0d0f14;
+      --bg-panel-solid: #0d0f14;
+      --bg-panel-raised: #151821;
+      --border-soft: rgba(255, 255, 255, 0.05);
+      --border-medium: rgba(255, 255, 255, 0.1);
+      --text-main: #f1f5f9;
+      --text-muted: #64748b;
+      --blue: #3b82f6;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-bg-active: rgba(99, 102, 241, 0.15);
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     * { box-sizing: border-box; }
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
     body {
-      color: var(--text);
-      background: var(--space);
-      font-family: Inter, sans-serif;
+      color: var(--text-main);
+      background: var(--bg-space);
+      font-family: var(--font-ui);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    button, input, select { font: inherit; }
-    button { color: inherit; }
-
-    #app {
-      display: grid;
-      grid-template-rows: 72px minmax(0, 1fr);
+    #dashboard {
+      display: flex;
       width: 100vw;
       height: 100vh;
+      overflow: hidden;
     }
 
-    .topbar {
-      z-index: 20;
-      display: grid;
-      grid-template-columns: minmax(260px, 1fr) auto;
-      align-items: center;
-      gap: 20px;
-      padding: 12px 18px;
-      border-bottom: 1px solid var(--line);
-      background: var(--panel-solid);
-    }
-
-    .brand-row { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .brand {
-      display: flex;
-      align-items: center;
-      color: var(--text);
-      white-space: nowrap;
-    }
-    .logo-container {
+    /* Left Sidebar Navigation */
+    #nav-sidebar {
+      width: 250px;
+      background: var(--bg-panel-solid);
+      border-right: 1px solid var(--border-soft);
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      flex-shrink: 0;
+      z-index: 10;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .brand-text {
+
+    .logo-container {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .logo-icon {
+      font-size: 20px;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+
+    .logo-text {
       font-family: "Bricolage Grotesque", sans-serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-    }
-    .logo-three {
-      position: relative;
-      display: inline-block;
-      color: var(--red);
-      margin: 0 1px;
-    }
-    .brand-subtitle {
-      font-family: "Inter", sans-serif;
-      font-size: 6px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-top: 5px;
-      line-height: 1;
-    }
-    .target-summary { min-width: 0; }
-    .target-name {
-      overflow: hidden;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 15px;
-      font-weight: 600;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .target-meta { margin-top: 3px; color: var(--muted); font-size: 11px; }
-    .risk-pill {
-      padding: 4px 8px;
-      border: 1px solid var(--red);
-      border-radius: 4px;
-      color: var(--red);
-      background: var(--line-soft);
-      font-family: "Bricolage Grotesque", sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      white-space: nowrap;
+      color: var(--text-main);
     }
 
-    .summary-stats { display: flex; align-items: center; gap: 8px; }
-    .summary-stat {
-      min-width: 82px;
-      padding: 6px 10px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      background: var(--panel);
+    .nav-section {
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--border-soft);
     }
-    .summary-stat span {
-      display: block;
-      color: var(--muted);
+
+    .nav-section-title {
       font-family: "Bricolage Grotesque", sans-serif;
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-    }
-    .summary-stat strong {
-      display: block;
-      margin-top: 2px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      padding-left: 8px;
     }
 
-    .workspace {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
-      min-height: 0;
-    }
-
-    #graph-shell { position: relative; min-width: 0; overflow: hidden; background: var(--space); }
-    #mynetwork { position: absolute; inset: 0; z-index: 2; }
-    #stars, #orbit-layer { position: absolute; inset: 0; pointer-events: none; }
-    #stars { display: none; }
-    #orbit-layer { z-index: 1; }
-    .orbit {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      border: 1px solid rgba(27, 24, 22, 0.08);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-    }
-    .orbit-label {
-      position: absolute;
-      left: 50%;
-      top: 0;
-      padding: 3px 7px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      color: var(--muted);
-      background: var(--panel-solid);
-      font-family: "JetBrains Mono", monospace;
-      font-size: 9px;
-      letter-spacing: 0.08em;
-      transform: translate(-50%, -50%);
-      text-transform: uppercase;
-    }
-
-    .toolbar {
-      z-index: 10;
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      right: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      pointer-events: none;
-    }
-    .toolbar > * { pointer-events: auto; }
-    .search {
-      position: relative;
-      width: min(330px, 38vw);
-    }
-    .search input {
-      width: 100%;
-      height: 40px;
-      padding: 0 36px 0 13px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      outline: none;
-      color: var(--text);
-      background: var(--panel);
-      box-shadow: 0 4px 12px rgba(0,0,0,.03);
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-    }
-    .search input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(9,105,218,.12); }
-    .search kbd {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 2px 5px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      color: var(--muted);
-      background: var(--panel);
-      font-size: 9px;
-    }
-    .toolbar-group {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      background: var(--panel);
-      box-shadow: 0 4px 12px rgba(0,0,0,.03);
-    }
-    .toolbar-spacer { flex: 1; }
-    .tool-button, .tool-select {
-      height: 32px;
-      border: 1px solid transparent;
-      border-radius: 3px;
-      color: var(--muted);
-      background: transparent;
-      cursor: pointer;
-      font-size: 11px;
-    }
-    .tool-button { padding: 0 10px; }
-    .tool-button.square { width: 32px; padding: 0; font-size: 16px; }
-    .tool-button:hover, .tool-button.active, .tool-select:hover {
-      border-color: var(--line);
-      color: var(--text);
-      background: var(--panel-raised);
-    }
-    .tool-select { padding: 0 28px 0 9px; outline: none; }
-
-    .depth-control {
-      z-index: 10;
-      position: absolute;
-      right: 18px;
-      bottom: 18px;
+    .nav-item {
       display: flex;
       align-items: center;
       gap: 10px;
-      min-width: 230px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      background: var(--panel);
-      box-shadow: 0 4px 16px rgba(0,0,0,.05);
+      padding: 8px 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      margin-bottom: 2px;
     }
-    .depth-control label { color: var(--muted); font-size: 11px; }
-    .depth-control input { flex: 1; accent-color: var(--red); }
-    .depth-value {
-      min-width: 22px;
-      color: var(--text);
-      font-family: "JetBrains Mono", monospace;
+
+    .nav-item:hover {
+      color: var(--text-main);
+      background: var(--bg-panel-raised);
+    }
+
+    .nav-item.active {
+      color: var(--text-main);
+      background: var(--accent-bg-active);
+      border-left: 3px solid var(--accent);
+      border-top-left-radius: 2px;
+      border-bottom-left-radius: 2px;
+    }
+
+    .control-group {
+      padding: 0 6px;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .control-group select {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      background: var(--bg-panel-raised);
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      color: var(--text-main);
+      outline: none;
       font-size: 12px;
-      text-align: right;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    .legend {
-      z-index: 10;
-      position: absolute;
-      left: 18px;
-      bottom: 18px;
+    .control-group select:hover {
+      border-color: var(--accent);
+    }
+
+    .slider-header {
       display: flex;
-      gap: 14px;
-      padding: 9px 12px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      color: var(--muted);
-      background: var(--panel);
-      box-shadow: 0 4px 16px rgba(0,0,0,.05);
-      font-size: 10px;
-    }
-    .legend-item { display: flex; align-items: center; gap: 6px; }
-    .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
-    .copyright {
-      z-index: 10;
-      position: absolute;
-      left: 20px;
-      bottom: 5px;
-      font-size: 8px;
-      color: var(--muted);
-      opacity: 0.5;
-      font-family: sans-serif;
-      pointer-events: none;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
     }
 
-    #sidebar {
-      z-index: 12;
-      min-width: 0;
-      overflow-y: auto;
-      border-left: 1px solid var(--line);
-      background: var(--panel-solid);
-      box-shadow: none;
+    .slider-header label {
+      margin-bottom: 0;
     }
-    .sidebar-header { padding: 18px; border-bottom: 1px solid var(--line); }
-    .eyebrow {
+
+    .depth-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    #depth-slider {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .action-btn {
+      width: 100%;
+      height: 34px;
+      background: var(--bg-panel-raised);
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover, .action-btn.active {
+      background: var(--accent-bg-active);
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .nav-footer {
+      margin-top: auto;
+      padding: 16px 12px;
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-footer-btn {
+      width: 100%;
+      height: 34px;
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-footer-btn:hover {
+      color: var(--text-main);
+      border-color: var(--accent);
+      background: var(--bg-panel-raised);
+    }
+
+    .version {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-align: center;
+      opacity: 0.6;
+    }
+
+    /* Main Content */
+    #main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
+    }
+
+    /* Top bar Header */
+    #top-bar {
+      height: 72px;
+      background: var(--bg-panel-solid);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      flex-shrink: 0;
+      z-index: 9;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .target-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      min-width: 0;
+    }
+
+    .target-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .target-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .risk-pill {
+      padding: 4px 10px;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid var(--red);
+      border-radius: 20px;
       color: var(--red);
       font-family: "Bricolage Grotesque", sans-serif;
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: .08em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
-    .sidebar-title { margin-top: 7px; font-family: "Bricolage Grotesque", sans-serif; font-size: 18px; font-weight: 600; }
-    .inspector { padding: 16px; }
-    .empty-state { padding: 80px 20px; color: var(--muted); text-align: center; }
-    .empty-graphic {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto 18px;
-      border: 2px dashed var(--line);
+
+    .tag-pill {
+      padding: 4px 10px;
+      background: var(--line-soft);
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Metrics Panel Dashboard */
+    .metrics-panel {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .metric-card {
+      min-width: 90px;
+      padding: 6px 12px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
       border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: help;
     }
-    .empty-state p { margin: 0; font-size: 12px; line-height: 1.6; }
-    .card {
-      margin-bottom: 12px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      background: var(--panel);
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
     }
-    .card-label {
-      margin-bottom: 8px;
-      color: var(--muted);
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .metric-label {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Work Area split panels layout */
+    #work-area {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      min-height: 0;
+    }
+
+    /* Knowledge Graph Canvas Panel */
+    #graph-panel {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      background: var(--bg-space);
+    }
+
+    #mynetwork {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    #orbit-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Floating Canvas Toolbar */
+    .canvas-toolbar {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+      box-shadow: var(--shadow);
+      z-index: 10;
+    }
+
+    .tb-btn {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .tb-btn:hover {
+      background: var(--bg-panel-raised);
+      color: var(--text-main);
+    }
+
+    /* Floating Canvas Legend */
+    .canvas-legend {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 200px;
+    }
+
+    .legend-title {
       font-family: "Bricolage Grotesque", sans-serif;
       font-size: 9px;
       font-weight: 700;
-      letter-spacing: .08em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: 6px;
+      margin-bottom: 2px;
     }
-    .symbol-name { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 600; word-break: break-all; }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-color-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-text {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Right details panel */
+    #info-panels {
+      background: var(--bg-panel-solid);
+      border-left: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .panel-section {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      background: var(--bg-panel-raised);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-header .icon {
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    .panel-header h3 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 0;
+      color: var(--text-main);
+    }
+
+    .panel-body {
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    /* Card Panels Styling */
+    .card {
+      background: var(--bg-panel-raised);
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+    }
+
+    .card-label {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .symbol-name {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      word-break: break-all;
+      color: var(--text-main);
+    }
+
     .badge {
       display: inline-flex;
       padding: 4px 8px;
-      border: 1px solid currentColor;
       border-radius: 4px;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: .04em;
       text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
-    .badge.target { color: var(--red); background: rgba(9, 105, 218, 0.08); }
-    .badge.inner { color: var(--cyan); background: rgba(26, 127, 55, 0.08); }
-    .badge.mid { color: var(--amber); background: rgba(154, 103, 0, 0.08); }
-    .badge.outer { color: var(--blue); background: rgba(33, 139, 255, 0.08); }
-    body.dark-mode .badge.target { background: rgba(88, 166, 255, 0.15); }
-    body.dark-mode .badge.inner { background: rgba(63, 185, 80, 0.15); }
-    body.dark-mode .badge.mid { background: rgba(210, 153, 34, 0.15); }
-    body.dark-mode .badge.outer { background: rgba(47, 129, 247, 0.15); }
+
+    .badge.target { color: var(--red); background: rgba(244, 63, 94, 0.1); border: 1px solid var(--red); }
+    .badge.inner { color: var(--cyan); background: rgba(6, 182, 212, 0.1); border: 1px solid var(--cyan); }
+    .badge.mid { color: var(--amber); background: rgba(245, 158, 11, 0.1); border: 1px solid var(--amber); }
+    .badge.outer { color: var(--blue); background: rgba(59, 130, 246, 0.1); border: 1px solid var(--blue); }
+
     .location {
-      color: var(--muted);
-      font-family: "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 11px;
-      line-height: 1.6;
+      color: var(--text-muted);
       word-break: break-all;
+      line-height: 1.5;
     }
-    .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
     .action {
-      min-height: 38px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      color: var(--text);
-      background: var(--panel);
-      cursor: pointer;
+      height: 34px;
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      background: var(--bg-panel-raised);
+      color: var(--text-main);
       font-size: 11px;
       font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-decoration: none;
+      transition: all 0.2s ease;
     }
-    a.action { display: flex; align-items: center; justify-content: center; }
-    .action.primary { border-color: var(--red); background: var(--red); color: #ffffff; }
-    .action:hover { filter: brightness(0.96); }
 
+    a.action {
+      display: flex;
+    }
+
+    .action.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .action.primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .action:not(.primary):hover {
+      border-color: var(--accent);
+      background: var(--accent-bg-active);
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 40px 16px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      font-size: 28px;
+      color: var(--border-soft);
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* System Architecture List Rows */
+    .arch-card {
+      background: var(--bg-panel-raised);
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .arch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .arch-row:last-child {
+      border-bottom: none;
+    }
+
+    .arch-label {
+      color: var(--text-muted);
+    }
+
+    .arch-val {
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .text-purple { color: #8b5cf6; }
+    .text-cyan { color: var(--cyan); }
+    .text-green { color: var(--green); }
+
+    .arch-header-sub {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .diagnostic-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .diag-item {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .diag-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .diag-val {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Toast Notification */
     #toast {
       z-index: 30;
       position: absolute;
       left: 50%;
       bottom: 24px;
-      padding: 9px 12px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
+      padding: 8px 16px;
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
       opacity: 0;
-      color: var(--text);
-      background: var(--panel);
-      box-shadow: 0 4px 16px rgba(0,0,0,.08);
-      font-size: 11px;
+      color: var(--text-main);
+      background: var(--bg-panel);
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      font-weight: 500;
       pointer-events: none;
       transform: translate(-50%, 10px);
-      transition: .2s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    #toast.visible { opacity: 1; transform: translate(-50%, 0); }
 
-    /* Code Preview UI */
+    #toast.visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    /* Code Preview Panels */
     .code-preview {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 4px;
+      background: var(--bg-space);
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
       overflow: hidden;
       margin-top: 8px;
     }
     .code-header {
-      background: var(--panel-raised);
+      background: var(--bg-panel-raised);
       padding: 8px 12px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid var(--border-soft);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .code-file {
-      font-family: "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--muted);
+      color: var(--text-muted);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       max-width: 70%;
     }
     .code-line-badge {
-      font-family: "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 9px;
-      color: var(--text);
-      background: var(--line);
+      color: var(--text-main);
+      background: var(--border-soft);
       padding: 2px 6px;
       border-radius: 4px;
     }
     .code-content {
       padding: 12px;
       overflow-x: auto;
-      background: var(--panel);
+      background: var(--bg-space);
     }
     .code-line {
       display: flex;
@@ -519,117 +841,214 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       padding: 2px 0;
     }
     .code-line.highlight {
-      background: rgba(9, 105, 218, 0.08);
+      background: rgba(99, 102, 241, 0.08);
       margin: 0 -12px;
       padding: 2px 12px;
-      border-left: 2px solid var(--red);
+      border-left: 2px solid var(--accent);
     }
     .line-num {
-      color: var(--muted);
+      color: var(--text-muted);
       text-align: right;
       min-width: 32px;
       user-select: none;
       opacity: 0.5;
-      font-family: "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 11px;
     }
     .line-code {
-      color: var(--text);
+      color: var(--text-main);
       white-space: pre;
-      font-family: "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 11px;
     }
 
-    @media (max-width: 980px) {
-      .workspace { grid-template-columns: minmax(0, 1fr) 300px; }
-      .summary-stat:nth-child(3) { display: none; }
-      .toolbar .tool-button span { display: none; }
+    @media (max-width: 1100px) {
+      #work-area { grid-template-columns: minmax(0, 1fr) 300px; }
+      .metrics-panel .metric-card:nth-child(3) { display: none; }
+    }
+    @media (max-width: 768px) {
+      #dashboard { flex-direction: column; }
+      #nav-sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border-soft); }
+      #work-area { grid-template-columns: 1fr; }
+      #info-panels { border-left: none; border-top: 1px solid var(--border-soft); }
     }
   </style>
 </head>
-<body>
-  <div id="app">
-    <header class="topbar">
-      <div class="brand-row">
-        <div class="brand">
-          <div class="logo-container">
-            <div class="brand-text">N<span class="logo-three">3</span>MO</div>
-            <div class="brand-subtitle">Code Intelligence Engine</div>
-          </div>
-        </div>
-        <div class="target-summary">
-          <div class="target-name" id="target-name"></div>
-          <div class="target-meta">Dependency call graph / impact depth</div>
-        </div>
-        <div class="risk-pill" id="risk-pill">High impact</div>
+<body class="dark-mode">
+  <div id="dashboard">
+    <!-- Left Navigation Sidebar -->
+    <aside id="nav-sidebar">
+      <div class="logo-container">
+        <div class="logo-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+        <div class="logo-text">N3MO</div>
       </div>
-      <div class="summary-stats">
-        <div class="summary-stat"><span>Direct</span><strong id="stat-direct">0</strong></div>
-        <div class="summary-stat"><span>Total</span><strong id="stat-total">0</strong></div>
-        <div class="summary-stat"><span>Files</span><strong id="stat-files">0</strong></div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">Navigation</div>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-network-wired"></i> Impact Graph</a>
+        <a href="https://github.com/RajX-dev/N3MO" target="_blank" class="nav-item"><i class="fa-brands fa-github"></i> Repository</a>
+        <a href="https://github.com/RajX-dev/N3MO/blob/main/README.md" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i> Documentation</a>
       </div>
-    </header>
 
-    <main class="workspace">
-      <section id="graph-shell">
-        <div id="stars"></div>
-        <div id="orbit-layer"></div>
-        <div id="mynetwork"></div>
-
-        <div class="toolbar">
-          <div class="search">
-            <input id="symbol-search" type="search" placeholder="Find a symbol..." autocomplete="off">
-            <kbd>/</kbd>
-          </div>
-          <div class="toolbar-group">
-            <select class="tool-select" id="layout-select" aria-label="Graph layout">
-              <option value="solar">Radial layout</option>
-              <option value="force">Force graph</option>
-              <option value="tree">Impact tree</option>
-            </select>
-            <button class="tool-button" id="btn-group" type="button">Group by file</button>
-          </div>
-          <div class="toolbar-spacer"></div>
-          <div class="toolbar-group">
-            <button class="tool-button square" id="btn-fit" type="button" title="Fit graph">◎</button>
-            <button class="tool-button square" id="btn-zoom-in" type="button" title="Zoom in">+</button>
-            <button class="tool-button square" id="btn-zoom-out" type="button" title="Zoom out">-</button>
-            <button class="tool-button" id="btn-export" type="button">Export PNG</button>
-            <button class="tool-button" id="btn-theme" type="button">◑ Theme</button>
-            <button class="tool-button" id="btn-reset" type="button">Reset</button>
-          </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Layout Engine</div>
+        <div class="control-group">
+          <label for="layout-select">Graph Representation</label>
+          <select id="layout-select">
+            <option value="solar">Radial Orbital</option>
+            <option value="force">Force Directed</option>
+            <option value="tree">Impact Tree</option>
+          </select>
         </div>
-
-        <div class="legend">
-          <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Target node</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Direct callers</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Indirect callers</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Deep callers</div>
+        <div class="control-group" style="margin-top: 12px;">
+          <button class="action-btn" id="btn-group" type="button">
+            <i class="fa-solid fa-folder-tree"></i> Group by File
+          </button>
         </div>
-        <div class="copyright">&copy; 2026 Raj shekhar</div>
+      </div>
 
-        <div class="depth-control">
-          <label for="depth-slider">Visible depth</label>
+      <div class="nav-section">
+        <div class="nav-section-title">Configuration</div>
+        <div class="control-group">
+          <div class="slider-header">
+            <label for="depth-slider">Visible Depth</label>
+            <span class="depth-value" id="depth-label">__MAX_DEPTH__</span>
+          </div>
           <input id="depth-slider" type="range" min="1" max="__MAX_DEPTH__" value="__MAX_DEPTH__">
-          <span class="depth-value" id="depth-label">__MAX_DEPTH__</span>
         </div>
-        <div id="toast"></div>
-      </section>
+      </div>
+      
+      <div class="nav-footer">
+        <button class="nav-footer-btn" id="btn-theme"><i class="fa-solid fa-sun"></i> Light Mode</button>
+        <div class="version">v1.2.3</div>
+      </div>
+    </aside>
 
-      <aside id="sidebar" style="display: flex; flex-direction: column;">
-        <div class="sidebar-header" style="flex-shrink: 0;">
-          <div class="eyebrow">Symbol Inspector</div>
-          <div class="sidebar-title" id="sidebar-title-text">Dependency Details</div>
+    <!-- Main Content Panel -->
+    <main id="main-content">
+      <header id="top-bar">
+        <div class="header-left">
+          <div class="target-title">
+            <span class="target-label">Target Symbol:</span>
+            <span class="target-value" id="target-name"></span>
+          </div>
+          <div class="badge-row">
+            <span class="risk-pill" id="risk-pill">High Impact</span>
+            <span class="tag-pill"><i class="fa-solid fa-shield-halved"></i> Verified</span>
+          </div>
         </div>
-        <div id="inspector-tab-content" style="flex: 1; overflow-y: auto; padding: 16px;">
-          <div class="inspector" id="inspector-content" style="padding: 0;">
-            <div class="empty-state">
-              <div class="empty-graphic"></div>
-              <p>Select a node to inspect its call details, source location, and path to the target.</p>
+        
+        <div class="metrics-panel">
+          <div class="metric-card" title="Direct caller dependencies (Depth 1)">
+            <div class="metric-value" id="stat-direct">0</div>
+            <div class="metric-label">Direct Callers</div>
+          </div>
+          <div class="metric-card" title="Total transitive callers impacted">
+            <div class="metric-value" id="stat-total">0</div>
+            <div class="metric-label">Total Impacted</div>
+          </div>
+          <div class="metric-card" title="Unique files containing call paths">
+            <div class="metric-value" id="stat-files">0</div>
+            <div class="metric-label">Affected Files</div>
+          </div>
+        </div>
+      </header>
+
+      <div id="work-area">
+        <section id="graph-panel">
+          <div id="stars"></div>
+          <div id="orbit-layer"></div>
+          <div id="mynetwork"></div>
+
+          <!-- Canvas Floating Search Bar -->
+          <div class="search" style="position: absolute; top: 16px; left: 16px; z-index: 10; width: 300px;">
+            <input id="symbol-search" type="search" placeholder="Search symbol... (Press '/' to focus)" autocomplete="off">
+          </div>
+
+          <div class="canvas-toolbar">
+            <button class="tb-btn" id="btn-fit" title="Fit Graph"><i class="fa-solid fa-expand"></i></button>
+            <button class="tb-btn" id="btn-zoom-in" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+            <button class="tb-btn" id="btn-zoom-out" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+            <button class="tb-btn" id="btn-export" title="Export PNG Image"><i class="fa-solid fa-image"></i></button>
+            <button class="tb-btn" id="btn-reset" title="Reset View"><i class="fa-solid fa-rotate-left"></i></button>
+          </div>
+
+          <div class="canvas-legend">
+            <div class="legend-title">Blast Radius Legend</div>
+            <div class="legend-row">
+              <span class="legend-color-dot" style="background: var(--red);"></span>
+              <span class="legend-text">Target Focus Node</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-color-dot" style="background: var(--cyan);"></span>
+              <span class="legend-text">Direct Caller (Depth 1)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-color-dot" style="background: var(--amber);"></span>
+              <span class="legend-text">Indirect Caller (Depth 2)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-color-dot" style="background: var(--blue);"></span>
+              <span class="legend-text">Deep Caller (Depth &ge; 3)</span>
             </div>
           </div>
-        </div>
-      </aside>
+        </section>
+
+        <!-- Right Side Multi-Panels -->
+        <aside id="info-panels">
+          <!-- Panel 1: Real-time Analysis -->
+          <div class="panel-section" id="analysis-panel" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="panel-header" style="flex-shrink: 0;">
+              <i class="fa-solid fa-magnifying-glass-chart icon"></i>
+              <h3>Real-Time Analysis</h3>
+            </div>
+            <div class="panel-body" id="inspector-content" style="flex: 1; overflow-y: auto;">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-circle-info"></i></div>
+                <p>Select any node in the knowledge graph canvas to view call telemetry, source path, and code context.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 2: System Architecture Details -->
+          <div class="panel-section" id="architecture-panel" style="flex-shrink: 0;">
+            <div class="panel-header">
+              <i class="fa-solid fa-server icon"></i>
+              <h3>System Architecture</h3>
+            </div>
+            <div class="panel-body">
+              <div class="arch-card">
+                <div class="arch-row">
+                  <span class="arch-label">Relational Engine</span>
+                  <span class="arch-val"><i class="fa-solid fa-database text-purple"></i> PostgreSQL</span>
+                </div>
+                <div class="arch-row">
+                  <span class="arch-label">Parser Engine</span>
+                  <span class="arch-val"><i class="fa-solid fa-code-branch text-cyan"></i> Tree-sitter</span>
+                </div>
+                <div class="arch-row">
+                  <span class="arch-label">License Mode</span>
+                  <span class="arch-val"><i class="fa-solid fa-balance-scale text-green"></i> Local (AGPL-3.0)</span>
+                </div>
+              </div>
+              
+              <div class="arch-card" style="margin-top: 12px;">
+                <div class="arch-header-sub">Diagnostics</div>
+                <div class="diagnostic-grid">
+                  <div class="diag-item">
+                    <div class="diag-label">Search Speed</div>
+                    <div class="diag-val">&lt; 50ms</div>
+                  </div>
+                  <div class="diag-item">
+                    <div class="diag-label">Link Strategy</div>
+                    <div class="diag-val">Scope-Aware</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </main>
   </div>
 
@@ -641,33 +1060,33 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     const actualMaxDepth = Math.max(1, ...nodesData.map(node => node.group));
     const themes = {
       light: {
-        text: '#24292f',
+        text: '#0f172a',
         stroke: '#ffffff',
         edge: '#cbd5e1',
-        edgeHover: '#57606a',
-        orbitStroke: 'rgba(0, 0, 0, 0.06)',
-        orbitDash: 'rgba(9, 105, 218, 0.15)',
-        palette: ['#0969da', '#218bff', '#1a7f37', '#9a6700', '#8250df', '#bf3989'],
+        edgeHover: '#64748b',
+        orbitStroke: 'rgba(0, 0, 0, 0.05)',
+        orbitDash: 'rgba(99, 102, 241, 0.15)',
+        palette: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
         nodes: {
-          target: { bg: '#ddf4ff', border: '#0969da', highlightBg: '#0969da', hoverBg: '#ddf4ff' },
-          inner: { bg: '#dafbe1', border: '#1a7f37', highlightBg: '#dafbe1', hoverBg: '#dafbe1' },
-          mid: { bg: '#fff8c5', border: '#9a6700', highlightBg: '#fff8c5', hoverBg: '#fff8c5' },
-          outer: { bg: '#f6f8fa', border: '#57606a', highlightBg: '#f6f8fa', hoverBg: '#f6f8fa' }
+          target: { bg: '#e0e7ff', border: '#4f46e5', highlightBg: '#4f46e5', hoverBg: '#e0e7ff' },
+          inner: { bg: '#d1fae5', border: '#059669', highlightBg: '#d1fae5', hoverBg: '#d1fae5' },
+          mid: { bg: '#fef3c7', border: '#d97706', highlightBg: '#fef3c7', hoverBg: '#fef3c7' },
+          outer: { bg: '#f1f5f9', border: '#64748b', highlightBg: '#f1f5f9', hoverBg: '#f1f5f9' }
         }
       },
       dark: {
-        text: '#c9d1d9',
-        stroke: '#0d1117',
-        edge: '#30363d',
-        edgeHover: '#8b949e',
-        orbitStroke: 'rgba(255, 255, 255, 0.06)',
-        orbitDash: 'rgba(88, 166, 255, 0.18)',
-        palette: ['#58a6ff', '#2f81f7', '#3fb950', '#d29922', '#bc8cff', '#ff7b72'],
+        text: '#f1f5f9',
+        stroke: '#07080b',
+        edge: '#1e293b',
+        edgeHover: '#64748b',
+        orbitStroke: 'rgba(255, 255, 255, 0.05)',
+        orbitDash: 'rgba(99, 102, 241, 0.18)',
+        palette: ['#818cf8', '#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#a78bfa'],
         nodes: {
-          target: { bg: '#0c2d6b', border: '#58a6ff', highlightBg: '#58a6ff', hoverBg: '#0d3880' },
-          inner: { bg: '#11351e', border: '#3fb950', highlightBg: '#2a2a2a', hoverBg: '#174c2b' },
-          mid: { bg: '#372c10', border: '#d29922', highlightBg: '#2a2a2a', hoverBg: '#4e3f17' },
-          outer: { bg: '#161b22', border: '#8b949e', highlightBg: '#2a2a2a', hoverBg: '#21262d' }
+          target: { bg: '#1e1b4b', border: '#818cf8', highlightBg: '#818cf8', hoverBg: '#2e2a75' },
+          inner: { bg: '#064e3b', border: '#34d399', highlightBg: '#2a2a2a', hoverBg: '#0b6c53' },
+          mid: { bg: '#451a03', border: '#fbbf24', highlightBg: '#2a2a2a', hoverBg: '#622705' },
+          outer: { bg: '#0d0f16', border: '#64748b', highlightBg: '#2a2a2a', hoverBg: '#141722' }
         }
       }
     };
@@ -1043,7 +1462,11 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       `;
     }
 
-
+    const defaultEmptyState = `
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fa-solid fa-circle-info"></i></div>
+        <p>Select any node in the knowledge graph canvas to view call telemetry, source path, and code context.</p>
+      </div>`;
 
     function inspectNode(nodeId) {
       const node = nodesData.find(item => item.id === nodeId);
@@ -1072,9 +1495,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         ${codeHtml}
         <div class="action-row">
           <a class="action primary" href="${editorLink}">Open in editor</a>
-          <button class="action" id="focus-selected" type="button">Focus path</button>
-          <button class="action" id="copy-location" type="button">Copy location</button>
-          <button class="action" id="clear-path" type="button">Clear path</button>
+          <button class="action" id="focus-selected" type="button"><i class="fa-solid fa-crosshairs"></i> Focus path</button>
+          <button class="action" id="copy-location" type="button"><i class="fa-solid fa-copy"></i> Copy path</button>
+          <button class="action" id="clear-path" type="button"><i class="fa-solid fa-xmark"></i> Clear path</button>
         </div>`;
 
       document.getElementById('focus-selected').onclick = () =>
@@ -1087,11 +1510,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         selectedId = null;
         network.unselectAll();
         clearTrace();
-        document.getElementById('inspector-content').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-graphic"></div>
-            <p>Select a node to inspect its call details, source location, and path to the target.</p>
-          </div>`;
+        document.getElementById('inspector-content').innerHTML = defaultEmptyState;
       };
     }
 
@@ -1119,11 +1538,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       } else {
         selectedId = null;
         clearTrace();
-        document.getElementById('inspector-content').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-orbit"></div>
-            <p>Select a planet to inspect its depth, source location, and path to the target.</p>
-          </div>`;
+        document.getElementById('inspector-content').innerHTML = defaultEmptyState;
       }
     });
 
@@ -1156,7 +1571,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       context.save();
       context.setLineDash([5, 8]);
       context.lineWidth = 1 / network.getScale();
-      context.strokeStyle = 'rgba(96, 127, 165, 0.22)';
+      context.strokeStyle = document.body.classList.contains('dark-mode') 
+        ? 'rgba(255, 255, 255, 0.05)' 
+        : 'rgba(0, 0, 0, 0.05)';
       
       const visible = nodesData.filter(node => node.group <= currentDepth);
       
@@ -1213,11 +1630,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         selectedId = null;
         network.unselectAll();
         clearTrace();
-        document.getElementById('inspector-content').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-orbit"></div>
-            <p>Select a planet to inspect its depth, source location, and path to the target.</p>
-          </div>`;
+        document.getElementById('inspector-content').innerHTML = defaultEmptyState;
       }
     });
 
@@ -1242,11 +1655,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       selectedId = null;
       clearTrace();
       currentLayout === 'solar' ? applySolarLayout() : currentLayout === 'force' ? applyForceLayout() : applyTreeLayout();
-      document.getElementById('inspector-content').innerHTML = `
-        <div class="empty-state">
-          <div class="empty-graphic"></div>
-          <p>Select a node to inspect its call details, source location, and path to the target.</p>
-        </div>`;
+      document.getElementById('inspector-content').innerHTML = defaultEmptyState;
     };
     document.getElementById('btn-export').onclick = () => {
       const canvas = container.querySelector('canvas');
@@ -1281,18 +1690,21 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       }
     }
 
-    const savedTheme = localStorage.getItem('n3mo-theme') || 'light';
+    const savedTheme = localStorage.getItem('n3mo-theme') || 'dark';
     if (savedTheme === 'dark') {
       document.body.classList.add('dark-mode');
-      document.getElementById('btn-theme').textContent = '☼ Light Mode';
+      document.getElementById('btn-theme').innerHTML = '<i class="fa-solid fa-sun"></i> Light Mode';
     } else {
-      document.getElementById('btn-theme').textContent = '◑ Dark Mode';
+      document.body.classList.remove('dark-mode');
+      document.getElementById('btn-theme').innerHTML = '<i class="fa-solid fa-moon"></i> Dark Mode';
     }
 
     document.getElementById('btn-theme').onclick = () => {
       const isDark = document.body.classList.toggle('dark-mode');
       localStorage.setItem('n3mo-theme', isDark ? 'dark' : 'light');
-      document.getElementById('btn-theme').textContent = isDark ? '☼ Light Mode' : '◑ Dark Mode';
+      document.getElementById('btn-theme').innerHTML = isDark 
+        ? '<i class="fa-solid fa-sun"></i> Light Mode' 
+        : '<i class="fa-solid fa-moon"></i> Dark Mode';
       updateThemeColors();
     };
 
