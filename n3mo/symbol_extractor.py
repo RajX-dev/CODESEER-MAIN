@@ -61,11 +61,19 @@ load_lang("vba", "tree_sitter_vba", "language")
 def get_parser(lang_name):
     if lang_name not in LANGUAGES:
         return None
-    return Parser(LANGUAGES[lang_name])
+    try:
+        return Parser(LANGUAGES[lang_name])
+    except ValueError:
+        return None
 
 # Main Python parser instance (preserved for legacy Python extractors)
 PY_LANGUAGE = LANGUAGES.get("python")
-parser = Parser(PY_LANGUAGE) if PY_LANGUAGE else None
+try:
+    parser = Parser(PY_LANGUAGE) if PY_LANGUAGE else None
+except ValueError:
+    parser = None
+
+
 
 # --- ADAPTER (Connects your logic to the runner) ---
 def extract_symbols(file_path):
