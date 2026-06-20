@@ -34,6 +34,6 @@ jobs:
           PR_NUMBER: ${{ github.event.client_payload.pr_number }}
           USER_ID: ${{ github.event.client_payload.user_id }}
           INSTALLATION_ID: ${{ github.event.client_payload.installation_id }}
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
         run: |
           python -m n3mo.worker
