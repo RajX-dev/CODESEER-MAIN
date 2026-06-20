@@ -19,9 +19,9 @@
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
-**📜 Licensed under AGPL-3.0** — Free for personal/internal use • [Contact for commercial licensing](#-license)
+**📜 Licensed under AGPL-3.0** — Open source & free for local/internal usage • [Contact for commercial licensing](#-license)
 
-[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub App & Pricing](#-github-app-and-commercial-tiers) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub App & Pricing](#-github-app-integration-self-hosted) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
 
 </div>
 
@@ -257,7 +257,7 @@ erDiagram
 - **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
 - **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
 - **Premium styling** — sleek interactive dashboard landing page UI and graph visualizer styled with `Bricolage Grotesque`, `Inter`, and `JetBrains Mono` typography
-- **SKILL.md profile** — system instructions to configure Claude as an impact-aware coding agent
+- **[SKILL.md](SKILL.md) profile** — system instructions to configure Claude as an impact-aware coding agent
 - **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
 - **Git hooks** — automatic re-indexing on every commit
 - **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
