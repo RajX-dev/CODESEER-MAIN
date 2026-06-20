@@ -15,12 +15,53 @@
 
 import logging
 from n3mo.database import get_connection, release_connection
+from cryptography.fernet import Fernet
+import os
+from pathlib import Path
 
 logger = logging.getLogger("n3mo.saas_db")
+
+def _get_encryption_key() -> bytes:
+    key_env = os.getenv("N3MO_DB_ENCRYPTION_KEY")
+    if key_env:
+        return key_env.encode()
+        
+    key_path = Path("secrets/db_encryption.key")
+    if key_path.exists():
+        with open(key_path, "rb") as f:
+            return f.read().strip()
+            
+    # Generate and save a new key
+    key_path.parent.mkdir(parents=True, exist_ok=True)
+    new_key = Fernet.generate_key()
+    with open(key_path, "wb") as f:
+        f.write(new_key)
+    return new_key
+
+def _encrypt_token(token: str | None) -> str | None:
+    if not token:
+        return None
+    try:
+        f = Fernet(_get_encryption_key())
+        return f.encrypt(token.encode()).decode()
+    except Exception as e:
+        logger.error(f"Encryption failed: {e}")
+        return token
+
+def _decrypt_token(encrypted_token: str | None) -> str | None:
+    if not encrypted_token:
+        return None
+    try:
+        f = Fernet(_get_encryption_key())
+        return f.decrypt(encrypted_token.encode()).decode()
+    except Exception:
+        # Fallback for old plain-text tokens
+        return encrypted_token
 
 def upsert_user(github_id: int, username: str, email: str | None = None, avatar_url: str | None = None, github_token: str | None = None) -> dict:
     conn = get_connection()
     try:
+        encrypted_token = _encrypt_token(github_token)
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -33,7 +74,7 @@ def upsert_user(github_id: int, username: str, email: str | None = None, avatar_
                               github_token = COALESCE(EXCLUDED.github_token, users.github_token)
                 RETURNING id, github_id, username, email, avatar_url, created_at
                 """,
-                (github_id, username, email, avatar_url, github_token)
+                (github_id, username, email, avatar_url, encrypted_token)
             )
             row = cur.fetchone()
             conn.commit()
