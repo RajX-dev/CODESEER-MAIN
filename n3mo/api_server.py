@@ -51,6 +51,7 @@ class IndexRequest(BaseModel):
 
 @app.get("/health")
 def health():
+    # Minor Change: Adding a detailed health check comment for testing
     return {"status": "healthy", "service": "n3mo-api"}
 
 @app.post("/index")
