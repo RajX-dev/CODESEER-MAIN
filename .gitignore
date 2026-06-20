@@ -50,3 +50,5 @@ impact_graph.html
 # Secrets and RSA keys
 secrets/
 
+# Local scripts
+demo_enterprise.py
