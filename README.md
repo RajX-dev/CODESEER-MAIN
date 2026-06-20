@@ -342,6 +342,9 @@ To use N3MO in Cursor:
 
 ## ⚓ GitHub App Integration (Self-Hosted)
 
+> [!NOTE]
+> **Hosted Service Status**: The hosted public SaaS/webhook service is currently offline. Please run N3MO **locally** using the CLI or native MCP server integrations. You can also self-host the webhook API server for team PR integrations following the steps below.
+
 N3MO is designed to run entirely locally on your machine for maximum privacy, security, and speed. There is **no hosted SaaS/cloud server**; all code parsing, graph queries, and visualizations are processed offline in your local PostgreSQL container.
 
 If you wish to use N3MO for team collaboration and automated pull-request analysis in your CI/CD pipeline, you can self-host the N3MO webhook API server and configure a custom GitHub App.
