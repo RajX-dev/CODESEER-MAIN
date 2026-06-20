@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import secrets
 from n3mo.database import get_connection, release_connection
 from cryptography.fernet import Fernet
 import os
@@ -60,21 +61,22 @@ def _decrypt_token(encrypted_token: str | None) -> str | None:
 
 def upsert_user(github_id: int, username: str, email: str | None = None, avatar_url: str | None = None, github_token: str | None = None) -> dict:
     conn = get_connection()
+    webhook_secret = f"n3mo_wh_{secrets.token_urlsafe(24)}"
     try:
         encrypted_token = _encrypt_token(github_token)
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO users (github_id, username, email, avatar_url, github_token)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO users (github_id, username, email, avatar_url, github_token, webhook_secret)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (github_id) 
                 DO UPDATE SET username = EXCLUDED.username, 
                               email = COALESCE(EXCLUDED.email, users.email),
                               avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
                               github_token = COALESCE(EXCLUDED.github_token, users.github_token)
-                RETURNING id, github_id, username, email, avatar_url, created_at
+                RETURNING id, github_id, username, email, avatar_url, created_at, webhook_secret
                 """,
-                (github_id, username, email, avatar_url, encrypted_token)
+                (github_id, username, email, avatar_url, encrypted_token, webhook_secret)
             )
             row = cur.fetchone()
             conn.commit()
@@ -85,7 +87,8 @@ def upsert_user(github_id: int, username: str, email: str | None = None, avatar_
                     "username": row[2],
                     "email": row[3],
                     "avatar_url": row[4],
-                    "created_at": row[5]
+                    "created_at": row[5],
+                    "webhook_secret": row[6]
                 }
             return {}
     except Exception as e:
@@ -271,6 +274,64 @@ def get_license_key_by_hash(key_hash: str) -> dict:
             return {}
     except Exception as e:
         logger.error(f"Failed to fetch license key: {e}")
+        return {}
+    finally:
+        release_connection(conn)
+
+def get_user_by_id(user_id: str) -> dict:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, github_id, username, email, avatar_url, webhook_secret
+                FROM users 
+                WHERE id = %s
+                """,
+                (user_id,)
+            )
+            row = cur.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "github_id": row[1],
+                    "username": row[2],
+                    "email": row[3],
+                    "avatar_url": row[4],
+                    "webhook_secret": row[5]
+                }
+            return {}
+    except Exception as e:
+        logger.error(f"Failed to fetch user by id: {e}")
+        return {}
+    finally:
+        release_connection(conn)
+
+def get_user_by_username(username: str) -> dict:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, github_id, username, email, avatar_url, webhook_secret
+                FROM users 
+                WHERE username = %s
+                """,
+                (username,)
+            )
+            row = cur.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "github_id": row[1],
+                    "username": row[2],
+                    "email": row[3],
+                    "avatar_url": row[4],
+                    "webhook_secret": row[5]
+                }
+            return {}
+    except Exception as e:
+        logger.error(f"Failed to fetch user by username: {e}")
         return {}
     finally:
         release_connection(conn)

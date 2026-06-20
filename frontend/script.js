@@ -113,46 +113,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Gumroad Checkout Flow
+// LemonSqueezy / Gumroad Checkout Flow
 async function handleCheckout(planType) {
     if (planType !== 'pro') return;
 
-    try {
-        // In a real app, you would get the github_id from the logged-in user's session.
-        // For the demo, we will prompt the user to enter their GitHub ID or username.
-        const githubId = prompt("Enter your GitHub ID to upgrade (e.g. 12345):", "12345");
-        if (!githubId) return;
-
-        const btn = document.querySelector(`button[onclick="handleCheckout('${planType}')"]`);
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Loading...';
-        btn.disabled = true;
-
-        const response = await fetch('/api/create-checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ github_id: githubId })
-        });
-
-        const data = await response.json();
-        
-        if (data.checkout_url) {
-            // LemonSqueezy Checkout overlay or redirect
-            window.location.href = data.checkout_url;
-        } else {
-            alert('Failed to generate checkout URL');
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    } catch (error) {
-        console.error('Checkout error:', error);
-        alert('An error occurred. Please try again.');
-        const btn = document.querySelector(`button[onclick="handleCheckout('${planType}')"]`);
-        if (btn) {
-            btn.innerHTML = 'Upgrade Now';
-            btn.disabled = false;
-        }
-    }
+    // Redirect to login -> dashboard flow
+    // The user will upgrade from their actual dashboard once logged in.
+    window.location.href = '/api/auth/login';
 }

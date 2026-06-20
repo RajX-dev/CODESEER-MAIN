@@ -25,6 +25,9 @@ from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
 from n3mo.api.gumroad_webhook import router as gumroad_router
+from n3mo.api.auth import get_current_user_from_token
+from fastapi import Depends
+from n3mo.saas_db import get_subscription, get_user_by_id
 
 logging.basicConfig(level=logging.INFO)
 
@@ -76,6 +79,25 @@ def create_checkout(req: dict):
     checkout_url = f"{base_url}?github_id={github_id}"
     
     return {"checkout_url": checkout_url}
+
+@app.get("/api/user/dashboard-data")
+def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)):
+    """Fetch all data needed for the user dashboard."""
+    user_id = current_user["user_id"]
+    
+    user_db = get_user_by_id(user_id)
+    subscription = get_subscription(user_id, "user")
+    
+    return {
+        "status": "success",
+        "user": {
+            "username": current_user["username"],
+            "github_id": user_db.get("github_id"),
+            "avatar_url": user_db.get("avatar_url")
+        },
+        "subscription": subscription,
+        "webhook_secret": user_db.get("webhook_secret")
+    }
 
 @app.get("/impact/{symbol}")
 def get_impact(

@@ -34,7 +34,7 @@ def get_oauth_config():
         "client_id": os.getenv("GITHUB_CLIENT_ID", ""),
         "client_secret": os.getenv("GITHUB_CLIENT_SECRET", ""),
         "redirect_uri": os.getenv("GITHUB_REDIRECT_URI", "http://localhost:8000/auth/callback"),
-        "frontend_url": os.getenv("FRONTEND_DASHBOARD_URL", "http://localhost:3000/dashboard"),
+        "frontend_url": os.getenv("FRONTEND_DASHBOARD_URL", "/dashboard.html"),
         "session_secret": os.getenv("JWT_SESSION_SECRET", "super-secret-saas-session-key")
     }
 

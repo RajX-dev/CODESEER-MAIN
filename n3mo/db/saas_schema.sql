@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT,
     avatar_url TEXT,
     github_token TEXT, -- Encrypted/encrypted-at-rest or raw token for repo access
+    webhook_secret TEXT, -- Personal webhook secret for GitHub PR checks
     created_at TIMESTAMP DEFAULT NOW()
 );
 

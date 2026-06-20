@@ -343,20 +343,37 @@ async def github_webhook(
     if not x_github_event:
         raise HTTPException(status_code=400, detail="Missing X-GitHub-Event header")
 
-    # Verify signature if secret is configured
-    if GITHUB_WEBHOOK_SECRET:
+    payload_bytes = await request.body()
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+        
+    logger.info(f"Received GitHub event: {x_github_event}")
+
+    # Determine which secret to use for HMAC verification
+    secret_to_use = GITHUB_WEBHOOK_SECRET
+    
+    # In SaaS mode, we use the user's personal webhook secret
+    is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
+    if is_saas:
+        repo_owner_name = payload.get("repository", {}).get("owner", {}).get("login")
+        if repo_owner_name:
+            from n3mo.saas_db import get_user_by_username
+            user_db = get_user_by_username(repo_owner_name)
+            if user_db and user_db.get("webhook_secret"):
+                secret_to_use = user_db.get("webhook_secret")
+
+    # Verify signature if a secret is configured (either global or personal)
+    if secret_to_use:
         if not x_hub_signature_256:
             raise HTTPException(status_code=401, detail="Missing X-Hub-Signature-256 header")
         parts = x_hub_signature_256.split("=")
         if len(parts) != 2 or parts[0] != "sha256":
             raise HTTPException(status_code=400, detail="Invalid signature format")
-        body = await request.body()
-        expected = hmac.new(GITHUB_WEBHOOK_SECRET.encode(), body, hashlib.sha256).hexdigest()
+        expected = hmac.new(secret_to_use.encode(), payload_bytes, hashlib.sha256).hexdigest()
         if not hmac.compare_digest(expected, parts[1]):
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
-
-    payload = await request.json()
-    logger.info(f"Received GitHub event: {x_github_event}")
 
     if x_github_event == "pull_request":
         action = payload.get("action")
