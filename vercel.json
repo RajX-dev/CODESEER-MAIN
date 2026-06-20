@@ -3,6 +3,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/index.py"
+    },
+    {
+      "source": "/github/(.*)",
+      "destination": "/api/index.py"
     }
   ]
 }
