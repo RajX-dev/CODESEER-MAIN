@@ -46,18 +46,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         planBadge.textContent = planType.toUpperCase();
         
         if (isProOrEnt) {
-            planBadge.className = "px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30";
-            planStatus.classList.remove('hidden');
+            planBadge.className = "plan-badge pro";
             
-            viewPro.classList.remove('hidden');
+            viewPro.style.display = 'block';
             secretInput.value = data.webhook_secret;
         } else {
-            viewFree.classList.remove('hidden');
+            viewFree.style.display = 'block';
         }
 
         // Show dashboard
-        loadingState.classList.add('hidden');
-        dashboardContent.classList.remove('hidden');
+        loadingState.style.display = 'none';
+        dashboardContent.style.display = 'block';
 
     } catch (err) {
         console.error("Failed to load dashboard data:", err);
