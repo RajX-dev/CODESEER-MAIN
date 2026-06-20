@@ -1,10 +1,6 @@
 import os
 import sys
 import logging
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
-logger = logging.getLogger("n3mo.worker")
-
 import urllib.request
 import urllib.error
 import json
@@ -21,6 +17,9 @@ from n3mo.api.webhook_handler import (
     format_impact_markdown,
     post_github_comment
 )
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+logger = logging.getLogger("n3mo.worker")
 
 def fetch_pr_details(repo_full_name: str, pr_number: str) -> dict:
     github_pat = os.getenv("GITHUB_PAT")
