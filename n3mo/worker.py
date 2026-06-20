@@ -74,7 +74,7 @@ def main():
         total_lines = calculate_repo_loc(repo_dir)
         
         logger.info("Indexing base commit...")
-        run_indexer_for_path(repo_dir, changed_files)
+        run_indexer_for_path(repo_dir)
         
         project_id = get_project_id(repo_dir)
         base_impacts = get_impact_for_changed_files(project_id, changed_files)
@@ -84,7 +84,7 @@ def main():
         checkout_repo(clone_url, target_repo, head_sha)
         
         logger.info("Indexing head commit...")
-        run_indexer_for_path(repo_dir, changed_files)
+        run_indexer_for_path(repo_dir)
         
         head_impacts = get_impact_for_changed_files(project_id, changed_files)
         
