@@ -4,118 +4,260 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>N3MO Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#0b0c10] text-gray-300 font-sans min-h-screen">
+    <!-- Use the main styling -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Include fonts used in style.css -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <nav class="flex items-center justify-between p-6 max-w-7xl mx-auto border-b border-gray-800">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center font-bold text-white shadow-lg shadow-purple-500/20">
-                N
+    <style>
+        /* Dashboard-specific tweaks reusing tokens */
+        .dashboard-container {
+            padding-top: 120px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            height: fit-content;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+        }
+        .user-info h3 {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .user-info p {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-family: var(--font-mono);
+        }
+        .plan-box {
+            background-color: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .plan-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .plan-badge {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background-color: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            text-transform: uppercase;
+        }
+        .plan-badge.pro {
+            color: #000;
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .action-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .pro-view { display: none; }
+        .free-view { display: none; }
+        
+        .secret-input-wrapper {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .secret-input {
+            flex: 1;
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 6px;
+        }
+        .secret-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .instructions-list {
+            list-style-position: inside;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.8;
+            margin-top: 16px;
+        }
+        .instructions-list code {
+            font-family: var(--font-mono);
+            background-color: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Loading */
+        #loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 40vh;
+            gap: 16px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Overrides to match design system */
+        #view-free {
+            border-color: rgba(245, 158, 11, 0.3);
+            background-image: linear-gradient(to bottom right, rgba(245, 158, 11, 0.05), transparent);
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">N</div>
+                <div class="logo-text">N3MO <span class="text-secondary" style="font-weight: 500; font-size: 18px; color: var(--text-muted);">Dashboard</span></div>
             </div>
-            <span class="text-xl font-bold tracking-tight text-white">N3MO <span class="text-purple-400">Dashboard</span></span>
+            <nav>
+                <a href="/" style="display:flex; align-items:center;">Home</a>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </nav>
         </div>
-        <div class="flex items-center gap-4">
-            <a href="/" class="text-sm font-medium hover:text-white transition-colors">Home</a>
-            <button id="logout-btn" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-800/50 hover:bg-gray-800 text-white border border-gray-700 transition-all">Logout</button>
-        </div>
-    </nav>
+    </header>
 
-    <main class="max-w-7xl mx-auto p-6 mt-8">
+    <main class="container dashboard-container">
         
         <!-- Loading State -->
-        <div id="loading" class="flex flex-col items-center justify-center py-20">
-            <div class="w-10 h-10 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mb-4"></div>
-            <p class="text-gray-400 animate-pulse">Loading your profile...</p>
+        <div id="loading">
+            <div class="spinner"></div>
+            <p style="color: var(--text-muted); font-family: var(--font-mono); font-size: 13px;">Loading profile...</p>
         </div>
 
-        <!-- Dashboard Content (Hidden until loaded) -->
-        <div id="dashboard-content" class="hidden">
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" style="display: none;">
+            <div class="dashboard-grid">
                 
-                <!-- Profile Card -->
-                <div class="col-span-1 bg-[#15161c] rounded-2xl p-6 border border-gray-800/50 shadow-xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                <!-- Profile Card (Left) -->
+                <div class="bento-card profile-card">
+                    <h2 style="font-family: var(--font-heading); font-size: 22px;">Profile</h2>
                     
-                    <h2 class="text-lg font-semibold text-white mb-6">Profile</h2>
-                    
-                    <div class="flex items-center gap-4 mb-8">
-                        <img id="user-avatar" src="" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-gray-700">
-                        <div>
-                            <h3 id="user-name" class="font-bold text-lg text-white">...</h3>
-                            <p id="user-github-id" class="text-sm text-gray-500">...</p>
+                    <div class="profile-header">
+                        <img id="user-avatar" src="" alt="Avatar" class="avatar">
+                        <div class="user-info">
+                            <h3 id="user-name">...</h3>
+                            <p id="user-github-id">...</p>
                         </div>
                     </div>
                     
-                    <div class="p-4 rounded-xl bg-gray-900/50 border border-gray-800">
-                        <p class="text-sm text-gray-400 mb-1">Current Plan</p>
-                        <div class="flex items-center justify-between">
-                            <span id="plan-badge" class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-gray-800 text-gray-300 border border-gray-700">Free</span>
-                            <span id="plan-status" class="text-sm text-green-400 font-medium hidden">Active</span>
+                    <div class="plan-box">
+                        <span class="plan-label">Current Plan</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span id="plan-badge" class="plan-badge">FREE</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Area -->
-                <div class="col-span-1 md:col-span-2 space-y-6">
+                <!-- Action Area (Right) -->
+                <div class="action-area">
                     
                     <!-- Free Tier View -->
-                    <div id="view-free" class="hidden bg-gradient-to-br from-[#15161c] to-[#111216] rounded-2xl p-8 border border-gray-800 shadow-xl relative overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5"></div>
-                        <div class="relative z-10">
-                            <h2 class="text-2xl font-bold text-white mb-3">Upgrade to Pro</h2>
-                            <p class="text-gray-400 mb-8 max-w-lg">
+                    <div id="view-free" class="bento-card free-view">
+                        <div class="bento-body">
+                            <div class="feature-header">
+                                <h3 style="font-size: 24px;">Upgrade to <span class="accent-text">Pro</span></h3>
+                            </div>
+                            <p style="font-size: 15px; max-width: 500px;">
                                 Unlock N3MO's full potential for your repositories. Analyze up to 100,000 lines of code, catch deep architectural issues, and automate your PR reviews.
                             </p>
-                            <button id="upgrade-btn" class="px-6 py-3 rounded-xl bg-white text-black font-bold hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] flex items-center gap-2">
-                                Upgrade Now - $30/mo
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                            </button>
+                            <div style="margin-top: 32px;">
+                                <button id="upgrade-btn" class="btn btn-primary" style="font-size: 15px; padding: 12px 24px;">
+                                    Upgrade Now - $30/mo
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Pro Tier View -->
-                    <div id="view-pro" class="hidden space-y-6">
-                        
-                        <div class="bg-[#15161c] rounded-2xl p-8 border border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.05)] relative overflow-hidden">
-                            <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div id="view-pro" class="pro-view">
+                        <div class="bento-card" style="border-color: rgba(16, 185, 129, 0.3); background-color: rgba(16, 185, 129, 0.02); margin-bottom: 24px;">
+                            <h2 style="font-family: var(--font-heading); font-size: 20px; color: var(--accent-green); margin-bottom: 8px;">
                                 Pro Subscription Active
                             </h2>
-                            <p class="text-gray-400">Thank you for supporting N3MO! You can now configure your GitHub repositories to receive automated architectural analysis.</p>
+                            <p style="color: var(--text-secondary); font-size: 14px;">
+                                Thank you for supporting N3MO! You can now configure your GitHub repositories to receive automated architectural analysis.
+                            </p>
                         </div>
 
-                        <div class="bg-[#15161c] rounded-2xl p-8 border border-gray-800 shadow-xl">
-                            <h3 class="text-lg font-bold text-white mb-4">Your Webhook Secret</h3>
-                            <p class="text-sm text-gray-400 mb-6">Use this secret to securely authenticate your repositories with the N3MO engine. <span class="text-red-400">Keep this secret private.</span></p>
+                        <div class="bento-card" style="margin-bottom: 24px;">
+                            <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px;">Your Webhook Secret</h3>
+                            <p style="color: var(--text-secondary); font-size: 14px;">
+                                Use this secret to securely authenticate your repositories with the N3MO engine. <span style="color: var(--accent-red);">Keep this secret private.</span>
+                            </p>
                             
-                            <div class="flex items-center gap-3">
-                                <input type="password" id="webhook-secret-input" readonly class="flex-1 bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-purple-500" value="loading...">
-                                <button id="copy-secret-btn" class="px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg border border-gray-600 transition-colors font-medium text-sm">
-                                    Copy
-                                </button>
-                                <button id="toggle-secret-btn" class="px-4 py-3 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-lg border border-gray-600 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </button>
+                            <div class="secret-input-wrapper">
+                                <input type="password" id="webhook-secret-input" readonly class="secret-input" value="loading...">
+                                <button id="copy-secret-btn" class="btn btn-primary">Copy</button>
+                                <button id="toggle-secret-btn" class="btn btn-secondary">Show</button>
                             </div>
                         </div>
 
-                        <div class="bg-[#15161c] rounded-2xl p-8 border border-gray-800 shadow-xl">
-                            <h3 class="text-lg font-bold text-white mb-4">Setup Instructions</h3>
-                            <ol class="list-decimal list-inside space-y-4 text-gray-400 text-sm">
+                        <div class="bento-card">
+                            <h3 style="font-family: var(--font-heading); font-size: 18px;">Setup Instructions</h3>
+                            <ol class="instructions-list">
                                 <li>Go to your GitHub Repository -> <strong>Settings</strong> -> <strong>Webhooks</strong>.</li>
                                 <li>Click <strong>Add webhook</strong>.</li>
-                                <li>Set Payload URL to: <code class="bg-black/50 px-2 py-1 rounded text-purple-400 border border-gray-800 ml-1">https://api.n3mo.shop/api/webhook</code></li>
-                                <li>Set Content type to: <code class="bg-black/50 px-2 py-1 rounded text-white border border-gray-800 ml-1">application/json</code></li>
+                                <li>Set Payload URL to: <code>https://api.n3mo.shop/api/webhook</code></li>
+                                <li>Set Content type to: <code>application/json</code></li>
                                 <li>Paste your <strong>Webhook Secret</strong> (from above) into the Secret field.</li>
                                 <li>Select <strong>Let me select individual events</strong> and check <strong>Pull requests</strong>.</li>
                                 <li>Click Add webhook. You're done!</li>
                             </ol>
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
     </main>
