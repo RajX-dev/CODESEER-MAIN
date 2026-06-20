@@ -37,7 +37,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-app.mount("/", StaticFiles(directory="public", html=True), name="static")
+if not os.getenv("VERCEL"):
+    if os.path.exists("public"):
+        app.mount("/", StaticFiles(directory="public", html=True), name="static")
+    elif os.path.exists("frontend"):
+        app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+
 app.include_router(webhook_router, prefix="/github")
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])

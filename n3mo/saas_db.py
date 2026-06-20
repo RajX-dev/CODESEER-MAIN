@@ -32,12 +32,14 @@ def _get_encryption_key() -> bytes:
         with open(key_path, "rb") as f:
             return f.read().strip()
             
-    # Generate and save a new key
-    key_path.parent.mkdir(parents=True, exist_ok=True)
-    new_key = Fernet.generate_key()
-    with open(key_path, "wb") as f:
-        f.write(new_key)
-    return new_key
+    # Generate a new key and save it if neither exists
+    key = Fernet.generate_key()
+    try:
+        key_path.parent.mkdir(parents=True, exist_ok=True)
+        key_path.write_bytes(key)
+    except OSError:
+        logger.warning("Could not save encryption key to disk (read-only filesystem). Tokens will be encrypted with an ephemeral key.")
+    return key
 
 def _encrypt_token(token: str | None) -> str | None:
     if not token:
