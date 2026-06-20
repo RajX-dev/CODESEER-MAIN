@@ -10,15 +10,11 @@ from n3mo.saas_db import update_subscription
 logger = logging.getLogger("n3mo.payments")
 router = APIRouter()
 
-# Note: You don't need a secret for testing initially, but it's good practice.
-# In Gumroad, you can find this under your advanced settings.
-GUMROAD_WEBHOOK_SECRET = os.getenv("GUMROAD_WEBHOOK_SECRET", "dummy_webhook_secret")
+# Gumroad simple Pings don't use signatures, but they do send your seller_id
+GUMROAD_SELLER_ID = os.getenv("GUMROAD_SELLER_ID", "")
 
 @router.post("/webhook/gumroad")
-async def gumroad_webhook(
-    request: Request,
-    x_gumroad_signature: Optional[str] = Header(None)
-):
+async def gumroad_webhook(request: Request):
     """
     Handle incoming webhooks from Gumroad.
     This upgrades the user's account to Pro when a payment is successful.
@@ -31,21 +27,11 @@ async def gumroad_webhook(
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid form data")
         
-    # If a secret is configured, verify the HMAC signature
-    # (Optional for simple testing, but required for production security)
-    if GUMROAD_WEBHOOK_SECRET and GUMROAD_WEBHOOK_SECRET != "dummy_webhook_secret":
-        if not x_gumroad_signature:
-            raise HTTPException(status_code=400, detail="Missing signature header")
-            
-        digest = hmac.new(
-            GUMROAD_WEBHOOK_SECRET.encode('utf-8'),
-            msg=payload_body,
-            digestmod=hashlib.sha256
-        ).hexdigest()
-
-        if not hmac.compare_digest(digest, x_gumroad_signature):
-            logger.error("Invalid Gumroad webhook signature")
-            raise HTTPException(status_code=401, detail="Invalid signature")
+    # Verify it's actually coming from your store
+    incoming_seller_id = data.get("seller_id")
+    if GUMROAD_SELLER_ID and incoming_seller_id != GUMROAD_SELLER_ID:
+        logger.error(f"Invalid Gumroad seller_id. Expected {GUMROAD_SELLER_ID}, got {incoming_seller_id}")
+        raise HTTPException(status_code=401, detail="Invalid seller ID")
 
     try:
         # Gumroad passes custom fields in the form data
