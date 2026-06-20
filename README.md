@@ -256,7 +256,8 @@ erDiagram
 
 - **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
 - **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
-- **Premium styling** — sleek orbital interface with `Bricolage Grotesque` and `Inter` typography
+- **Premium styling** — sleek interactive dashboard landing page UI and graph visualizer styled with `Bricolage Grotesque`, `Inter`, and `JetBrains Mono` typography
+- **SKILL.md profile** — system instructions to configure Claude as an impact-aware coding agent
 - **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
 - **Git hooks** — automatic re-indexing on every commit
 - **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
@@ -322,6 +323,9 @@ To automatically configure N3MO in your local Claude Desktop:
 n3mo mcp install
 ```
 This registers N3MO and sets up the paths automatically. Restart Claude Desktop and you're ready!
+
+### 🧠 Claude Skill (System Instructions)
+To configure Claude to run N3MO impact queries proactively before changing code in the editor, import or copy-paste the custom instructions from the **[SKILL.md](SKILL.md)** profile.
 
 ### Cursor Setup
 To use N3MO in Cursor:
