@@ -381,8 +381,47 @@ async def github_webhook(
         action = payload.get("action")
         if action in ["opened", "synchronize"]:
             # Run the checkout and analysis in a background task to respond instantly
-            background_tasks.add_task(handle_pull_request, payload)
-            return {"status": "accepted", "message": "PR impact analysis queued in background"}
+            # In SaaS/Vercel mode, we trigger the Core Engine via GitHub Actions
+            github_pat = os.getenv("GITHUB_PAT")
+            if not github_pat:
+                logger.error("Missing GITHUB_PAT. Cannot trigger Core Engine.")
+                return {"status": "error", "message": "N3MO Core Engine is not configured (Missing PAT)."}
+                
+            n3mo_repo = os.getenv("N3MO_CENTRAL_REPO", "RajX-dev/N3MO")
+            dispatch_url = f"https://api.github.com/repos/{n3mo_repo}/dispatches"
+            
+            target_repo = payload.get("repository", {}).get("full_name")
+            pr_number = payload.get("number")
+            
+            dispatch_payload = {
+                "event_type": "n3mo-analyze-pr",
+                "client_payload": {
+                    "repository": target_repo,
+                    "pr_number": str(pr_number),
+                    "user_id": str(user_db.get("id")) if 'user_db' in locals() and user_db else ""
+                }
+            }
+            
+            req = urllib.request.Request(
+                dispatch_url,
+                data=json.dumps(dispatch_payload).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {github_pat}",
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json",
+                    "User-Agent": "N3MO-SaaS"
+                },
+                method="POST"
+            )
+            
+            try:
+                import urllib.request
+                with urllib.request.urlopen(req) as resp:
+                    logger.info(f"Successfully triggered Core Engine for {target_repo} PR #{pr_number}")
+                    return {"status": "accepted", "message": "Core Engine triggered successfully"}
+            except Exception as e:
+                logger.error(f"Failed to trigger Core Engine: {e}")
+                return {"status": "error", "message": f"Failed to wake up Core Engine"}
 
     return {"message": f"Event '{x_github_event}' ignored"}
 
