@@ -3,26 +3,6 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/index.py"
-    },
-    {
-      "source": "/dashboard.html",
-      "destination": "/frontend/dashboard.html"
-    },
-    {
-      "source": "/dashboard.js",
-      "destination": "/frontend/dashboard.js"
-    },
-    {
-      "source": "/index.css",
-      "destination": "/frontend/index.css"
-    },
-    {
-      "source": "/script.js",
-      "destination": "/frontend/script.js"
-    },
-    {
-      "source": "/",
-      "destination": "/frontend/index.html"
     }
   ]
 }
