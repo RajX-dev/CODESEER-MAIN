@@ -392,6 +392,8 @@ def handle_pull_request(payload: dict) -> dict:
     license_key = os.getenv("N3MO_LICENSE_KEY")
     license_info = verify_license_key(license_key) if license_key else {"valid": False, "plan_type": "free", "max_loc": 15000}
     
+    is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
+    
     max_loc = 15000
     plan_name = "Free Tier"
     
@@ -399,7 +401,7 @@ def handle_pull_request(payload: dict) -> dict:
         max_loc_val = license_info["max_loc"]
         max_loc = max_loc_val if isinstance(max_loc_val, int) else 15000
         plan_name = f"Self-Hosted {str(license_info['plan_type']).capitalize()}"
-    else:
+    elif is_saas:
         # Fallback to SaaS database subscription lookup
         repo_owner_name = payload.get("repository", {}).get("owner", {}).get("login")
         repo_owner_id = payload.get("repository", {}).get("owner", {}).get("id")
@@ -425,6 +427,19 @@ def handle_pull_request(payload: dict) -> dict:
                         max_loc = -1 # Unlimited
                     elif sub.get("plan_type") == "pro":
                         max_loc = 100000 # 100k LOC for Pro
+    else:
+        # Self-hosted without a valid license key -> Block and request license
+        logger.warning("N3MO Webhook: Blocked analysis on self-hosted instance due to missing or invalid N3MO_LICENSE_KEY.")
+        warning_msg = (
+            "### ❌ N3MO Self-Hosted License Required\n\n"
+            "This self-hosted instance of the N3MO webhook API server requires a valid Enterprise or Pro license key to analyze pull requests.\n\n"
+            "Please configure your `N3MO_LICENSE_KEY` environment variable with a valid key. Contact the N3MO team for license details."
+        )
+        post_github_comment(repo_name, pr_number, warning_msg, installation_id)
+        return {
+            "status": "license_required",
+            "message": "Self-hosted webhook requires a valid N3MO_LICENSE_KEY."
+        }
     
     total_lines = calculate_repo_loc(repo_dir)
     # Check limit if max_loc is positive (not -1 for unlimited)

@@ -170,7 +170,7 @@ def test_webhook_loc_exceeded(mock_post_comment, mock_calculate_loc, mock_checko
         }
     }
     
-    with patch.dict(os.environ, {}, clear=True):
+    with patch.dict(os.environ, {"N3MO_SAAS_MODE": "true"}, clear=True):
         resp = client.post("/webhook", json=payload, headers={"X-GitHub-Event": "pull_request"})
         assert resp.status_code == 200
         # Should call post_github_comment with the warning message
@@ -219,8 +219,9 @@ def test_webhook_full_analysis_flow(
         }
     }
     
-    resp = client.post("/webhook", json=payload, headers={"X-GitHub-Event": "pull_request"})
-    assert resp.status_code == 200
+    with patch.dict(os.environ, {"N3MO_SAAS_MODE": "true"}):
+        resp = client.post("/webhook", json=payload, headers={"X-GitHub-Event": "pull_request"})
+        assert resp.status_code == 200
     
     # Verify indexer ran for both base and head
     assert mock_run_indexer.call_count == 2
@@ -230,3 +231,25 @@ def test_webhook_full_analysis_flow(
     assert "### ◈ N3MO Pull Request Impact Analysis" in args[2]
     assert "old_func" in args[2]
     assert "new_func" in args[2]
+
+@patch("n3mo.api.webhook_handler.checkout_repo")
+@patch("n3mo.api.webhook_handler.post_github_comment")
+def test_webhook_self_hosted_blocked_without_license(mock_post_comment, mock_checkout):
+    mock_checkout.return_value = "/mock/repo/dir"
+    
+    payload = {
+        "action": "opened",
+        "number": 42,
+        "repository": {"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"},
+        "pull_request": {
+            "base": {"sha": "base123"},
+            "head": {"sha": "head456"}
+        }
+    }
+    
+    with patch.dict(os.environ, {"N3MO_SAAS_MODE": "false", "N3MO_LICENSE_KEY": ""}, clear=True):
+        resp = client.post("/webhook", json=payload, headers={"X-GitHub-Event": "pull_request"})
+        assert resp.status_code == 200
+        mock_post_comment.assert_called_once()
+        args, kwargs = mock_post_comment.call_args
+        assert "❌ N3MO Self-Hosted License Required" in args[2]
