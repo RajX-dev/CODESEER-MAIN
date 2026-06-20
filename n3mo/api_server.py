@@ -69,11 +69,11 @@ def create_checkout(req: dict):
     if not github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
         
-    # Replace with your actual Gumroad product permalink (e.g., 'n3mopro')
-    product_permalink = "n3mo-dummy-pro"
+    # Use the user's actual Gumroad product URL
+    base_url = "https://srajster25.gumroad.com/l/n3mo-pro"
     
     # Gumroad automatically pulls URL parameters into custom fields if they match the name
-    checkout_url = f"https://gum.co/{product_permalink}?github_id={github_id}"
+    checkout_url = f"{base_url}?github_id={github_id}"
     
     return {"checkout_url": checkout_url}
 
