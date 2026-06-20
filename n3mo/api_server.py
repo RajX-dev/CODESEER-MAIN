@@ -38,11 +38,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-if not os.getenv("VERCEL"):
-    if os.path.exists("public"):
-        app.mount("/", StaticFiles(directory="public", html=True), name="static")
-    elif os.path.exists("frontend"):
-        app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+
 
 app.include_router(webhook_router, prefix="/github")
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
@@ -292,6 +288,12 @@ def get_impact(
         release_connection(conn)
 
 def start_server(host="127.0.0.1", port=8000):
+    if not os.getenv("VERCEL"):
+        if os.path.exists("public"):
+            app.mount("/", StaticFiles(directory="public", html=True), name="static")
+        elif os.path.exists("frontend"):
+            app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+
     uvicorn.run(app, host=host, port=port)
 
 if __name__ == "__main__":

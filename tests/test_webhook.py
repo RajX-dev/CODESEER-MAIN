@@ -139,19 +139,20 @@ def test_webhook_signature_required():
         payload_bytes = json.dumps(payload).encode()
         correct_hash = hmac.new(b"my_secret", payload_bytes, hashlib.sha256).hexdigest()
         
-        with patch("n3mo.api.webhook_handler.handle_pull_request") as mock_handle:
-            mock_handle.return_value = {"status": "processed"}
-            resp = client.post(
-                "/webhook",
-                content=payload_bytes,
-                headers={
-                    "X-GitHub-Event": "pull_request",
-                    "Content-Type": "application/json",
-                    "X-Hub-Signature-256": f"sha256={correct_hash}"
-                }
-            )
+        with patch("urllib.request.urlopen") as mock_urlopen:
+            mock_urlopen.return_value.__enter__.return_value = MagicMock()
+            with patch.dict(os.environ, {"GITHUB_PAT": "mock_pat"}):
+                resp = client.post(
+                    "/webhook",
+                    content=payload_bytes,
+                    headers={
+                        "X-GitHub-Event": "pull_request",
+                        "Content-Type": "application/json",
+                        "X-Hub-Signature-256": f"sha256={correct_hash}"
+                    }
+                )
             assert resp.status_code == 200
-            mock_handle.assert_called_once()
+            mock_urlopen.assert_called_once()
 
 @patch("n3mo.api.webhook_handler.checkout_repo")
 @patch("n3mo.api.webhook_handler.calculate_repo_loc")
@@ -171,8 +172,9 @@ def test_webhook_loc_exceeded(mock_post_comment, mock_calculate_loc, mock_checko
     }
     
     with patch.dict(os.environ, {"N3MO_SAAS_MODE": "true"}, clear=True):
-        resp = client.post("/webhook", json=payload, headers={"X-GitHub-Event": "pull_request"})
-        assert resp.status_code == 200
+        from n3mo.api.webhook_handler import handle_pull_request
+        res = handle_pull_request(payload)
+        assert res.get("status") == "limit_exceeded"
         # Should call post_github_comment with the warning message
         mock_post_comment.assert_called_once()
         args, kwargs = mock_post_comment.call_args
@@ -220,8 +222,9 @@ def test_webhook_full_analysis_flow(
     }
     
     with patch.dict(os.environ, {"N3MO_SAAS_MODE": "true"}):
-        resp = client.post("/webhook", json=payload, headers={"X-GitHub-Event": "pull_request"})
-        assert resp.status_code == 200
+        from n3mo.api.webhook_handler import handle_pull_request
+        res = handle_pull_request(payload)
+        assert res.get("status") == "processed"
     
     # Verify indexer ran for both base and head
     assert mock_run_indexer.call_count == 2
@@ -248,8 +251,9 @@ def test_webhook_self_hosted_blocked_without_license(mock_post_comment, mock_che
     }
     
     with patch.dict(os.environ, {"N3MO_SAAS_MODE": "false", "N3MO_LICENSE_KEY": ""}, clear=True):
-        resp = client.post("/webhook", json=payload, headers={"X-GitHub-Event": "pull_request"})
-        assert resp.status_code == 200
+        from n3mo.api.webhook_handler import handle_pull_request
+        res = handle_pull_request(payload)
+        assert res.get("status") == "license_required"
         mock_post_comment.assert_called_once()
         args, kwargs = mock_post_comment.call_args
         assert "❌ N3MO Self-Hosted License Required" in args[2]
