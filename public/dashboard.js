@@ -26,8 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('/api/user/dashboard-data');
         if (!response.ok) {
-            // Not logged in or error, redirect to login
-            window.location.href = '/api/auth/login';
+            if (response.status === 401) {
+                window.location.href = '/api/auth/login';
+            } else {
+                document.getElementById('loading').innerHTML = `<p class="text-red-500">Error loading dashboard: ${response.statusText}</p>`;
+            }
             return;
         }
         
@@ -50,6 +53,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             viewPro.style.display = 'block';
             secretInput.value = data.webhook_secret;
+            
+            // Dynamically update the webhook URL in the HTML
+            const payloadUrlEl = document.getElementById('webhook-payload-url');
+            if (payloadUrlEl) {
+                payloadUrlEl.textContent = `${window.location.origin}/github/webhook`;
+            }
         } else {
             viewFree.style.display = 'block';
         }
@@ -60,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (err) {
         console.error("Failed to load dashboard data:", err);
-        window.location.href = '/api/auth/login';
+        document.getElementById('loading').innerHTML = `<p class="text-red-500">Network or server error. Please try again later.</p>`;
     }
 
     // Upgrade Button flow
