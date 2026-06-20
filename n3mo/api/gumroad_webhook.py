@@ -1,9 +1,6 @@
 import os
-import hmac
-import hashlib
 import logging
-from fastapi import APIRouter, Request, HTTPException, Header
-from typing import Optional
+from fastapi import APIRouter, Request, HTTPException
 
 from n3mo.saas_db import update_subscription
 
@@ -19,8 +16,6 @@ async def gumroad_webhook(request: Request):
     Handle incoming webhooks from Gumroad.
     This upgrades the user's account to Pro when a payment is successful.
     """
-    payload_body = await request.body()
-    
     # Gumroad sends form data usually, so we can parse it
     try:
         data = await request.form()
