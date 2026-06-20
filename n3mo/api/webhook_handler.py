@@ -415,13 +415,12 @@ async def github_webhook(
             )
             
             try:
-                import urllib.request
                 with urllib.request.urlopen(req) as resp:
                     logger.info(f"Successfully triggered Core Engine for {target_repo} PR #{pr_number}")
                     return {"status": "accepted", "message": "Core Engine triggered successfully"}
             except Exception as e:
                 logger.error(f"Failed to trigger Core Engine: {e}")
-                return {"status": "error", "message": f"Failed to wake up Core Engine"}
+                return {"status": "error", "message": "Failed to wake up Core Engine"}
 
     return {"message": f"Event '{x_github_event}' ignored"}
 

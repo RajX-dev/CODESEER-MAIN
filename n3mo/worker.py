@@ -1,8 +1,6 @@
 import os
 import sys
 import logging
-import json
-import requests
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 logger = logging.getLogger("n3mo.worker")
@@ -15,8 +13,7 @@ def main():
     if not target_repo or not pr_number:
         logger.error("Missing TARGET_REPO or PR_NUMBER in environment")
         sys.exit(1)
-        
-    logger.info(f"🚀 N3MO CORE ENGINE WAKING UP 🚀")
+    logger.info("🚀 N3MO CORE ENGINE WAKING UP 🚀")
     logger.info(f"Target Repository: {target_repo}")
     logger.info(f"Pull Request: #{pr_number}")
     logger.info(f"User ID: {user_id}")

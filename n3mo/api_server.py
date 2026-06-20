@@ -17,6 +17,7 @@ import os
 import logging
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from n3mo.run_indexer import run_indexer_for_path
 from n3mo.database import get_connection, release_connection
@@ -90,8 +91,10 @@ def create_checkout(req: dict):
 def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)):
     """Fetch all data needed for the user dashboard."""
     user_id = current_user["user_id"]
-    
     user_db = get_user_by_id(user_id)
+    if not user_db:
+        raise HTTPException(status_code=401, detail="User not found in database. Please re-authenticate.")
+        
     subscription = get_subscription(user_id, "user")
     
     return {
