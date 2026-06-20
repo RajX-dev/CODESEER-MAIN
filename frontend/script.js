@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// LemonSqueezy Checkout Flow
+// Gumroad Checkout Flow
 async function handleCheckout(planType) {
     if (planType !== 'pro') return;
 

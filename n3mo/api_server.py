@@ -24,7 +24,7 @@ from n3mo.cli import get_code_context
 from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
-from n3mo.api.lemonsqueezy_webhook import router as lemonsqueezy_router
+from n3mo.api.gumroad_webhook import router as gumroad_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -37,7 +37,7 @@ app = FastAPI(
 app.include_router(webhook_router, prefix="/github")
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])
-app.include_router(lemonsqueezy_router, prefix="/api", tags=["Payments"])
+app.include_router(gumroad_router, prefix="/api", tags=["Payments"])
 
 
 class IndexRequest(BaseModel):
@@ -62,18 +62,18 @@ def trigger_indexing(req: IndexRequest):
 @app.post("/api/create-checkout")
 def create_checkout(req: dict):
     """
-    Generate a LemonSqueezy checkout URL for the Pro Plan.
-    We pass the github_id as custom data so the webhook knows who paid.
+    Generate a Gumroad checkout URL for the Pro Plan.
+    We pass the github_id as a URL parameter so the webhook knows who paid.
     """
     github_id = req.get("github_id")
     if not github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
         
-    # Replace with your actual LemonSqueezy Store Name and Variant ID once you set it up
-    store_name = "n3mo"
-    variant_id = "pro-plan-variant-id"
+    # Replace with your actual Gumroad product permalink (e.g., 'n3mopro')
+    product_permalink = "n3mo-dummy-pro"
     
-    checkout_url = f"https://{store_name}.lemonsqueezy.com/checkout/buy/{variant_id}?checkout[custom][github_id]={github_id}"
+    # Gumroad automatically pulls URL parameters into custom fields if they match the name
+    checkout_url = f"https://gum.co/{product_permalink}?github_id={github_id}"
     
     return {"checkout_url": checkout_url}
 
