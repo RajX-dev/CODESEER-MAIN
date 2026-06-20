@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesque:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&family=Space+Grotesque:wght@500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
     <!-- FontAwesome for icons -->
@@ -20,7 +20,7 @@
     <header>
         <div class="nav-container">
             <div class="logo">
-                <i class="fa-solid fa-anchor logo-icon"></i>
+                <i class="fa-solid fa-circle-nodes logo-icon"></i>
                 <span class="logo-text">N3MO</span>
             </div>
             <nav>
@@ -35,98 +35,178 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-glow-1"></div>
-        <div class="hero-glow-2"></div>
-        
-        <div class="container hero-content">
-            <div class="badge">
-                <i class="fa-solid fa-bolt"></i> Symbol-Centric Code Analytics
+    <!-- Hero Section / Split Playground Dashboard -->
+    <section class="hero-dashboard">
+        <div class="grid-overlay"></div>
+        <div class="container hero-layout">
+            <div class="hero-left">
+                <div class="badge">
+                    <i class="fa-solid fa-code-branch"></i> Release v1.2.4 is Live
+                </div>
+                <h1>Know what breaks <span class="accent-text">before you push</span></h1>
+                <p class="subtitle">N3MO parses your repository's ASTs and builds a local call graph to trace the transitive blast radius of any code change instantly.</p>
+                
+                <div class="hero-actions">
+                    <a href="https://github.com/RajX-dev/N3MO" class="btn btn-primary"><i class="fa-brands fa-github"></i> Install GitHub App</a>
+                    <a href="#docs" class="btn btn-outline"><i class="fa-solid fa-terminal"></i> Read CLI Docs</a>
+                </div>
+
+                <!-- Terminal Installation Widget -->
+                <div class="terminal-widget">
+                    <div class="terminal-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span class="terminal-title">Quick Install</span>
+                    </div>
+                    <div class="terminal-body">
+                        <span class="prompt">$</span> <code id="install-cmd">pip install n3mo</code>
+                        <button class="copy-btn" onclick="copyCommand()" aria-label="Copy Command">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <h1>Know exactly what breaks<br><span class="gradient-text">before it does</span></h1>
-            <p class="subtitle">N3MO maps your repository's ASTs, call graphs, and dependencies into a relational database to compute the transitive blast radius of any code change instantly.</p>
             
-            <div class="hero-actions">
-                <a href="https://github.com/RajX-dev/N3MO" class="btn btn-primary"><i class="fa-brands fa-github"></i> Install GitHub App</a>
-                <a href="#docs" class="btn btn-outline"><i class="fa-solid fa-terminal"></i> Try Local CLI</a>
-            </div>
-
-            <!-- Terminal Copy Widget -->
-            <div class="terminal-widget">
-                <div class="terminal-header">
-                    <span class="dot red"></span>
-                    <span class="dot yellow"></span>
-                    <span class="dot green"></span>
-                    <span class="terminal-title">Quick Installation</span>
-                </div>
-                <div class="terminal-body">
-                    <span class="prompt">$</span> <code id="install-cmd">pip install n3mo</code>
-                    <button class="copy-btn" onclick="copyCommand()" aria-label="Copy Command">
-                        <i class="fa-regular fa-copy"></i>
-                    </button>
+            <div class="hero-right">
+                <!-- Interactive Play visualizer -->
+                <div class="playground-window">
+                    <div class="window-header">
+                        <span class="window-dot red"></span>
+                        <span class="window-dot yellow"></span>
+                        <span class="window-dot green"></span>
+                        <span class="window-title">n3mo interactive playground</span>
+                    </div>
+                    <div class="playground-content">
+                        <!-- Left Panel: Controls -->
+                        <div class="playground-control">
+                            <div class="control-header">Query Symbol</div>
+                            <div class="symbol-selector">
+                                <button class="symbol-btn active" data-symbol="auth_user">auth_user</button>
+                                <button class="symbol-btn" data-symbol="db_pool">db_pool</button>
+                                <button class="symbol-btn" data-symbol="validate_jwt">validate_jwt</button>
+                            </div>
+                            <div class="telemetry-box">
+                                <div class="telemetry-header">Blast Radius Info</div>
+                                <div class="telemetry-row">
+                                    <span>Affected Files:</span> 
+                                    <strong id="telemetry-files">3</strong>
+                                </div>
+                                <div class="telemetry-row">
+                                    <span>Transitive Callers:</span> 
+                                    <strong id="telemetry-callers">8</strong>
+                                </div>
+                                <div class="telemetry-row">
+                                    <span>Severity:</span> 
+                                    <span class="severity-badge high" id="telemetry-severity">High Impact</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Right Panel: Orbiting Graph Simulation -->
+                        <div class="playground-graph">
+                            <div class="graph-canvas" id="interactive-canvas">
+                                <div class="center-node" id="graph-center">auth_user</div>
+                                <div class="orbit-path r1">
+                                    <div class="orbit-node node-a active" style="--angle: 0deg;" data-name="login_endpoint">login</div>
+                                    <div class="orbit-node node-b active" style="--angle: 120deg;" data-name="refresh_token">refresh</div>
+                                    <div class="orbit-node node-c active" style="--angle: 240deg;" data-name="validate_session">validate</div>
+                                </div>
+                                <div class="orbit-path r2">
+                                    <div class="orbit-node node-d active" style="--angle: 45deg;" data-name="POST /login">POST /login</div>
+                                    <div class="orbit-node node-e active" style="--angle: 165deg;" data-name="admin_login">admin_login</div>
+                                    <div class="orbit-node node-f active" style="--angle: 285deg;" data-name="require_auth">require_auth</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Visualizer Showcase -->
-    <section class="showcase">
-        <div class="container">
-            <div class="showcase-card">
-                <div class="showcase-header">
-                    <h3>Interactive Dependency Visualizer</h3>
-                    <p>Observe your code dependencies stagger on concentric orbits. Highlight nodes to trace exact call paths and deep-link directly into your local IDE.</p>
-                </div>
-                <!-- CSS Orbit Mockup -->
-                <div class="orbit-visualizer">
-                    <div class="orbit-center">
-                        <span class="node-label">authenticate_user</span>
-                    </div>
-                    <div class="orbit ring-1">
-                        <div class="node n-1" style="--angle: 0deg;"><span class="label">login_endpoint</span></div>
-                        <div class="node n-2" style="--angle: 120deg;"><span class="label">refresh_token</span></div>
-                        <div class="node n-3" style="--angle: 240deg;"><span class="label">validate_session</span></div>
-                    </div>
-                    <div class="orbit ring-2">
-                        <div class="node n-4" style="--angle: 45deg;"><span class="label">POST /login</span></div>
-                        <div class="node n-5" style="--angle: 165deg;"><span class="label">admin_login</span></div>
-                        <div class="node n-6" style="--angle: 285deg;"><span class="label">require_auth</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
+    <!-- Bento Grid Features Section -->
     <section id="features" class="features">
         <div class="container">
             <h2 class="section-title">Engineered for Structural Confidence</h2>
             <p class="section-subtitle">Ditch simple text matchers. N3MO builds a relational knowledge graph of codebases to empower engineering teams.</p>
             
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-burst"></i></div>
-                    <h3>Transitive Blast Radius</h3>
-                    <p>Traces calls recursively to arbitrary depth, showing you direct and indirect downstream impacts of any refactor or deletion.</p>
+            <div class="bento-grid">
+                <!-- Large Card 1: Transitive Blast Radius -->
+                <div class="bento-card col-span-2 row-span-1 highlight-card">
+                    <div class="bento-body">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-burst"></i></div>
+                            <h3>Transitive Blast Radius</h3>
+                        </div>
+                        <p>Traces call links recursively to arbitrary depth, showing you direct and indirect downstream impacts of any refactor or deletion. Find hidden dependencies that standard search tools miss.</p>
+                        
+                        <div class="bento-telemetry-demo">
+                            <div class="telemetry-bar">
+                                <span class="metric-item">Root: <code>auth.py</code></span>
+                                <span class="metric-item text-orange">Transitive Depth: 5</span>
+                                <span class="metric-item text-green">DB Resolution: Scope-Aware</span>
+                            </div>
+                            <div class="telemetry-code">
+                                <span class="line-c"><span class="t-keyword">SELECT</span> symbol, file_path <span class="t-keyword">FROM</span> callers <span class="t-keyword">WHERE</span> target = <span class="t-string">'db_pool'</span>;</span><br>
+                                <span class="line-c text-muted">&gt; Found 12 matching transitive callers across 4 service layers.</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
-                    <h3>27 Languages Supported</h3>
-                    <p>Powered by Tree-sitter for error-tolerant AST parsing across Python, TypeScript, Go, Rust, Java, C/C++, C#, Swift, and more.</p>
+                <!-- Small Card 2: 27 Languages Supported -->
+                <div class="bento-card col-span-1 row-span-1">
+                    <div class="bento-body">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
+                            <h3>27 Languages</h3>
+                        </div>
+                        <p>Powered by Tree-sitter for robust, error-tolerant AST parsing across Python, JS, TS, Go, Rust, Java, C++, Swift, and more.</p>
+                        <div class="language-cloud">
+                            <span class="lang-tag">Python</span>
+                            <span class="lang-tag">TypeScript</span>
+                            <span class="lang-tag">Go</span>
+                            <span class="lang-tag">Rust</span>
+                            <span class="lang-tag">C++</span>
+                            <span class="lang-tag">Java</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
-                    <h3>Native MCP Server</h3>
-                    <p>Integrate N3MO directly into Cursor, Claude Desktop, or Windsurf. AI agents can query the codebase structure to refactor code without hallucinations.</p>
+                <!-- Small Card 3: Native MCP Server -->
+                <div class="bento-card col-span-1 row-span-1">
+                    <div class="bento-body">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+                            <h3>Native MCP Server</h3>
+                        </div>
+                        <p>Integrate N3MO directly into Cursor, Claude Desktop, or Windsurf. Allow AI agents to trace structures without hallucinations.</p>
+                        <div class="mcp-badge">
+                            <i class="fa-solid fa-circle-check text-green"></i> Model Context Protocol Active
+                        </div>
+                    </div>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-git-pull-request"></i></div>
-                    <h3>GitHub App Webhook</h3>
-                    <p>Enforce codebase size-aware checkpoints on every Pull Request, posting a comprehensive impact markdown report directly to PR comments in under 2 seconds.</p>
+                
+                <!-- Large Card 4: GitHub App Webhook -->
+                <div class="bento-card col-span-2 row-span-1 highlight-card">
+                    <div class="bento-body">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-git-pull-request"></i></div>
+                            <h3>GitHub App Webhook</h3>
+                        </div>
+                        <p>Enforce codebase size-aware checkpoints on every Pull Request, posting a comprehensive impact markdown report directly to PR comments in under 2 seconds.</p>
+                        
+                        <div class="pr-preview-box">
+                            <div class="pr-header">
+                                <i class="fa-brands fa-github"></i> github-actions <span class="bot-badge">bot</span> commented on PR #124
+                            </div>
+                            <div class="pr-body">
+                                <strong>◈ N3MO Impact Check: PASSED</strong><br>
+                                • Modifying <code>auth_user</code> affects <strong>3</strong> downstream components.<br>
+                                • Transitive blast radius: <strong>High Impact</strong> (8 caller nodes).
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,7 +214,6 @@
 
     <!-- Pricing Section -->
     <section id="pricing" class="pricing">
-        <div class="pricing-glow"></div>
         <div class="container">
             <h2 class="section-title">Plans & Pricing</h2>
             <p class="section-subtitle">Scale N3MO's PR impact check capabilities dynamically to fit the size of your team's codebases.</p>
