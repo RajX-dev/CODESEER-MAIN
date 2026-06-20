@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('/api/user/dashboard-data');
         if (!response.ok) {
-            // Not logged in or error, redirect to home
-            window.location.href = '/';
+            // Not logged in or error, redirect to login
+            window.location.href = '/api/auth/login';
             return;
         }
         
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (err) {
         console.error("Failed to load dashboard data:", err);
-        window.location.href = '/';
+        window.location.href = '/api/auth/login';
     }
 
     // Upgrade Button flow
