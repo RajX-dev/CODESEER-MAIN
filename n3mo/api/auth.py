@@ -139,14 +139,17 @@ def oauth_callback(response: Response, code: str = Query(None)):
         raise HTTPException(status_code=400, detail="Incomplete profile returned from GitHub")
 
     # 3. Upsert user in local PostgreSQL database
-    user = upsert_user(
-        github_id=github_id,
-        username=username,
-        email=email,
-        avatar_url=avatar_url,
-        github_token=github_token
-    )
-    
+    try:
+        user = upsert_user(
+            github_id=github_id,
+            username=username,
+            email=email,
+            avatar_url=avatar_url,
+            github_token=github_token
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database Error: {str(e)}")
+        
     if not user:
         raise HTTPException(status_code=500, detail="Failed to register user account in system database")
 
