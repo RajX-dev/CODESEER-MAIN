@@ -361,8 +361,10 @@ async def github_webhook(
         if repo_owner_name:
             from n3mo.saas_db import get_user_by_username
             user_db = get_user_by_username(repo_owner_name)
-            if user_db and user_db.get("webhook_secret"):
-                secret_to_use = user_db.get("webhook_secret")
+            if user_db:
+                secret_from_db = user_db.get("webhook_secret")
+                if secret_from_db:
+                    secret_to_use = str(secret_from_db)
 
     # Verify signature if a secret is configured (either global or personal)
     if secret_to_use:
