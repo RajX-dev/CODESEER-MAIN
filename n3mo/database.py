@@ -42,8 +42,13 @@ def get_connection():
     return get_pool().getconn()
 
 def release_connection(conn):
-    """Return a connection back to the pool."""
+    """Return a connection back to the pool, ensuring aborted transactions are cleared."""
     if conn:
+        try:
+            if not conn.closed:
+                conn.rollback()
+        except Exception:
+            pass
         get_pool().putconn(conn)
 
 # 2. Ensure Project Exists
