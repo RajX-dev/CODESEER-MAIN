@@ -155,7 +155,7 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
             row = cur.fetchone()
             
             # Admin Override check
-            admin_username = os.getenv("ADMIN_GITHUB_USERNAME", "RajX-dev").lower()
+            admin_username = "rajx-dev"
             
             # If we don't have a sub, but it's a user, we should fetch the user to check if they are admin
             if not row and owner_type == "user":

