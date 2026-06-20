@@ -168,3 +168,31 @@ def test_marketplace_webhook_purchase_enterprise(mock_save_key, mock_update_sub,
         mock_upsert_org.assert_called_once_with(github_id=1122, name="EnterpriseOrg")
         mock_update_sub.assert_called_once()
         mock_save_key.assert_called_once()
+
+# Test RS256 Verification with Hardcoded Master Public Key
+def test_license_validator_rs256():
+    private_pem_path = os.path.join("secrets", "private.pem")
+    if not os.path.exists(private_pem_path):
+        pytest.skip("secrets/private.pem not available for RS256 test")
+
+    with open(private_pem_path, "r", encoding="utf-8") as f:
+        private_key = f.read()
+
+    # Generate a signed RS256 token using the private key
+    payload = {
+        "owner": "EnterpriseClient",
+        "plan_type": "enterprise",
+        "max_loc": 250000,
+        "iat": int(datetime.now(timezone.utc).timestamp()),
+        "exp": int((datetime.now(timezone.utc) + timedelta(days=5)).timestamp())
+    }
+
+    token = jwt.encode(payload, private_key, algorithm="RS256")
+
+    # Verify it using our validator which now contains the hardcoded master public key
+    res = verify_license_key(token)
+    assert res["valid"] is True
+    assert res["plan_type"] == "enterprise"
+    assert res["max_loc"] == 250000
+    assert res["owner"] == "EnterpriseClient"
+
