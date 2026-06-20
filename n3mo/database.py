@@ -25,15 +25,23 @@ _pool = None
 def get_pool():
     global _pool
     if _pool is None:
-        _pool = pool.ThreadedConnectionPool(
-            minconn=2,
-            maxconn=10,
-            host=os.getenv("POSTGRES_HOST", "localhost"),
-            port=os.getenv("POSTGRES_PORT", "5432"),
-            database=os.getenv("POSTGRES_DB", "n3mo"),
-            user=os.getenv("POSTGRES_USER", "n3mo"),
-            password=os.getenv("POSTGRES_PASSWORD", "n3mo")
-        )
+        db_url = os.getenv("DATABASE_URL")
+        if db_url:
+            _pool = pool.ThreadedConnectionPool(
+                minconn=2,
+                maxconn=10,
+                dsn=db_url
+            )
+        else:
+            _pool = pool.ThreadedConnectionPool(
+                minconn=2,
+                maxconn=10,
+                host=os.getenv("POSTGRES_HOST", "localhost"),
+                port=os.getenv("POSTGRES_PORT", "5432"),
+                database=os.getenv("POSTGRES_DB", "n3mo"),
+                user=os.getenv("POSTGRES_USER", "n3mo"),
+                password=os.getenv("POSTGRES_PASSWORD", "n3mo")
+            )
     return _pool
 
 # 1. Database Connection Config
