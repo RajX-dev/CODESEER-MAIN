@@ -371,12 +371,14 @@ def run_indexer_for_path(target_dir):
             console_handlers.append(h)
             logger.removeHandler(h)
             
-    animation = SolarSystemAnimation("Indexing repository...")
-    buffer_handler = BufferHandler(animation)
-    buffer_handler.setFormatter(logging.Formatter("%(message)s"))
-    logger.addHandler(buffer_handler)
+    is_ci = os.environ.get("GITHUB_ACTIONS") == "true"
     
-    animation.start()
+    if not is_ci:
+        animation = SolarSystemAnimation("Indexing repository...")
+        buffer_handler = BufferHandler(animation)
+        buffer_handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(buffer_handler)
+        animation.start()
 
     try:
         logger.info(f"\n🌊 N3MO: Starting Analysis on {target_dir}...")
@@ -386,10 +388,20 @@ def run_indexer_for_path(target_dir):
             return False, f"Error: Target directory '{target_dir}' does not exist."
 
         # Automatically start Docker container and wait for Postgres readiness
-        start_docker_services()
-        if not wait_for_postgres_and_schema():
-            logger.error("❌ Aborting indexing due to database unreadiness.")
-            return False, "Aborting indexing due to database unreadiness."
+        if not is_ci:
+            start_docker_services()
+            if not wait_for_postgres_and_schema():
+                logger.error("❌ Aborting indexing due to database unreadiness.")
+                return False, "Aborting indexing due to database unreadiness."
+        else:
+            # In CI, just check if the database is reachable
+            try:
+                from n3mo.database import get_connection, release_connection
+                conn = get_connection()
+                release_connection(conn)
+            except Exception as e:
+                logger.error(f"❌ Aborting indexing due to database connection error: {e}")
+                return False, f"Database connection error: {e}"
 
         # Clear previous residues from OTHER repositories
         clear_all_data(exclude_url=target_dir)
@@ -516,7 +528,7 @@ def run_indexer_for_path(target_dir):
                 animation.stop()
             except Exception:
                 pass
-        if 'buffer_handler' in locals():
+        if 'buffer_handler' in locals() and not is_ci:
             try:
                 logger.removeHandler(buffer_handler)
             except Exception:
