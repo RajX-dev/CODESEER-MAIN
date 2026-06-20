@@ -116,7 +116,7 @@ def test_saas_auth_callback(mock_upsert, mock_urlopen):
     }):
         resp = client.get("/api/auth/callback?code=mock_code", follow_redirects=False)
         assert resp.status_code == 307
-        assert resp.headers["location"] == "http://localhost:3000/dashboard"
+        assert resp.headers["location"] == "/dashboard.html"
         
         # Verify session cookie is set
         assert "session" in resp.cookies
