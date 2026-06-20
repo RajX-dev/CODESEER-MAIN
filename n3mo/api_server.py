@@ -66,12 +66,11 @@ def trigger_indexing(req: IndexRequest):
     return {"status": "success", "summary": summary}
 
 @app.post("/api/create-checkout")
-def create_checkout(req: dict):
+def create_checkout(github_id: str):
     """
     Generate a Gumroad checkout URL for the Pro Plan.
     We pass the github_id as a URL parameter so the webhook knows who paid.
     """
-    github_id = req.get("github_id")
     if not github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
         
