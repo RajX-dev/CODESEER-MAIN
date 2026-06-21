@@ -279,5 +279,6 @@ def test_gumroad_webhook():
             )
             assert resp.status_code == 200
             assert resp.json() == {"status": "success"}
-            mock_update.assert_called_once_with("mock-uuid-1234", "user", "pro", "active")
+            import unittest.mock
+            mock_update.assert_called_once_with("mock-uuid-1234", "user", "pro", "active", expires_at=unittest.mock.ANY)
 
