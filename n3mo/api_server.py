@@ -132,6 +132,31 @@ def admin_upgrade():
     finally:
         release_connection(conn)
 
+@app.get("/api/admin/expire")
+def admin_expire(github_id: int):
+    """Secret endpoint to forcefully expire a user's subscription for testing."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM users WHERE github_id = %s", (github_id,))
+            row = cur.fetchone()
+            if not row:
+                return {"status": "error", "message": "User not found"}
+            
+            user_id = row[0]
+            cur.execute(
+                """
+                UPDATE subscriptions 
+                SET expires_at = NOW() - INTERVAL '1 day'
+                WHERE user_owner_id = %s
+                """,
+                (user_id,)
+            )
+            conn.commit()
+            return {"status": "success", "message": f"User {github_id} successfully expired!"}
+    finally:
+        release_connection(conn)
+
 @app.get("/impact/{symbol}")
 def get_impact(
     symbol: str,
