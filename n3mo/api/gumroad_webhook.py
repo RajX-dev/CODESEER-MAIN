@@ -2,7 +2,7 @@ import os
 import logging
 from fastapi import APIRouter, Request, HTTPException
 
-from n3mo.saas_db import update_subscription
+from n3mo.saas_db import update_subscription, get_user_by_github_id
 
 logger = logging.getLogger("n3mo.payments")
 router = APIRouter()
@@ -37,8 +37,12 @@ async def gumroad_webhook(request: Request):
         # Gumroad doesn't always send an event_name, it's just a POST on sale
         # But we can check if there's a price and email.
         if github_id:
-            logger.info(f"Payment successful via Gumroad! Upgrading github_id {github_id} to PRO")
-            update_subscription(str(github_id), "user", "pro", "active")
+            user_db = get_user_by_github_id(int(github_id))
+            if user_db:
+                logger.info(f"Payment successful via Gumroad! Upgrading github_id {github_id} to PRO")
+                update_subscription(str(user_db["id"]), "user", "pro", "active")
+            else:
+                logger.error(f"Received payment for github_id {github_id} but user not found in DB")
         else:
             logger.warning("Received payment but no github_id found in Gumroad custom fields")
             

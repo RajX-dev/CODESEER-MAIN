@@ -141,7 +141,7 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
         with conn.cursor() as cur:
             if owner_type == "user":
                 cur.execute(
-                    "SELECT id, plan_type, status, expires_at, username FROM subscriptions JOIN users ON subscriptions.user_owner_id = users.id WHERE user_owner_id = %s",
+                    "SELECT subscriptions.id, plan_type, status, expires_at, username FROM subscriptions JOIN users ON subscriptions.user_owner_id = users.id WHERE user_owner_id = %s",
                     (owner_id,)
                 )
             elif owner_type == "organization":
@@ -321,6 +321,35 @@ def get_user_by_id(user_id: str) -> dict:
             return {}
     except Exception as e:
         logger.error(f"Failed to fetch user by id: {e}")
+        return {}
+    finally:
+        release_connection(conn)
+
+def get_user_by_github_id(github_id: int) -> dict:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, github_id, username, email, avatar_url, webhook_secret
+                FROM users 
+                WHERE github_id = %s
+                """,
+                (github_id,)
+            )
+            row = cur.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "github_id": row[1],
+                    "username": row[2],
+                    "email": row[3],
+                    "avatar_url": row[4],
+                    "webhook_secret": row[5]
+                }
+            return {}
+    except Exception as e:
+        logger.error(f"Failed to fetch user by github_id: {e}")
         return {}
     finally:
         release_connection(conn)
