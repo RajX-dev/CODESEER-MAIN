@@ -36,7 +36,7 @@ async def gumroad_webhook(request: Request):
         # We only want to process actual successful sales
         # Gumroad doesn't always send an event_name, it's just a POST on sale
         # But we can check if there's a price and email.
-        if github_id:
+        if github_id and isinstance(github_id, str):
             user_db = get_user_by_github_id(int(github_id))
             if user_db:
                 logger.info(f"Payment successful via Gumroad! Upgrading github_id {github_id} to PRO")
