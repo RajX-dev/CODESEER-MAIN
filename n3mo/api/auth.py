@@ -76,7 +76,8 @@ def login_redirect():
     params = {
         "client_id": config["client_id"],
         "redirect_uri": config["redirect_uri"],
-        "scope": "user:email read:org"
+        "scope": "user:email read:org",
+        "prompt": "consent"
     }
     url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
     return RedirectResponse(url)
