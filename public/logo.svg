@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="100%">
+  <defs>
+    <!-- Background Grid Pattern -->
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="1" stroke-opacity="0.25"/>
+    </pattern>
+
+    <!-- Glowing effect filters -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur1" />
+      <feGaussianBlur stdDeviation="9" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Linear Gradients for Letters -->
+    <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/> <!-- Indigo -->
+      <stop offset="50%" stop-color="#38bdf8"/> <!-- Cyan -->
+      <stop offset="100%" stop-color="#c084fc"/> <!-- Purple -->
+    </linearGradient>
+
+    <!-- Linear Gradients for Flows -->
+    <linearGradient id="flowGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#38bdf8" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="flowGrad2" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#38bdf8" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    /* Base Styles */
+    .bg-rect {
+      fill: #080b10;
+      stroke: url(#cyberGrad);
+      stroke-width: 1.5;
+    }
+    
+    /* Letter Paths styling */
+    .letter-path {
+      fill: none;
+      stroke: url(#cyberGrad);
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: url(#neonGlow);
+      animation: breathe 4s ease-in-out infinite alternate;
+    }
+
+    /* Sub-text styling */
+    .sub-text {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      fill: #94a3b8;
+    }
+
+    /* Node dots styling */
+    .node-dot {
+      fill: #ffffff;
+      stroke: #38bdf8;
+      stroke-width: 2;
+      filter: drop-shadow(0 0 3px #38bdf8);
+      animation: pulseNode 2s ease-in-out infinite alternate;
+    }
+
+    /* Set different delay for nodes */
+    .nd-1 { animation-delay: 0s; }
+    .nd-2 { animation-delay: 0.4s; }
+    .nd-3 { animation-delay: 0.8s; }
+    .nd-4 { animation-delay: 1.2s; }
+
+    /* Flowing network background lines */
+    .network-edge {
+      fill: none;
+      stroke: #1e293b;
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+      opacity: 0.4;
+    }
+
+    /* Glowing flow animation lines */
+    .data-flow-1 {
+      fill: none;
+      stroke: url(#flowGrad1);
+      stroke-width: 2;
+      stroke-dasharray: 40 160;
+      animation: flowForward 6s linear infinite;
+    }
+
+    .data-flow-2 {
+      fill: none;
+      stroke: url(#flowGrad2);
+      stroke-width: 2;
+      stroke-dasharray: 50 150;
+      animation: flowBackward 8s linear infinite;
+    }
+
+    /* Animations */
+    @keyframes breathe {
+      0% { opacity: 0.85; stroke-width: 6.5; }
+      100% { opacity: 1; stroke-width: 7.5; }
+    }
+
+    @keyframes pulseNode {
+      0% { r: 3.5; opacity: 0.7; }
+      100% { r: 5.5; opacity: 1; }
+    }
+
+    @keyframes flowForward {
+      to { stroke-dashoffset: -200; }
+    }
+
+    @keyframes flowBackward {
+      to { stroke-dashoffset: 200; }
+    }
+
+    /* Typing Animation Cover and Cursor using Transforms */
+    .typing-cover {
+      fill: #080b10;
+      transform-origin: 620px 177px;
+      animation: typeReveal 6s steps(40) infinite;
+    }
+
+    .typing-cursor {
+      fill: #38bdf8;
+      filter: drop-shadow(0 0 2px #38bdf8);
+      animation: cursorMove 6s steps(40) infinite, cursorBlink 0.8s infinite;
+    }
+
+    @keyframes typeReveal {
+      0% { transform: scaleX(1); }
+      45%, 85% { transform: scaleX(0); }
+      93%, 100% { transform: scaleX(1); }
+    }
+
+    @keyframes cursorMove {
+      0% { transform: translateX(0px); }
+      45%, 85% { transform: translateX(440px); }
+      93%, 100% { transform: translateX(0px); }
+    }
+
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+  </style>
+
+  <!-- Background Data Flow Paths (Behind letters) -->
+  <path class="network-edge" d="M 120 50 L 190 50 L 270 50 L 310 50 L 380 50 L 420 95 L 460 95 L 540 125 L 555 140 L 680 140"/>
+  <path class="network-edge" d="M 120 170 L 190 140 L 270 140 L 310 140 L 340 95 L 420 50 L 500 50 L 540 65 L 610 65 L 680 95"/>
+  
+  <path class="data-flow-1" d="M 120 50 L 190 50 L 270 50 L 310 50 L 380 50 L 420 95 L 460 95 L 540 125 L 555 140 L 680 140"/>
+  <path class="data-flow-2" d="M 120 170 L 190 140 L 270 140 L 310 140 L 340 95 L 420 50 L 500 50 L 540 65 L 610 65 L 680 95"/>
+
+  <!-- Local Network Cross Connections -->
+  <line class="network-edge" x1="270" y1="50" x2="310" y2="50" />
+  <line class="network-edge" x1="270" y1="140" x2="310" y2="140" />
+  <line class="network-edge" x1="380" y1="90" x2="420" y2="50" />
+  <line class="network-edge" x1="380" y1="140" x2="420" y2="140" />
+  <line class="network-edge" x1="500" y1="95" x2="540" y2="65" />
+  <line class="network-edge" x1="500" y1="140" x2="555" y2="140" />
+  <line class="network-edge" x1="230" y1="95" x2="340" y2="95" />
+
+  <!-- Letter N -->
+  <path class="letter-path" d="M 190 140 L 190 50 L 270 140 L 270 50"/>
+
+  <!-- Letter 3 -->
+  <path class="letter-path" d="M 310 50 L 380 50 L 380 90 L 340 95 L 380 100 L 380 140 L 310 140"/>
+
+  <!-- Letter M -->
+  <path class="letter-path" d="M 420 140 L 420 50 L 460 95 L 500 50 L 500 140"/>
+
+  <!-- Letter O -->
+  <path class="letter-path" d="M 555 50 L 595 50 L 610 65 L 610 125 L 595 140 L 555 140 L 540 125 L 540 65 Z"/>
+
+  <!-- Node Intersections (Cyan/White Dots) -->
+  <!-- N Nodes -->
+  <circle class="node-dot nd-1" cx="190" cy="140" r="4"/>
+  <circle class="node-dot nd-2" cx="190" cy="50" r="4"/>
+  <circle class="node-dot nd-3" cx="270" cy="140" r="4"/>
+  <circle class="node-dot nd-4" cx="270" cy="50" r="4"/>
+  
+  <!-- 3 Nodes -->
+  <circle class="node-dot nd-1" cx="310" cy="50" r="4"/>
+  <circle class="node-dot nd-2" cx="380" cy="50" r="4"/>
+  <circle class="node-dot nd-3" cx="380" cy="90" r="4"/>
+  <circle class="node-dot nd-4" cx="340" cy="95" r="4"/>
+  <circle class="node-dot nd-1" cx="380" cy="100" r="4"/>
+  <circle class="node-dot nd-2" cx="380" cy="140" r="4"/>
+  <circle class="node-dot nd-3" cx="310" cy="140" r="4"/>
+
+  <!-- M Nodes -->
+  <circle class="node-dot nd-1" cx="420" cy="140" r="4"/>
+  <circle class="node-dot nd-2" cx="420" cy="50" r="4"/>
+  <circle class="node-dot nd-3" cx="460" cy="95" r="4"/>
+  <circle class="node-dot nd-4" cx="500" cy="50" r="4"/>
+  <circle class="node-dot nd-1" cx="500" cy="140" r="4"/>
+
+  <!-- O Nodes -->
+  <circle class="node-dot nd-2" cx="555" cy="50" r="4"/>
+  <circle class="node-dot nd-3" cx="595" cy="50" r="4"/>
+  <circle class="node-dot nd-4" cx="610" cy="65" r="4"/>
+  <circle class="node-dot nd-1" cx="610" cy="125" r="4"/>
+  <circle class="node-dot nd-2" cx="595" cy="140" r="4"/>
+  <circle class="node-dot nd-3" cx="555" cy="140" r="4"/>
+  <circle class="node-dot nd-4" cx="540" cy="125" r="4"/>
+  <circle class="node-dot nd-1" cx="540" cy="65" r="4"/>
+
+  <!-- Sub-Text -->
+  <text class="sub-text" x="400" y="180" text-anchor="middle">C O D E   I N T E L L I G E N C E   E N G I N E</text>
+
+  <!-- Typing Animation Cover (Scales to right edge) -->
+  <rect class="typing-cover" x="180" y="165" width="440" height="25" />
+  
+  <!-- Blinking Cursor (Translates across text) -->
+  <rect class="typing-cursor" x="180" y="166" width="3" height="16" />
+</svg>
