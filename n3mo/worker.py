@@ -73,6 +73,35 @@ def main():
         
         total_lines = calculate_repo_loc(repo_dir)
         
+        # Check SaaS limits
+        max_loc = 15000
+        plan_name = "SaaS Free"
+        
+        if user_id:
+            from n3mo.saas_db import get_subscription
+            sub = get_subscription(user_id, "user")
+            if sub.get("status") == "active":
+                plan_type_str = str(sub.get("plan_type") or "free")
+                plan_name = f"SaaS {plan_type_str.capitalize()}"
+                if sub.get("plan_type") == "enterprise":
+                    max_loc = -1
+                elif sub.get("plan_type") == "pro":
+                    max_loc = 100000
+                    
+        if max_loc > 0 and total_lines > max_loc:
+            logger.warning(f"LOC limit exceeded for {target_repo}: {total_lines} LOC (Limit: {max_loc} for {plan_name})")
+            warning_msg = (
+                f"### ⚠️ N3MO Tier Limit Reached ({plan_name})\n\n"
+                f"This repository contains **{total_lines:,} lines of code**, which exceeds N3MO's limit of **{max_loc:,} lines** for this plan.\n\n"
+                f"To enable PR checks on this repository, please:\n"
+                f"1. **Upgrade your plan** on our SaaS platform to activate a Pro or Enterprise subscription, or\n"
+                f"2. Configure your own **Self-Hosted N3MO Enterprise edition** on your private infrastructure.\n\n"
+                f"*Already upgraded? Make sure your payment is active in the dashboard.*"
+            )
+            post_github_comment(target_repo, int(pr_number), warning_msg, os.getenv("INSTALLATION_ID"))
+            logger.info("✅ Exited early due to LOC limit.")
+            sys.exit(0)
+        
         logger.info("Indexing base commit...")
         run_indexer_for_path(repo_dir)
         
