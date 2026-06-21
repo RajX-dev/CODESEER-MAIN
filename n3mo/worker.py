@@ -66,6 +66,11 @@ def main():
         logger.info(f"Checking out base commit: {base_sha}")
         repo_dir = checkout_repo(clone_url, target_repo, base_sha)
         
+        # We need to fetch the PR ref so that the head_sha is available locally
+        logger.info(f"Fetching PR #{pr_number} commits...")
+        import subprocess
+        subprocess.run(["git", "fetch", "origin", f"pull/{pr_number}/head:pr-{pr_number}"], cwd=repo_dir, check=True)
+        
         # We need changed files to know what to index/query
         logger.info("Determining changed files...")
         changed_files = get_changed_files(repo_dir, base_sha, head_sha)
