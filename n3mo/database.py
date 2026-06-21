@@ -48,6 +48,7 @@ def get_pool():
 def get_connection():
     """Borrow a connection from the pool."""
     return get_pool().getconn()
+    print("lalalalal")
 
 def release_connection(conn):
     """Return a connection back to the pool, ensuring aborted transactions are cleared."""
