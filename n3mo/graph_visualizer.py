@@ -60,9 +60,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       --red: #dc2626;
       --cyan: #0891b2;
       --green: #16a34a;
-      --accent: #4f46e5;
-      --accent-hover: #4338ca;
-      --accent-bg-active: rgba(79, 70, 229, 0.08);
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --accent-bg-active: rgba(245, 158, 11, 0.08);
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
       --font-ui: "Inter", sans-serif;
       --font-mono: "JetBrains Mono", monospace;
@@ -656,6 +656,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       text-decoration: none;
       transition: all 0.2s ease;
     }
@@ -1501,7 +1502,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         </div>
         ${codeHtml}
         <div class="action-row">
-          <a class="action primary" href="${editorLink}">Open in editor</a>
+          <a class="action primary" href="${editorLink}"><i class="fa-solid fa-code"></i> Open in editor</a>
           <button class="action" id="focus-selected" type="button"><i class="fa-solid fa-crosshairs"></i> Focus path</button>
           <button class="action" id="copy-location" type="button"><i class="fa-solid fa-copy"></i> Copy path</button>
           <button class="action" id="clear-path" type="button"><i class="fa-solid fa-xmark"></i> Clear path</button>
