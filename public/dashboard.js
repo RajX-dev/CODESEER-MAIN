@@ -45,20 +45,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Populate Plan
         const planType = data.subscription?.plan_type || 'free';
         const isProOrEnt = planType === 'pro' || planType === 'enterprise';
+        let isExpired = false;
         
-        planBadge.textContent = planType.toUpperCase();
-        
+        // Show subscription details
+        const subDetails = document.getElementById('sub-details');
+        const subStart = document.getElementById('sub-start-date');
+        const subExpires = document.getElementById('sub-expires-in');
+
         if (isProOrEnt) {
-            planBadge.className = "plan-badge pro";
-            
-            viewPro.style.display = 'block';
-            secretInput.value = data.webhook_secret;
-            
-            // Show subscription details
-            const subDetails = document.getElementById('sub-details');
-            const subStart = document.getElementById('sub-start-date');
-            const subExpires = document.getElementById('sub-expires-in');
-            
             subDetails.style.display = 'block';
             
             if (data.subscription && data.subscription.created_at) {
@@ -77,11 +71,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     subExpires.textContent = `${diffDays} days`;
                 } else {
                     subExpires.textContent = "Expired";
-                    subExpires.style.color = "var(--text-red)";
+                    subExpires.style.color = "#ef4444";
+                    isExpired = true;
                 }
             } else {
                 subExpires.textContent = "Lifetime / Active";
             }
+        }
+        
+        planBadge.textContent = planType.toUpperCase();
+        
+        if (isProOrEnt && !isExpired) {
+            planBadge.className = "plan-badge pro";
+            
+            viewPro.style.display = 'block';
+            secretInput.value = data.webhook_secret;
             
             // Dynamically update the webhook URL in the HTML
             const payloadUrlEl = document.getElementById('webhook-payload-url');
@@ -89,6 +93,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 payloadUrlEl.textContent = `${window.location.origin}/github/webhook`;
             }
         } else {
+            if (isExpired) {
+                planBadge.textContent = "EXPIRED";
+                planBadge.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
+                planBadge.style.color = "#ef4444";
+                planBadge.style.border = "1px solid rgba(239, 68, 68, 0.5)";
+            }
             viewFree.style.display = 'block';
         }
 
