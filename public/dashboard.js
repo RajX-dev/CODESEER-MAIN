@@ -98,6 +98,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isProOrEnt && !isExpired) {
             planBadge.className = "plan-badge pro";
             viewPro.style.display = 'block';
+            if (planType === 'enterprise') {
+                const titleEl = document.getElementById('paid-plan-title');
+                const descEl = document.getElementById('paid-plan-desc');
+                if (titleEl) titleEl.textContent = 'Enterprise Subscription Active';
+                if (descEl) descEl.innerHTML = 'Thank you for supporting N3MO! You can now analyze repositories with <strong>unlimited lines of code</strong>.';
+            }
         } else {
             if (isExpired) {
                 planBadge.textContent = "EXPIRED";
