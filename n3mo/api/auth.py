@@ -183,5 +183,11 @@ def get_user_profile(current_user: dict = Depends(get_current_user_from_token)):
 def logout(response: Response):
     """Logs out user by clearing the session cookie."""
     response = Response(content=json.dumps({"status": "success", "message": "Logged out successfully"}), media_type="application/json")
-    response.delete_cookie("session")
+    response.delete_cookie(
+        key="session",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
     return response
