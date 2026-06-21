@@ -8,18 +8,24 @@
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    
+
     /* Neon & Developer Accents */
-    --accent: #f59e0b; /* Amber */
-    --accent-glow: rgba(245, 158, 11, 0.2);
-    --accent-green: #10b981; /* Success Green */
-    --accent-red: #f43f5e; /* Danger/Alert Red */
-    --accent-blue: #3b82f6; /* Info Blue */
-    
+    --accent: #f59e0b;
+    /* Amber */
+    --accent-glow: rgba(245, 158, 11, 0.4);
+    --accent-green: #10b981;
+    /* Success Green */
+    --accent-red: #f43f5e;
+    /* Danger/Alert Red */
+    --accent-blue: #3b82f6;
+    /* Info Blue */
+    --glass-bg: rgba(13, 15, 21, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.08);
+
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
     --font-heading: 'Bricolage Grotesque', 'Space Grotesque', sans-serif;
-    
-    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -38,6 +44,7 @@ body {
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
+    cursor: none;
 }
 
 /* Layout Utilities */
@@ -50,7 +57,6 @@ body {
 /* Header & Navigation Bar */
 header {
     background-color: rgba(7, 8, 12, 0.85);
-    backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border-color);
     position: fixed;
     top: 0;
@@ -160,8 +166,9 @@ nav a:hover {
 /* Hero Section / Split Playground Dashboard */
 .hero-dashboard {
     position: relative;
+    z-index: 2;
     padding: 140px 0 90px 0;
-    background-color: #050608;
+    background: transparent;
     border-bottom: 1px solid var(--border-color);
     overflow: hidden;
 }
@@ -170,7 +177,7 @@ nav a:hover {
     position: absolute;
     inset: 0;
     background-size: 40px 40px;
-    background-image: 
+    background-image:
         linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
     z-index: 1;
@@ -259,9 +266,17 @@ h1 {
     border-radius: 50%;
 }
 
-.dot.red { background-color: var(--accent-red); }
-.dot.yellow { background-color: var(--accent); }
-.dot.green { background-color: var(--accent-green); }
+.dot.red {
+    background-color: var(--accent-red);
+}
+
+.dot.yellow {
+    background-color: var(--accent);
+}
+
+.dot.green {
+    background-color: var(--accent-green);
+}
 
 .terminal-title {
     color: var(--text-muted);
@@ -329,9 +344,17 @@ h1 {
     border-radius: 50%;
 }
 
-.window-dot.red { background-color: rgba(244, 63, 94, 0.4); }
-.window-dot.yellow { background-color: rgba(245, 158, 11, 0.4); }
-.window-dot.green { background-color: rgba(16, 185, 129, 0.4); }
+.window-dot.red {
+    background-color: rgba(244, 63, 94, 0.4);
+}
+
+.window-dot.yellow {
+    background-color: rgba(245, 158, 11, 0.4);
+}
+
+.window-dot.green {
+    background-color: rgba(16, 185, 129, 0.4);
+}
 
 .window-title {
     color: var(--text-secondary);
@@ -521,7 +544,8 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0; /* Hide text, only display circle dot */
+    font-size: 0;
+    /* Hide text, only display circle dot */
     cursor: pointer;
     transform: rotate(var(--angle)) translate(70px) rotate(calc(-1 * var(--angle)));
     transition: var(--transition-smooth);
@@ -571,13 +595,23 @@ h1 {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes spin-reverse {
-    from { transform: rotate(360deg); }
-    to { transform: rotate(0deg); }
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
 }
 
 /* Bento Grid Features Section */
@@ -609,19 +643,42 @@ h1 {
 }
 
 .bento-card {
-    background-color: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
     padding: 28px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     transition: var(--transition-smooth);
+    position: relative;
+}
+
+.bento-card::before, .price-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(800px circle at var(--card-x, 50%) var(--card-y, 50%), rgba(245, 158, 11, 0.12), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+}
+
+.bento-card:hover::before, .price-card:hover::before {
+    opacity: 1;
+}
+
+.bento-body, .price-header, .price-features, .feature-header {
+    position: relative;
+    z-index: 1;
 }
 
 .bento-card:hover {
-    border-color: var(--border-highlight);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.12), inset 0 0 20px rgba(245, 158, 11, 0.05);
+    transform: translateY(-4px);
 }
 
 .bento-card.col-span-2 {
@@ -682,8 +739,13 @@ h1 {
     gap: 16px;
 }
 
-.telemetry-bar .text-orange { color: var(--accent); }
-.telemetry-bar .text-green { color: var(--accent-green); }
+.telemetry-bar .text-orange {
+    color: var(--accent);
+}
+
+.telemetry-bar .text-green {
+    color: var(--accent-green);
+}
 
 .telemetry-code {
     padding: 12px;
@@ -692,9 +754,17 @@ h1 {
     line-height: 1.5;
 }
 
-.t-keyword { color: #f472b6; }
-.t-string { color: #34d399; }
-.text-muted { color: var(--text-muted); }
+.t-keyword {
+    color: #f472b6;
+}
+
+.t-string {
+    color: #34d399;
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
 
 /* Language Cloud inside Bento Card */
 .language-cloud {
@@ -784,15 +854,18 @@ h1 {
 }
 
 .price-card {
-    background-color: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
     padding: 36px;
     transition: var(--transition-smooth);
+    position: relative;
 }
 
 .price-card:hover {
-    border-color: var(--border-highlight);
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.12);
+    transform: translateY(-4px);
 }
 
 .price-card.featured {
@@ -934,10 +1007,21 @@ h1 {
     overflow-x: auto;
 }
 
-.c-blue { color: #60a5fa; }
-.c-yellow { color: #fbbf24; }
-.c-green { color: #34d399; }
-.c-purple { color: #c084fc; }
+.c-blue {
+    color: #60a5fa;
+}
+
+.c-yellow {
+    color: #fbbf24;
+}
+
+.c-green {
+    color: #34d399;
+}
+
+.c-purple {
+    color: #c084fc;
+}
 
 /* Privacy and Code Governance Section */
 .privacy-section {
@@ -1030,34 +1114,256 @@ footer {
 
 /* Responsive adjustments */
 @media (max-width: 991px) {
-    h1 { font-size: 38px; }
+    h1 {
+        font-size: 38px;
+    }
+
     .hero-layout {
         grid-template-columns: 1fr;
         gap: 36px;
     }
+
     .bento-grid {
         grid-template-columns: 1fr;
     }
+
     .bento-card.col-span-2 {
         grid-column: span 1;
     }
+
     .pricing-grid {
         grid-template-columns: 1fr;
         max-width: 440px;
         margin: 0 auto;
         gap: 32px;
     }
+
     .docs-grid {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 576px) {
-    h1 { font-size: 30px; }
+    h1 {
+        font-size: 30px;
+    }
+
     .hero-actions {
         flex-direction: column;
     }
+
     .privacy-grid-details {
         grid-template-columns: 1fr;
     }
+}
+
+/* Fade Up Reveals (for cards and containers) */
+.reveal-fade {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal-fade.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal-delay-1.reveal-fade {
+    transition-delay: 0.1s;
+}
+
+.reveal-delay-2.reveal-fade {
+    transition-delay: 0.2s;
+}
+
+.reveal-delay-3.reveal-fade {
+    transition-delay: 0.3s;
+}
+
+/* Cinematic Scroll Reveals (for text) */
+.reveal-text {
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: top;
+    background: transparent;
+}
+
+.reveal-inner {
+    display: inline-block;
+    transform: translateY(110%);
+    transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.reveal-text.active .reveal-inner {
+    transform: translateY(0);
+}
+
+.reveal-delay-1 .reveal-inner {
+    transition-delay: 0.1s;
+}
+
+.reveal-delay-2 .reveal-inner {
+    transition-delay: 0.2s;
+}
+
+.reveal-delay-3 .reveal-inner {
+    transition-delay: 0.3s;
+}
+
+/* Mouse Tracker Glow */
+.cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transform: translate(calc(var(--mouse-x, 0) * 1px - 50%), calc(var(--mouse-y, 0) * 1px - 50%)) scale(var(--glow-scale, 1));
+    transition: opacity 0.5s ease;
+    mix-blend-mode: screen;
+    will-change: transform;
+}
+
+.cursor-glow.glow-active {
+    --glow-scale: 0.5;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 60%);
+}
+
+/* Custom Cursor Dot */
+.cur-dot {
+    position: fixed;
+    top: 0; left: 0;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    z-index: 10000;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s, height 0.25s, background 0.25s;
+    will-change: width, height, transform;
+}
+.cur-dot.big {
+    width: 48px; height: 48px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 2px solid var(--accent);
+}
+
+/* Animated Gradient Field */
+#ambient-field {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    filter: blur(80px) saturate(140%);
+    pointer-events: none;
+    will-change: transform;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    will-change: transform;
+    background: radial-gradient(ellipse, rgba(245, 158, 11, 0.15), transparent 60%);
+}
+
+.orb-1 {
+    width: 45vw;
+    height: 45vw;
+    top: -10%;
+    left: 10%;
+    animation: lava1 12s ease-in-out infinite alternate;
+}
+
+.orb-2 {
+    width: 40vw;
+    height: 50vw;
+    bottom: -20%;
+    right: 10%;
+    animation: lava2 15s ease-in-out infinite alternate;
+}
+
+.orb-3 {
+    width: 50vw;
+    height: 35vw;
+    top: 40%;
+    left: 30%;
+    animation: lava3 18s ease-in-out infinite alternate;
+}
+
+.orb-4 {
+    width: 35vw;
+    height: 35vw;
+    bottom: 10%;
+    left: -10%;
+    animation: lava1 14s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes lava1 {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(15vw, 20vh) scale(1.2, 0.9);
+    }
+
+    66% {
+        transform: translate(-10vw, 40vh) scale(0.9, 1.2);
+    }
+
+    100% {
+        transform: translate(10vw, 10vh) scale(1.1, 1.1);
+    }
+}
+
+@keyframes lava2 {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(-20vw, -20vh) scale(0.8, 1.2);
+    }
+
+    66% {
+        transform: translate(15vw, -35vh) scale(1.3, 0.9);
+    }
+
+    100% {
+        transform: translate(-10vw, -10vh) scale(1, 1);
+    }
+}
+
+@keyframes lava3 {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(25vw, -15vh) scale(1.1, 1.1);
+    }
+
+    66% {
+        transform: translate(5vw, 25vh) scale(0.9, 1.3);
+    }
+
+    100% {
+        transform: translate(-15vw, -5vh) scale(1.2, 0.8);
+    }
+}
+
+/* Grain Overlay */
+#grain-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }

@@ -57,8 +57,10 @@
         }
         .plan-box {
             background-color: rgba(255,255,255,0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
             padding: 16px;
             display: flex;
             justify-content: space-between;
@@ -98,8 +100,9 @@
         }
         .secret-input {
             flex: 1;
-            background-color: #000;
-            border: 1px solid var(--border-color);
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--glass-border);
             color: var(--text-primary);
             font-family: var(--font-mono);
             font-size: 13px;
@@ -147,12 +150,28 @@
         
         /* Overrides to match design system */
         #view-free {
-            border-color: rgba(245, 158, 11, 0.3);
-            background-image: linear-gradient(to bottom right, rgba(245, 158, 11, 0.05), transparent);
+            border-color: rgba(245, 158, 11, 0.4);
+            background-image: linear-gradient(to bottom right, rgba(245, 158, 11, 0.1), transparent);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08);
         }
     </style>
 </head>
 <body>
+    <!-- Mouse Tracker -->
+    <!-- SVG Grain Overlay -->
+    <div id="grain-overlay"></div>
+    
+    <!-- Animated Gradient Field -->
+    <div id="ambient-field">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+    
+    <!-- Custom Cursor -->
+    <div class="cur-dot"></div>
+    <div class="cursor-glow"></div>
     
     <header>
         <div class="nav-container">
@@ -221,7 +240,7 @@
 
                     <!-- Pro Tier View -->
                     <div id="view-pro" class="pro-view">
-                        <div class="bento-card" style="border-color: rgba(16, 185, 129, 0.3); background-color: rgba(16, 185, 129, 0.02); margin-bottom: 24px;">
+                        <div class="bento-card" style="border-color: rgba(16, 185, 129, 0.4); background-image: linear-gradient(to bottom right, rgba(16, 185, 129, 0.05), transparent); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08); margin-bottom: 24px;">
                             <h2 style="font-family: var(--font-heading); font-size: 20px; color: var(--accent-green); margin-bottom: 8px;">
                                 Pro Subscription Active
                             </h2>

@@ -111,6 +111,23 @@ document.addEventListener("DOMContentLoaded", () => {
             ring2.style.animationPlayState = "running";
         });
     });
+
+    // Scroll Reveal Intersection Observer
+    const reveals = document.querySelectorAll(".reveal-fade, .reveal-text");
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("active");
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        root: null,
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px"
+    });
+
+    reveals.forEach(reveal => revealObserver.observe(reveal));
 });
 
 // LemonSqueezy / Gumroad Checkout Flow
@@ -120,4 +137,68 @@ async function handleCheckout(planType) {
     // Redirect to login -> dashboard flow
     // The user will upgrade from their actual dashboard once logged in.
     window.location.href = '/api/auth/login';
+}
+
+// Mouse Tracker
+const cursorGlow = document.querySelector('.cursor-glow');
+const curDot = document.querySelector('.cur-dot');
+
+if (cursorGlow || curDot) {
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let currentX = window.innerWidth / 2;
+    let currentY = window.innerHeight / 2;
+
+    document.addEventListener('mousemove', (e) => {
+        if (cursorGlow) cursorGlow.style.opacity = '1';
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+    
+    document.addEventListener('mouseleave', () => {
+        if (cursorGlow) cursorGlow.style.opacity = '0';
+        if (curDot) curDot.style.opacity = '0';
+    });
+
+    document.addEventListener('mouseenter', () => {
+        if (curDot) curDot.style.opacity = '1';
+    });
+
+    const interactives = document.querySelectorAll('a, button, .bento-card, .price-card, .orbit-node, .symbol-btn');
+    interactives.forEach(el => {
+        const isCard = el.classList.contains('bento-card') || el.classList.contains('price-card');
+        
+        el.addEventListener('mouseenter', () => {
+            if (cursorGlow) cursorGlow.classList.add('glow-active');
+            if (curDot && !isCard) curDot.classList.add('big');
+        });
+        el.addEventListener('mouseleave', () => {
+            if (cursorGlow) cursorGlow.classList.remove('glow-active');
+            if (curDot) curDot.classList.remove('big');
+        });
+        if (isCard) {
+            el.addEventListener('mousemove', (e) => {
+                const rect = el.getBoundingClientRect();
+                el.style.setProperty('--card-x', `${e.clientX - rect.left}px`);
+                el.style.setProperty('--card-y', `${e.clientY - rect.top}px`);
+            });
+        }
+    });
+
+    function animateGlow() {
+        if (curDot) {
+            curDot.style.transform = `translate(-50%, -50%) translate3d(${mouseX}px, ${mouseY}px, 0)`;
+        }
+        if (cursorGlow) {
+            // LERP for ultra-fluid trailing
+            currentX += (mouseX - currentX) * 0.1;
+            currentY += (mouseY - currentY) * 0.1;
+            
+            cursorGlow.style.setProperty('--mouse-x', currentX);
+            cursorGlow.style.setProperty('--mouse-y', currentY);
+        }
+        requestAnimationFrame(animateGlow);
+    }
+    
+    animateGlow();
 }

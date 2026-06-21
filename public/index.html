@@ -15,6 +15,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Mouse Tracker -->
+    <!-- SVG Grain Overlay -->
+    <div id="grain-overlay"></div>
+    
+    <!-- Animated Gradient Field -->
+    <div id="ambient-field">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+    
+    <!-- Custom Cursor -->
+    <div class="cur-dot"></div>
+    <div class="cursor-glow"></div>
 
     <!-- Header / Nav -->
     <header>
@@ -132,7 +147,7 @@
             
             <div class="bento-grid">
                 <!-- Large Card 1: Transitive Blast Radius -->
-                <div class="bento-card col-span-2 row-span-1 highlight-card">
+                <div class="bento-card col-span-2 row-span-1 highlight-card reveal-fade">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-burst"></i></div>
@@ -155,7 +170,7 @@
                 </div>
                 
                 <!-- Small Card 2: 27 Languages Supported -->
-                <div class="bento-card col-span-1 row-span-1">
+                <div class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-1">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
@@ -174,7 +189,7 @@
                 </div>
 
                 <!-- Small Card 3: Native MCP Server -->
-                <div class="bento-card col-span-1 row-span-1">
+                <div class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-2">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
@@ -188,7 +203,7 @@
                 </div>
                 
                 <!-- Large Card 4: GitHub App Webhook -->
-                <div class="bento-card col-span-2 row-span-1 highlight-card">
+                <div class="bento-card col-span-2 row-span-1 highlight-card reveal-fade reveal-delay-3">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-git-pull-request"></i></div>
@@ -220,7 +235,7 @@
             
             <div class="pricing-grid">
                 <!-- Free Tier -->
-                <div class="price-card">
+                <div class="price-card reveal-fade">
                     <div class="price-header">
                         <h4>Free Plan</h4>
                         <div class="price-amount">$0<span>/month</span></div>
@@ -236,7 +251,7 @@
                 </div>
 
                 <!-- Pro Tier -->
-                <div class="price-card featured">
+                <div class="price-card featured reveal-fade reveal-delay-1">
                     <div class="featured-badge"><i class="fa-solid fa-star"></i> Popular</div>
                     <div class="price-header">
                         <h4>Pro Plan</h4>
@@ -253,7 +268,7 @@
                 </div>
 
                 <!-- Enterprise Tier -->
-                <div class="price-card">
+                <div class="price-card reveal-fade reveal-delay-2">
                     <div class="price-header">
                         <h4>Enterprise</h4>
                         <div class="price-amount">Custom</div>

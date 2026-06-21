@@ -4,6 +4,8 @@
 # python
 __pycache__/
 *.pyc
+.pytest_cache/
+.ruff_cache/
 
 # docker
 *.log
@@ -51,4 +53,4 @@ impact_graph.html
 secrets/
 
 # Local scripts
-demo_enterprise.py
+scripts/demo_enterprise.py

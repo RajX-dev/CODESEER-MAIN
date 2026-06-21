@@ -162,7 +162,7 @@ def oauth_callback(response: Response, code: str = Query(None)):
         httponly=True,
         max_age=7 * 24 * 60 * 60, # 7 Days
         samesite="lax",
-        secure=False # Set to True in production (HTTPS)
+        secure=True
     )
     return response
 
