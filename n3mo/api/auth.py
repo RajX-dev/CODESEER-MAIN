@@ -24,10 +24,10 @@ from fastapi import APIRouter, HTTPException, Query, Response, Depends, Cookie
 from fastapi.responses import RedirectResponse
 import warnings
 
+from n3mo.saas_db import upsert_user
+
 # Suppress PyJWT InsecureKeyLengthWarning for short testing secrets
 warnings.filterwarnings("ignore", message="The HMAC key is .* bytes long", module="jwt")
-
-from n3mo.saas_db import upsert_user
 
 logger = logging.getLogger("n3mo.api.auth")
 router = APIRouter()
