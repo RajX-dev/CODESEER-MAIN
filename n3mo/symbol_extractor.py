@@ -66,12 +66,8 @@ def get_parser(lang_name):
     except ValueError:
         return None
 
-# Main Python parser instance (preserved for legacy Python extractors)
+# Main Python parser language object (preserved for legacy Python extractors)
 PY_LANGUAGE = LANGUAGES.get("python")
-try:
-    parser = Parser(PY_LANGUAGE) if PY_LANGUAGE else None
-except ValueError:
-    parser = None
 
 
 
@@ -476,9 +472,14 @@ def extract_symbols_imports_calls(code_bytes, file_path="unknown"):
     """
     Returns: (symbols, imports, calls)
     """
-    if not parser:
+    if not PY_LANGUAGE:
         return [], [], []
-    tree = parser.parse(code_bytes)
+    try:
+        local_parser = Parser(PY_LANGUAGE)
+    except ValueError:
+        return [], [], []
+        
+    tree = local_parser.parse(code_bytes)
     root_node = tree.root_node
 
     symbols = []
