@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +10,10 @@
     <!-- Include fonts used in style.css -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
     <style>
         /* Dashboard-specific tweaks reusing tokens */
         .dashboard-container {
@@ -18,45 +21,53 @@
             padding-bottom: 80px;
             min-height: 100vh;
         }
+
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 32px;
         }
+
         @media (min-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr 2fr;
             }
         }
+
         .profile-card {
             display: flex;
             flex-direction: column;
             gap: 24px;
             height: fit-content;
         }
+
         .profile-header {
             display: flex;
             align-items: center;
             gap: 16px;
         }
+
         .avatar {
             width: 64px;
             height: 64px;
             border-radius: 50%;
             border: 2px solid var(--border-color);
         }
+
         .user-info h3 {
             font-family: var(--font-heading);
             font-size: 20px;
             margin-bottom: 4px;
         }
+
         .user-info p {
             color: var(--text-muted);
             font-size: 13px;
             font-family: var(--font-mono);
         }
+
         .plan-box {
-            background-color: rgba(255,255,255,0.02);
+            background-color: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
@@ -66,38 +77,49 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .plan-label {
             font-size: 13px;
             color: var(--text-secondary);
         }
+
         .plan-badge {
             font-family: var(--font-mono);
             font-size: 12px;
             font-weight: bold;
             padding: 4px 10px;
             border-radius: 4px;
-            background-color: rgba(255,255,255,0.05);
+            background-color: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             text-transform: uppercase;
         }
+
         .plan-badge.pro {
             color: #000;
             background-color: var(--accent);
             border-color: var(--accent);
         }
+
         .action-area {
             display: flex;
             flex-direction: column;
             gap: 24px;
         }
-        .pro-view { display: none; }
-        .free-view { display: none; }
-        
+
+        .pro-view {
+            display: none;
+        }
+
+        .free-view {
+            display: none;
+        }
+
         .secret-input-wrapper {
             display: flex;
             gap: 8px;
             margin-top: 16px;
         }
+
         .secret-input {
             flex: 1;
             background-color: rgba(0, 0, 0, 0.4);
@@ -109,10 +131,12 @@
             padding: 10px 14px;
             border-radius: 6px;
         }
+
         .secret-input:focus {
             outline: none;
             border-color: var(--accent);
         }
+
         .instructions-list {
             list-style-position: inside;
             color: var(--text-secondary);
@@ -120,16 +144,17 @@
             line-height: 1.8;
             margin-top: 16px;
         }
+
         .instructions-list code {
             font-family: var(--font-mono);
-            background-color: rgba(255,255,255,0.05);
+            background-color: rgba(255, 255, 255, 0.05);
             padding: 2px 6px;
             border-radius: 4px;
             color: var(--accent);
             font-size: 12px;
             border: 1px solid var(--border-color);
         }
-        
+
         /* Loading */
         #loading {
             display: flex;
@@ -139,6 +164,7 @@
             height: 40vh;
             gap: 16px;
         }
+
         .spinner {
             width: 40px;
             height: 40px;
@@ -147,7 +173,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
         /* Overrides to match design system */
         #view-free {
             border-color: rgba(245, 158, 11, 0.4);
@@ -156,11 +182,12 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Mouse Tracker -->
     <!-- SVG Grain Overlay -->
     <div id="grain-overlay"></div>
-    
+
     <!-- Animated Gradient Field -->
     <div id="ambient-field">
         <div class="orb orb-1"></div>
@@ -168,16 +195,17 @@
         <div class="orb orb-3"></div>
         <div class="orb orb-4"></div>
     </div>
-    
+
     <!-- Custom Cursor -->
     <div class="cur-dot"></div>
     <div class="cursor-glow"></div>
-    
+
     <header>
         <div class="nav-container">
             <div class="logo">
                 <div class="logo-icon">N</div>
-                <div class="logo-text">N3MO <span class="text-secondary" style="font-weight: 500; font-size: 18px; color: var(--text-muted);">Dashboard</span></div>
+                <div class="logo-text">N3MO <span class="text-secondary"
+                        style="font-weight: 500; font-size: 18px; color: var(--text-muted);">Dashboard</span></div>
             </div>
             <nav>
                 <a href="/" style="display:flex; align-items:center;">Home</a>
@@ -187,7 +215,7 @@
     </header>
 
     <main class="container dashboard-container">
-        
+
         <!-- Loading State -->
         <div id="loading">
             <div class="spinner"></div>
@@ -197,11 +225,11 @@
         <!-- Dashboard Content -->
         <div id="dashboard-content" style="display: none;">
             <div class="dashboard-grid">
-                
+
                 <!-- Profile Card (Left) -->
                 <div class="bento-card profile-card">
                     <h2 style="font-family: var(--font-heading); font-size: 22px;">Profile</h2>
-                    
+
                     <div class="profile-header">
                         <img id="user-avatar" src="" alt="Avatar" class="avatar">
                         <div class="user-info">
@@ -209,7 +237,7 @@
                             <p id="user-github-id">...</p>
                         </div>
                     </div>
-                    
+
                     <div class="plan-box">
                         <span class="plan-label">Current Plan</span>
                         <div style="display: flex; gap: 8px; align-items: center;">
@@ -220,7 +248,7 @@
 
                 <!-- Action Area (Right) -->
                 <div class="action-area">
-                    
+
                     <!-- Free Tier View -->
                     <div id="view-free" class="bento-card free-view">
                         <div class="bento-body">
@@ -228,11 +256,13 @@
                                 <h3 style="font-size: 24px;">Upgrade to <span class="accent-text">Pro</span></h3>
                             </div>
                             <p style="font-size: 15px; max-width: 500px;">
-                                Unlock N3MO's full potential for your repositories. Analyze up to 100,000 lines of code, catch deep architectural issues, and automate your PR reviews.
+                                Unlock N3MO's full potential for your repositories. Analyze up to 100,000 lines of code,
+                                catch deep architectural issues, and automate your PR reviews.
                             </p>
                             <div style="margin-top: 32px;">
-                                <button id="upgrade-btn" class="btn btn-primary" style="font-size: 15px; padding: 12px 24px;">
-                                    Upgrade Now - $30/mo
+                                <button id="upgrade-btn" class="btn btn-primary"
+                                    style="font-size: 15px; padding: 12px 24px;">
+                                    Upgrade Now - $25/mo
                                 </button>
                             </div>
                         </div>
@@ -240,23 +270,29 @@
 
                     <!-- Pro Tier View -->
                     <div id="view-pro" class="pro-view">
-                        <div class="bento-card" style="border-color: rgba(16, 185, 129, 0.4); background-image: linear-gradient(to bottom right, rgba(16, 185, 129, 0.05), transparent); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08); margin-bottom: 24px;">
-                            <h2 style="font-family: var(--font-heading); font-size: 20px; color: var(--accent-green); margin-bottom: 8px;">
+                        <div class="bento-card"
+                            style="border-color: rgba(16, 185, 129, 0.4); background-image: linear-gradient(to bottom right, rgba(16, 185, 129, 0.05), transparent); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08); margin-bottom: 24px;">
+                            <h2
+                                style="font-family: var(--font-heading); font-size: 20px; color: var(--accent-green); margin-bottom: 8px;">
                                 Pro Subscription Active
                             </h2>
                             <p style="color: var(--text-secondary); font-size: 14px;">
-                                Thank you for supporting N3MO! You can now configure your GitHub repositories to receive automated architectural analysis.
+                                Thank you for supporting N3MO! You can now configure your GitHub repositories to receive
+                                automated architectural analysis.
                             </p>
                         </div>
 
                         <div class="bento-card" style="margin-bottom: 24px;">
-                            <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px;">Your Webhook Secret</h3>
+                            <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px;">Your
+                                Webhook Secret</h3>
                             <p style="color: var(--text-secondary); font-size: 14px;">
-                                Use this secret to securely authenticate your repositories with the N3MO engine. <span style="color: var(--accent-red);">Keep this secret private.</span>
+                                Use this secret to securely authenticate your repositories with the N3MO engine. <span
+                                    style="color: var(--accent-red);">Keep this secret private.</span>
                             </p>
-                            
+
                             <div class="secret-input-wrapper">
-                                <input type="password" id="webhook-secret-input" readonly class="secret-input" value="loading...">
+                                <input type="password" id="webhook-secret-input" readonly class="secret-input"
+                                    value="loading...">
                                 <button id="copy-secret-btn" class="btn btn-primary">Copy</button>
                                 <button id="toggle-secret-btn" class="btn btn-secondary">Show</button>
                             </div>
@@ -265,12 +301,15 @@
                         <div class="bento-card">
                             <h3 style="font-family: var(--font-heading); font-size: 18px;">Setup Instructions</h3>
                             <ol class="instructions-list">
-                                <li>Go to your GitHub Repository -> <strong>Settings</strong> -> <strong>Webhooks</strong>.</li>
+                                <li>Go to your GitHub Repository -> <strong>Settings</strong> ->
+                                    <strong>Webhooks</strong>.</li>
                                 <li>Click <strong>Add webhook</strong>.</li>
-                                <li>Set Payload URL to: <code id="webhook-payload-url">https://api.n3mo.shop/api/webhook</code></li>
+                                <li>Set Payload URL to: <code
+                                        id="webhook-payload-url">https://api.n3mo.shop/api/webhook</code></li>
                                 <li>Set Content type to: <code>application/json</code></li>
                                 <li>Paste your <strong>Webhook Secret</strong> (from above) into the Secret field.</li>
-                                <li>Select <strong>Let me select individual events</strong> and check <strong>Pull requests</strong>.</li>
+                                <li>Select <strong>Let me select individual events</strong> and check <strong>Pull
+                                        requests</strong>.</li>
                                 <li>Click Add webhook. You're done!</li>
                             </ol>
                         </div>
@@ -283,4 +322,5 @@
 
     <script src="dashboard.js"></script>
 </body>
+
 </html>

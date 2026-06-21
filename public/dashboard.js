@@ -86,13 +86,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.location.href = data.checkout_url;
             } else {
                 alert("Checkout failed. Please try again.");
-                upgradeBtn.innerHTML = `Upgrade Now - $30/mo`;
+                upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
                 upgradeBtn.disabled = false;
             }
         } catch (e) {
             console.error(e);
             alert("Checkout failed. Please try again.");
-            upgradeBtn.innerHTML = `Upgrade Now - $30/mo`;
+            upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
             upgradeBtn.disabled = false;
         }
     });
