@@ -232,7 +232,7 @@
         <div class="container">
             <h2 class="section-title">Who is N3MO Built For?</h2>
             <p class="section-subtitle">A concise breakdown of our ideal user profiles.</p>
-            <div class="bento-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 40px;">
+            <div class="bento-grid audience-grid" style="margin-top: 40px;">
                 <div class="bento-card">
                     <div class="bento-body">
                         <h3 style="color: var(--accent); margin-bottom: 12px;"><i class="fa-solid fa-code-merge"></i> Staff Engineers</h3>
@@ -262,22 +262,22 @@
             <p class="section-subtitle">Step-by-step instructions on catching breaking changes.</p>
             
             <div style="display: flex; flex-direction: column; gap: 24px; margin-top: 40px; max-width: 800px; margin-left: auto; margin-right: auto;">
-                <div class="bento-card" style="display: flex; flex-direction: row; gap: 24px; align-items: center; padding: 24px;">
-                    <div style="font-size: 32px; font-weight: bold; color: var(--accent); min-width: 50px; text-align: center;">01</div>
+                <div class="bento-card step-card" style="padding: 24px;">
+                    <div class="step-number" style="color: var(--accent);">01</div>
                     <div>
                         <h4 style="margin-bottom: 8px; font-size: 18px;">Install the GitHub App</h4>
                         <p style="font-size: 14px; color: var(--text-secondary);">Navigate to your repository settings and grant N3MO read access to your source code. You don't need to configure CI/CD pipelines or write custom workflows.</p>
                     </div>
                 </div>
-                <div class="bento-card" style="display: flex; flex-direction: row; gap: 24px; align-items: center; padding: 24px;">
-                    <div style="font-size: 32px; font-weight: bold; color: var(--accent); min-width: 50px; text-align: center;">02</div>
+                <div class="bento-card step-card" style="padding: 24px;">
+                    <div class="step-number" style="color: var(--accent);">02</div>
                     <div>
                         <h4 style="margin-bottom: 8px; font-size: 18px;">Open a Pull Request</h4>
                         <p style="font-size: 14px; color: var(--text-secondary);">A junior developer opens a PR modifying a seemingly isolated utility function, `format_date()`. Unbeknownst to them, this function is indirectly used by the core billing service.</p>
                     </div>
                 </div>
-                <div class="bento-card" style="display: flex; flex-direction: row; gap: 24px; align-items: center; padding: 24px;">
-                    <div style="font-size: 32px; font-weight: bold; color: var(--accent); min-width: 50px; text-align: center;">03</div>
+                <div class="bento-card step-card" style="padding: 24px;">
+                    <div class="step-number" style="color: var(--accent);">03</div>
                     <div>
                         <h4 style="margin-bottom: 8px; font-size: 18px;">Review the Impact Report</h4>
                         <p style="font-size: 14px; color: var(--text-secondary);">Within 2 seconds, N3MO intercepts the webhook, parses the entire AST, and posts a comment on the PR detailing the exact downstream services that depend on `format_date()`. You catch the breaking change before it hits production.</p>

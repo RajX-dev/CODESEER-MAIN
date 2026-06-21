@@ -1112,6 +1112,25 @@ footer {
     color: var(--text-secondary);
 }
 
+/* Custom Section Layouts */
+.audience-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.step-card {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    align-items: center;
+}
+
+.step-number {
+    font-size: 32px;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 991px) {
     h1 {
@@ -1123,7 +1142,7 @@ footer {
         gap: 36px;
     }
 
-    .bento-grid {
+    .bento-grid, .audience-grid {
         grid-template-columns: 1fr;
     }
 
@@ -1141,6 +1160,10 @@ footer {
     .docs-grid {
         grid-template-columns: 1fr;
     }
+
+    nav {
+        display: none;
+    }
 }
 
 @media (max-width: 576px) {
@@ -1154,6 +1177,16 @@ footer {
 
     .privacy-grid-details {
         grid-template-columns: 1fr;
+    }
+
+    .step-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .step-number {
+        text-align: left;
     }
 }
 
