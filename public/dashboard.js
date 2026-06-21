@@ -81,17 +81,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         planBadge.textContent = planType.toUpperCase();
         
+        // Show webhook section for everyone who is logged in
+        const webhookSection = document.getElementById('webhook-section');
+        if (webhookSection) {
+            webhookSection.style.display = 'block';
+        }
+        
+        secretInput.value = data.webhook_secret;
+        
+        // Dynamically update the webhook URL in the HTML
+        const payloadUrlEl = document.getElementById('webhook-payload-url');
+        if (payloadUrlEl) {
+            payloadUrlEl.textContent = `${window.location.origin}/github/webhook`;
+        }
+        
         if (isProOrEnt && !isExpired) {
             planBadge.className = "plan-badge pro";
-            
             viewPro.style.display = 'block';
-            secretInput.value = data.webhook_secret;
-            
-            // Dynamically update the webhook URL in the HTML
-            const payloadUrlEl = document.getElementById('webhook-payload-url');
-            if (payloadUrlEl) {
-                payloadUrlEl.textContent = `${window.location.origin}/github/webhook`;
-            }
         } else {
             if (isExpired) {
                 planBadge.textContent = "EXPIRED";

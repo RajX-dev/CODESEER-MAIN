@@ -260,14 +260,16 @@
                 <div class="action-area">
 
                     <!-- Free Tier View -->
-                    <div id="view-free" class="bento-card free-view">
+                    <div id="view-free" class="bento-card free-view" style="display: none; border-color: rgba(245, 158, 11, 0.4); background-image: linear-gradient(to bottom right, rgba(245, 158, 11, 0.05), transparent); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08); margin-bottom: 24px;">
                         <div class="bento-body">
                             <div class="feature-header">
-                                <h3 style="font-size: 24px;">Upgrade to <span class="accent-text">Pro</span></h3>
+                                <h3 style="font-size: 24px; color: var(--accent);">Free Tier Active</h3>
                             </div>
+                            <p style="font-size: 15px; color: var(--text-secondary); max-width: 500px; margin-bottom: 16px;">
+                                You are currently on the Free tier, which allows analysis for repositories up to <strong>15,000 lines of code</strong>.
+                            </p>
                             <p style="font-size: 15px; max-width: 500px;">
-                                Unlock N3MO's full potential for your repositories. Analyze up to 100,000 lines of code,
-                                catch deep architectural issues, and automate your PR reviews.
+                                Upgrade to N3MO <span class="accent-text">Pro</span> to unlock analysis for up to 100,000 lines of code, catch deeper architectural issues, and automate your PR reviews for larger projects.
                             </p>
                             <div style="margin-top: 32px;">
                                 <button id="upgrade-btn" class="btn btn-primary"
@@ -279,7 +281,7 @@
                     </div>
 
                     <!-- Pro Tier View -->
-                    <div id="view-pro" class="pro-view">
+                    <div id="view-pro" class="pro-view" style="display: none;">
                         <div class="bento-card"
                             style="border-color: rgba(16, 185, 129, 0.4); background-image: linear-gradient(to bottom right, rgba(16, 185, 129, 0.05), transparent); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08); margin-bottom: 24px;">
                             <h2
@@ -287,11 +289,13 @@
                                 Pro Subscription Active
                             </h2>
                             <p style="color: var(--text-secondary); font-size: 14px;">
-                                Thank you for supporting N3MO! You can now configure your GitHub repositories to receive
-                                automated architectural analysis.
+                                Thank you for supporting N3MO! You can now analyze repositories up to <strong>100,000 lines of code</strong>.
                             </p>
                         </div>
+                    </div>
 
+                    <!-- Webhook Settings (Visible to everyone) -->
+                    <div id="webhook-section" style="display: none;">
                         <div class="bento-card" style="margin-bottom: 24px;">
                             <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px;">Your
                                 Webhook Secret</h3>
