@@ -19,7 +19,7 @@ import threading
 import time
 import math
 import sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import as_completed
 
 # --- DATABASE IMPORTS ---
 from n3mo.database import (

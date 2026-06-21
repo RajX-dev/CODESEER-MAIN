@@ -94,7 +94,7 @@ def main():
     incr_one_change_time = time.time() - start_time
 
     # Cleanup dummy repo
-    print(f"\n🧹 Cleaning up dummy repository...")
+    print("\n🧹 Cleaning up dummy repository...")
     if os.path.exists(dummy_repo_abs):
         shutil.rmtree(dummy_repo_abs)
 

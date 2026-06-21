@@ -14,9 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import hmac
-import hashlib
-import json
 import pytest
 import jwt
 from unittest.mock import patch, MagicMock
@@ -24,7 +21,7 @@ from fastapi.testclient import TestClient
 from datetime import datetime, timedelta, timezone
 
 from n3mo.api_server import app
-from n3mo.license_validator import verify_license_key, get_license_hash
+from n3mo.license_validator import verify_license_key
 from n3mo.api.marketplace import generate_license_jwt
 
 client = TestClient(app)
