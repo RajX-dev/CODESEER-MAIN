@@ -483,7 +483,7 @@ def handle_pull_request(payload: dict) -> dict:
                     if sub.get("plan_type") == "enterprise":
                         max_loc = -1 # Unlimited
                     elif sub.get("plan_type") == "pro":
-                        max_loc = 100000 # 100k LOC for Pro
+                        max_loc = 70000 # 70k LOC for Pro
     else:
         # Self-hosted without a valid license key -> Block and request license
         logger.warning("N3MO Webhook: Blocked analysis on self-hosted instance due to missing or invalid N3MO_LICENSE_KEY.")
