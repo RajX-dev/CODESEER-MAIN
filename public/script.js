@@ -24,7 +24,7 @@ function copyCommand() {
 // Live Interactive Playground Logic
 document.addEventListener("DOMContentLoaded", () => {
     // Inject Auth/Dashboard CTA dynamically based on server session
-    fetch('/api/user/dashboard-data')
+    fetch('/api/auth/me', { credentials: 'include' })
         .then(res => {
             const navCta = document.querySelector('.nav-cta');
             if (!navCta) return;
