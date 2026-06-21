@@ -23,6 +23,20 @@ function copyCommand() {
 
 // Live Interactive Playground Logic
 document.addEventListener("DOMContentLoaded", () => {
+    // Inject Dashboard CTA if logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+        const navCta = document.querySelector('.nav-cta');
+        if (navCta) {
+            const dashboardBtn = document.createElement('a');
+            dashboardBtn.href = 'dashboard.html';
+            dashboardBtn.className = 'btn btn-primary';
+            dashboardBtn.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dashboard';
+            dashboardBtn.style.marginRight = '12px';
+            navCta.prepend(dashboardBtn);
+        }
+    }
+
     const symbolBtns = document.querySelectorAll(".symbol-btn");
     const centerNode = document.getElementById("graph-center");
     
