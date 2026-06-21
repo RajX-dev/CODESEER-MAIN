@@ -212,10 +212,11 @@ def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int,
                 for c in direct_callers:
                     details += f"    *   `{c['source']}` (`{c['file_path']}:{c['line']}`)\n"
             if ripple_callers:
-                details += "*   **Ripple Effects:**\n"
+                details += f"<details>\n<summary><b>View {len(ripple_callers)} Ripple Effects</b></summary>\n\n"
                 for c in sorted(ripple_callers, key=lambda x: x["depth"]):
                     indent = "  " * (c["depth"] - 1)
                     details += f"    *{indent}─▸ `{c['source']}` (`{c['file_path']}:{c['line']}`)\n"
+                details += "</details>\n"
         details_sections.append(details)
         
     markdown += "\n---\n\n"
