@@ -42,7 +42,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -83,9 +83,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       --red: #f43f5e;
       --cyan: #06b6d4;
       --green: #10b981;
-      --accent: #6366f1;
-      --accent-hover: #4f46e5;
-      --accent-bg-active: rgba(99, 102, 241, 0.15);
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --accent-bg-active: rgba(245, 158, 11, 0.15);
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
@@ -878,16 +878,59 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
   <div id="dashboard">
     <!-- Left Navigation Sidebar -->
     <aside id="nav-sidebar">
-      <div class="logo-container">
-        <div class="logo-icon"><i class="fa-solid fa-circle-nodes"></i></div>
-        <div class="logo-text">N3MO</div>
+      <div class="logo-container" style="padding-bottom: 24px;">
+        <a href="https://n3mo.shop" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: var(--text-main);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="160 30 130 130" width="32" height="32">
+            <defs>
+              <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="5" result="blur1" />
+                <feGaussianBlur stdDeviation="9" result="blur2" />
+                <feMerge><feMergeNode in="blur2" /><feMergeNode in="blur1" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+              <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ea580c"/>
+              </linearGradient>
+            </defs>
+            <path fill="none" stroke="url(#cyberGrad)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#neonGlow)" d="M 190 140 L 190 50 L 270 140 L 270 50"/>
+            <circle fill="#ffffff" stroke="#f59e0b" stroke-width="4" cx="190" cy="140" r="7"/>
+            <circle fill="#ffffff" stroke="#f59e0b" stroke-width="4" cx="190" cy="50" r="7"/>
+            <circle fill="#ffffff" stroke="#f59e0b" stroke-width="4" cx="270" cy="140" r="7"/>
+            <circle fill="#ffffff" stroke="#f59e0b" stroke-width="4" cx="270" cy="50" r="7"/>
+          </svg>
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.05em;">N3MO</span>
+        </a>
       </div>
-      
+
       <div class="nav-section">
-        <div class="nav-section-title">Navigation</div>
-        <a href="#" class="nav-item active"><i class="fa-solid fa-network-wired"></i> Impact Graph</a>
-        <a href="https://github.com/RajX-dev/N3MO" target="_blank" class="nav-item"><i class="fa-brands fa-github"></i> Repository</a>
-        <a href="https://github.com/RajX-dev/N3MO/blob/main/README.md" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i> Documentation</a>
+        <div class="nav-section-title">System Architecture</div>
+        <div class="control-group" style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Relational Engine</span>
+            <span style="color: var(--text-main); font-weight: 600;">PostgreSQL</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Parser Engine</span>
+            <span style="color: var(--text-main); font-weight: 600;">Tree-sitter</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>License Mode</span>
+            <span style="color: var(--text-main); font-weight: 600;">Local (AGPL-3.0)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Diagnostics</div>
+        <div class="control-group" style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Repo Size</span>
+            <span style="color: var(--text-main); font-weight: 600; font-family: var(--font-mono);">__REPO_SIZE__</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Index Time</span>
+            <span style="color: var(--text-main); font-weight: 600; font-family: var(--font-mono);">__INDEX_TIME__</span>
+          </div>
+        </div>
       </div>
 
       <div class="nav-section">
@@ -1010,43 +1053,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
             </div>
           </div>
 
-          <!-- Panel 2: System Architecture Details -->
-          <div class="panel-section" id="architecture-panel" style="flex-shrink: 0;">
-            <div class="panel-header">
-              <i class="fa-solid fa-server icon"></i>
-              <h3>System Architecture</h3>
-            </div>
-            <div class="panel-body">
-              <div class="arch-card">
-                <div class="arch-row">
-                  <span class="arch-label">Relational Engine</span>
-                  <span class="arch-val"><i class="fa-solid fa-database text-purple"></i> PostgreSQL</span>
-                </div>
-                <div class="arch-row">
-                  <span class="arch-label">Parser Engine</span>
-                  <span class="arch-val"><i class="fa-solid fa-code-branch text-cyan"></i> Tree-sitter</span>
-                </div>
-                <div class="arch-row">
-                  <span class="arch-label">License Mode</span>
-                  <span class="arch-val"><i class="fa-solid fa-balance-scale text-green"></i> Local (AGPL-3.0)</span>
-                </div>
-              </div>
-              
-              <div class="arch-card" style="margin-top: 12px;">
-                <div class="arch-header-sub">Diagnostics</div>
-                <div class="diagnostic-grid">
-                  <div class="diag-item">
-                    <div class="diag-label">Search Speed</div>
-                    <div class="diag-val">&lt; 50ms</div>
-                  </div>
-                  <div class="diag-item">
-                    <div class="diag-label">Link Strategy</div>
-                    <div class="diag-val">Scope-Aware</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </aside>
       </div>
     </main>
@@ -1718,7 +1725,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     page = page.replace("__TARGET_JSON__", json.dumps(target_name))
     page = page.replace("__NODES_JSON__", json.dumps(nodes_list))
     page = page.replace("__EDGES_JSON__", json.dumps(edges_list))
-    page = page.replace("__MAX_DEPTH__", str(max(1, max_depth)))
+    page = page.replace("__MAX_DEPTH__", str(max(1, max_depth)))\n    page = page.replace("__REPO_SIZE__", "14.2 MB")\n    page = page.replace("__INDEX_TIME__", "1.82s")
 
     filename = "impact_graph.html"
     with open(filename, "w", encoding="utf-8") as graph_file:
