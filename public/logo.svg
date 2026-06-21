@@ -19,22 +19,22 @@
 
     <!-- Linear Gradients for Letters -->
     <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#818cf8"/> <!-- Indigo -->
-      <stop offset="50%" stop-color="#38bdf8"/> <!-- Cyan -->
-      <stop offset="100%" stop-color="#c084fc"/> <!-- Purple -->
+      <stop offset="0%" stop-color="#fbbf24"/> <!-- Yellow -->
+      <stop offset="50%" stop-color="#f59e0b"/> <!-- Amber -->
+      <stop offset="100%" stop-color="#ea580c"/> <!-- Orange -->
     </linearGradient>
 
     <!-- Linear Gradients for Flows -->
     <linearGradient id="flowGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#818cf8" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#38bdf8" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#f59e0b" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0"/>
     </linearGradient>
 
     <linearGradient id="flowGrad2" x1="100%" y1="0%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#c084fc" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#38bdf8" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#ea580c" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#f59e0b" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
     </linearGradient>
   </defs>
 
@@ -69,9 +69,9 @@
     /* Node dots styling */
     .node-dot {
       fill: #ffffff;
-      stroke: #38bdf8;
+      stroke: #f59e0b;
       stroke-width: 2;
-      filter: drop-shadow(0 0 3px #38bdf8);
+      filter: drop-shadow(0 0 3px #f59e0b);
       animation: pulseNode 2s ease-in-out infinite alternate;
     }
 
@@ -134,8 +134,8 @@
     }
 
     .typing-cursor {
-      fill: #38bdf8;
-      filter: drop-shadow(0 0 2px #38bdf8);
+      fill: #f59e0b;
+      filter: drop-shadow(0 0 2px #f59e0b);
       animation: cursorMove 6s steps(40) infinite, cursorBlink 0.8s infinite;
     }
 
