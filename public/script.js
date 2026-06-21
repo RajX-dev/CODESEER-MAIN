@@ -23,19 +23,31 @@ function copyCommand() {
 
 // Live Interactive Playground Logic
 document.addEventListener("DOMContentLoaded", () => {
-    // Inject Dashboard CTA if logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-        const navCta = document.querySelector('.nav-cta');
-        if (navCta) {
-            const dashboardBtn = document.createElement('a');
-            dashboardBtn.href = 'dashboard.html';
-            dashboardBtn.className = 'btn btn-primary';
-            dashboardBtn.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dashboard';
-            dashboardBtn.style.marginRight = '12px';
-            navCta.prepend(dashboardBtn);
-        }
-    }
+    // Inject Auth/Dashboard CTA dynamically based on server session
+    fetch('/api/user/dashboard-data')
+        .then(res => {
+            const navCta = document.querySelector('.nav-cta');
+            if (!navCta) return;
+            
+            if (res.ok) {
+                // Logged in
+                const dashboardBtn = document.createElement('a');
+                dashboardBtn.href = 'dashboard.html';
+                dashboardBtn.className = 'btn btn-primary';
+                dashboardBtn.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dashboard';
+                dashboardBtn.style.marginRight = '12px';
+                navCta.prepend(dashboardBtn);
+            } else {
+                // Not logged in
+                const loginBtn = document.createElement('a');
+                loginBtn.href = '/api/auth/login';
+                loginBtn.className = 'btn btn-outline';
+                loginBtn.innerHTML = '<i class="fa-brands fa-github"></i> Sign In';
+                loginBtn.style.marginRight = '12px';
+                navCta.prepend(loginBtn);
+            }
+        })
+        .catch(err => console.log("API not reachable, static mode"));
 
     const symbolBtns = document.querySelectorAll(".symbol-btn");
     const centerNode = document.getElementById("graph-center");
