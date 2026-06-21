@@ -40,7 +40,9 @@ async def gumroad_webhook(request: Request):
             user_db = get_user_by_github_id(int(github_id))
             if user_db:
                 logger.info(f"Payment successful via Gumroad! Upgrading github_id {github_id} to PRO")
-                update_subscription(str(user_db["id"]), "user", "pro", "active")
+                from datetime import datetime, timedelta, timezone
+                expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                update_subscription(str(user_db["id"]), "user", "pro", "active", expires_at=expires_at)
             else:
                 logger.error(f"Received payment for github_id {github_id} but user not found in DB")
         else:

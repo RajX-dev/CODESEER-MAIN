@@ -54,6 +54,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             viewPro.style.display = 'block';
             secretInput.value = data.webhook_secret;
             
+            // Show subscription details
+            const subDetails = document.getElementById('sub-details');
+            const subStart = document.getElementById('sub-start-date');
+            const subExpires = document.getElementById('sub-expires-in');
+            
+            if (data.subscription && (data.subscription.created_at || data.subscription.expires_at)) {
+                subDetails.style.display = 'block';
+                
+                if (data.subscription.created_at) {
+                    const startD = new Date(data.subscription.created_at);
+                    subStart.textContent = startD.toLocaleDateString();
+                } else {
+                    subStart.textContent = "N/A";
+                }
+                
+                if (data.subscription.expires_at) {
+                    const expD = new Date(data.subscription.expires_at);
+                    const now = new Date();
+                    const diffTime = expD - now;
+                    if (diffTime > 0) {
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        subExpires.textContent = `${diffDays} days`;
+                    } else {
+                        subExpires.textContent = "Expired";
+                        subExpires.style.color = "var(--text-red)";
+                    }
+                } else {
+                    subExpires.textContent = "Lifetime / Active";
+                }
+            }
+            
             // Dynamically update the webhook URL in the HTML
             const payloadUrlEl = document.getElementById('webhook-payload-url');
             if (payloadUrlEl) {

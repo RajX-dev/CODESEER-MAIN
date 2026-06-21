@@ -141,12 +141,12 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
         with conn.cursor() as cur:
             if owner_type == "user":
                 cur.execute(
-                    "SELECT subscriptions.id, plan_type, status, expires_at, username FROM subscriptions JOIN users ON subscriptions.user_owner_id = users.id WHERE user_owner_id = %s",
+                    "SELECT subscriptions.id, plan_type, status, expires_at, username, subscriptions.created_at FROM subscriptions JOIN users ON subscriptions.user_owner_id = users.id WHERE user_owner_id = %s",
                     (owner_id,)
                 )
             elif owner_type == "organization":
                 cur.execute(
-                    "SELECT id, plan_type, status, expires_at, '' as username FROM subscriptions WHERE org_owner_id = %s",
+                    "SELECT id, plan_type, status, expires_at, '' as username, created_at FROM subscriptions WHERE org_owner_id = %s",
                     (owner_id,)
                 )
             else:
@@ -173,11 +173,12 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                     "id": row[0],
                     "plan_type": row[1],
                     "status": row[2],
-                    "expires_at": row[3]
+                    "expires_at": row[3],
+                    "created_at": row[5]
                 }
                 
             # Fallback default plan
-            return {"plan_type": "free", "status": "active", "expires_at": None}
+            return {"plan_type": "free", "status": "active", "expires_at": None, "created_at": None}
     except Exception as e:
         logger.error(f"Failed to fetch subscription for {owner_type} {owner_id}: {e}")
         return {"plan_type": "free", "status": "active", "expires_at": None}

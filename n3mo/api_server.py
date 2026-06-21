@@ -93,7 +93,7 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
     subscription = get_subscription(user_id, "user")
     
     if current_user["username"].lower() == "rajx-dev":
-        subscription = {"plan_type": "enterprise", "status": "active", "expires_at": None}
+        subscription = {"plan_type": "enterprise", "status": "active", "expires_at": None, "created_at": None}
     
     return {
         "status": "success",
