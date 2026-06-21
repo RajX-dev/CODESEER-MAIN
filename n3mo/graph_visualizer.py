@@ -1725,7 +1725,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     page = page.replace("__TARGET_JSON__", json.dumps(target_name))
     page = page.replace("__NODES_JSON__", json.dumps(nodes_list))
     page = page.replace("__EDGES_JSON__", json.dumps(edges_list))
-    page = page.replace("__MAX_DEPTH__", str(max(1, max_depth)))\n    page = page.replace("__REPO_SIZE__", "14.2 MB")\n    page = page.replace("__INDEX_TIME__", "1.82s")
+    page = page.replace("__MAX_DEPTH__", str(max(1, max_depth)))
+    page = page.replace("__REPO_SIZE__", "14.2 MB")
+    page = page.replace("__INDEX_TIME__", "1.82s")
 
     filename = "impact_graph.html"
     with open(filename, "w", encoding="utf-8") as graph_file:
