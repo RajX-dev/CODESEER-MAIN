@@ -352,6 +352,12 @@ async def github_webhook(
         
     logger.info(f"Received GitHub event: {x_github_event}")
 
+    # Enforce SaaS-only Webhooks
+    is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
+    if not is_saas:
+        logger.warning("Webhook endpoint hit, but SaaS mode is disabled.")
+        return {"status": "error", "message": "GitHub Webhooks are a SaaS-exclusive feature. Run N3MO via CLI locally."}
+
     # Determine which secret to use for HMAC verification
     secret_to_use = GITHUB_WEBHOOK_SECRET
     

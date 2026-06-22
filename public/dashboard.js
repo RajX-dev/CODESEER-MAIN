@@ -123,7 +123,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Hide pricing and subscription views for local/free mode
                     viewFree.style.display = 'none';
                     viewPro.style.display = 'none';
-                    planBadge.textContent = 'COMMUNITY';
+                    planBadge.textContent = 'CLI ONLY';
+                    
+                    const webhookSection = document.getElementById('webhook-section');
+                    if (webhookSection) webhookSection.style.display = 'none';
+                    
+                    // Show a message that the dashboard is for SaaS
+                    const actionArea = document.querySelector('.action-area');
+                    if (actionArea) {
+                        const msg = document.createElement('div');
+                        msg.className = 'bento-card';
+                        msg.innerHTML = `
+                            <h3 style="color: var(--accent); font-family: var(--font-heading); margin-bottom: 12px;">Community Edition</h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6;">
+                                You are running N3MO locally. You have full, unlimited access to the <strong>N3MO CLI</strong> to analyze codebases on your machine.
+                                <br><br>
+                                <em>Note: Automated GitHub Pull Request Webhooks are a SaaS-exclusive feature. Deploy N3MO to the cloud to enable it!</em>
+                            </p>
+                        `;
+                        actionArea.appendChild(msg);
+                    }
                 }
             }
         } catch (e) {
