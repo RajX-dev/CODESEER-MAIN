@@ -144,7 +144,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.warn("Could not fetch location, defaulting to US");
             }
 
-            const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}&country=${country}`, { method: 'POST' });
+            const discountCode = document.getElementById('discount-code').value.trim();
+            const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}&country=${country}&discount=${discountCode}`, { method: 'POST' });
             if (!res.ok) throw new Error("Failed to create order");
             
             const data = await res.json();
