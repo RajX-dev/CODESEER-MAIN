@@ -184,6 +184,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!res.ok) throw new Error("Failed to create order");
             
             const data = await res.json();
+            if (data.free_upgrade) {
+                alert("100% Discount applied! Upgraded to PRO successfully.");
+                window.location.reload();
+                return;
+            }
             if (data.order_id) {
                 const options = {
                     "key": data.key_id,

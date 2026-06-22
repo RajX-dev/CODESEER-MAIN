@@ -95,6 +95,26 @@ def create_order(github_id: str, country: str = "US", discount: str = ""):
         if discount and discount.upper() == "LAUNCH":
             # 20% off discount
             order_amount = int(order_amount * 0.8)
+        elif discount and discount.upper() == "RAJ":
+            # 100% off discount
+            order_amount = 0
+            
+        if order_amount == 0:
+            from n3mo.saas_db import update_subscription, get_user_by_github_id
+            from datetime import datetime, timedelta, timezone
+            user_db = get_user_by_github_id(int(github_id))
+            if user_db:
+                expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                update_subscription(str(user_db["id"]), "user", "pro", "active", expires_at=expires_at)
+            
+            return {
+                "checkout_url": "", 
+                "order_id": "FREE_UPGRADE",
+                "key_id": key_id,
+                "amount": 0,
+                "currency": order_currency,
+                "free_upgrade": True
+            }
         
         order = client.order.create({
             "amount": order_amount,
