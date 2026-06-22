@@ -19,7 +19,7 @@
     /* Danger/Alert Red */
     --accent-blue: #3b82f6;
     /* Info Blue */
-    --glass-bg: rgba(13, 15, 21, 0.85);
+    --glass-bg: rgba(7, 8, 12, 0.65);
     --glass-border: rgba(255, 255, 255, 0.08);
 
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -56,7 +56,9 @@ body {
 
 /* Header & Navigation Bar */
 header {
-    background-color: rgba(7, 8, 12, 0.85);
+    background-color: rgba(7, 8, 12, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-color);
     position: fixed;
     top: 0;
@@ -644,6 +646,8 @@ h1 {
 
 .bento-card {
     background-color: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 28px;
@@ -855,6 +859,8 @@ h1 {
 
 .price-card {
     background-color: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 36px;
