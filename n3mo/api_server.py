@@ -15,8 +15,6 @@
 
 import os
 import logging
-from dotenv import load_dotenv
-load_dotenv()
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
@@ -31,8 +29,11 @@ from n3mo.api.marketplace import router as marketplace_router
 from n3mo.api.auth import get_current_user_from_token
 from fastapi import Depends
 from n3mo.saas_db import get_subscription, get_user_by_id, get_user_by_github_id, update_subscription
-import razorpay
+import razorpay  # type: ignore
 from datetime import datetime, timedelta, timezone
+
+from dotenv import load_dotenv
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
