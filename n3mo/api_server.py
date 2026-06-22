@@ -15,6 +15,9 @@
 
 import os
 import logging
+from dotenv import load_dotenv
+load_dotenv()
+
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
@@ -25,10 +28,11 @@ from n3mo.cli import get_code_context
 from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
-from n3mo.api.gumroad_webhook import router as gumroad_router
 from n3mo.api.auth import get_current_user_from_token
 from fastapi import Depends
-from n3mo.saas_db import get_subscription, get_user_by_id
+from n3mo.saas_db import get_subscription, get_user_by_id, get_user_by_github_id, update_subscription
+import razorpay
+from datetime import datetime, timedelta, timezone
 
 logging.basicConfig(level=logging.INFO)
 
@@ -43,8 +47,9 @@ app = FastAPI(
 app.include_router(webhook_router, prefix="/github")
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])
-app.include_router(gumroad_router, prefix="/api", tags=["Payments"])
 
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "secret")
 
 class IndexRequest(BaseModel):
     target_dir: str
@@ -65,22 +70,76 @@ def trigger_indexing(req: IndexRequest):
     
     return {"status": "success", "summary": summary}
 
-@app.post("/api/create-checkout")
-def create_checkout(github_id: str):
+@app.post("/api/create-order")
+def create_order(github_id: str):
     """
-    Generate a Gumroad checkout URL for the Pro Plan.
-    We pass the github_id as a URL parameter so the webhook knows who paid.
+    Generate a Razorpay checkout order for the Pro Plan.
     """
     if not github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
         
-    # Use the user's actual Gumroad product URL
-    base_url = "https://srajster25.gumroad.com/l/n3mo-pro"
-    
-    # Gumroad automatically pulls URL parameters into custom fields if they match the name
-    checkout_url = f"{base_url}?github_id={github_id}"
-    
-    return {"checkout_url": checkout_url}
+    try:
+        key_id = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123").strip()
+        key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
+        client = razorpay.Client(auth=(key_id, key_secret))
+        order_amount = 2500  # $25.00
+        order_currency = "USD"
+        
+        order = client.order.create({
+            "amount": order_amount,
+            "currency": order_currency,
+            "receipt": f"receipt_github_{github_id}",
+            "notes": {
+                "github_id": github_id
+            }
+        })
+        
+        return {
+            "checkout_url": "", 
+            "order_id": order["id"],
+            "key_id": key_id,
+            "amount": order_amount,
+            "currency": order_currency
+        }
+    except Exception as e:
+        logging.error(f"Error creating Razorpay order: {e} with key {os.getenv('RAZORPAY_KEY_ID')}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+class VerifyPaymentRequest(BaseModel):
+    razorpay_payment_id: str
+    razorpay_order_id: str
+    razorpay_signature: str
+    github_id: str
+
+@app.post("/api/verify-payment")
+def verify_payment(req: VerifyPaymentRequest):
+    try:
+        key_id = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123").strip()
+        key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
+        client = razorpay.Client(auth=(key_id, key_secret))
+        params_dict = {
+            'razorpay_order_id': req.razorpay_order_id,
+            'razorpay_payment_id': req.razorpay_payment_id,
+            'razorpay_signature': req.razorpay_signature
+        }
+        
+        # Verify signature
+        client.utility.verify_payment_signature(params_dict)
+        
+        # If successful, upgrade the user
+        user_db = get_user_by_github_id(int(req.github_id))
+        if user_db:
+            expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+            update_subscription(str(user_db["id"]), "user", "pro", "active", expires_at=expires_at)
+            return {"status": "success", "message": "Payment verified, upgraded to PRO."}
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+    except razorpay.errors.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Payment verification failed")
+    except Exception as e:
+        logging.error(f"Error verifying payment: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/user/dashboard-data")
 def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)):

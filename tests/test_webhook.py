@@ -258,27 +258,3 @@ def test_webhook_self_hosted_blocked_without_license(mock_post_comment, mock_che
         args, kwargs = mock_post_comment.call_args
         assert "❌ N3MO Self-Hosted License Required" in args[2]
 
-def test_gumroad_webhook():
-    # Gumroad sends form data URL-encoded
-    payload_body = b"github_id=9999&price=1900&email=test%40example.com"
-    correct_hash = hmac.new(b"dummy_webhook_secret", payload_body, hashlib.sha256).hexdigest()
-    
-    with patch("n3mo.api.gumroad_webhook.update_subscription") as mock_update:
-        with patch("n3mo.api.gumroad_webhook.get_user_by_github_id") as mock_get_user:
-            mock_get_user.return_value = {"id": "mock-uuid-1234"}
-            from n3mo.api_server import app as main_app
-            client = TestClient(main_app)
-            
-            resp = client.post(
-                "/api/webhook/gumroad",
-                content=payload_body,
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-Gumroad-Signature": correct_hash
-                }
-            )
-            assert resp.status_code == 200
-            assert resp.json() == {"status": "success"}
-            import unittest.mock
-            mock_update.assert_called_once_with("mock-uuid-1234", "user", "pro", "active", expires_at=unittest.mock.ANY)
-

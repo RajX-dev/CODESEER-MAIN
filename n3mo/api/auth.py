@@ -68,10 +68,28 @@ def get_current_user_from_token(session: str = Cookie(None)) -> dict:
 
 @router.get("/login")
 def login_redirect():
-    """Redirects the client to GitHub's OAuth authorization page."""
+    """Redirects the client to GitHub's OAuth authorization page, or mocks login if missing config."""
     config = get_oauth_config()
-    if not config["client_id"]:
-        raise HTTPException(status_code=500, detail="OAuth Configuration Error: GITHUB_CLIENT_ID not set")
+    if not config["client_id"] or config["client_id"] == "mock":
+        logger.warning("Mock login bypass active! Creating dummy session.")
+        user = upsert_user(
+            github_id=12345678,
+            username="test_user",
+            email="test@example.com",
+            avatar_url="https://avatars.githubusercontent.com/u/12345678?v=4",
+            github_token="mock_token"
+        )
+        session_token = create_session_token(user["id"], user["username"])
+        response = RedirectResponse(url=config["frontend_url"])
+        response.set_cookie(
+            key="session",
+            value=session_token,
+            httponly=True,
+            max_age=7 * 24 * 60 * 60, # 7 Days
+            samesite="lax",
+            secure=True
+        )
+        return response
     
     params = {
         "client_id": config["client_id"],

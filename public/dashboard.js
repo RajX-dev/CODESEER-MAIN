@@ -131,10 +131,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         upgradeBtn.disabled = true;
         
         try {
-            const res = await fetch(`/api/create-checkout?github_id=${userData.user.github_id}`, { method: 'POST' });
+            const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}`, { method: 'POST' });
+            if (!res.ok) throw new Error("Failed to create order");
+            
             const data = await res.json();
-            if (data.checkout_url) {
-                window.location.href = data.checkout_url;
+            if (data.order_id) {
+                const options = {
+                    "key": data.key_id,
+                    "amount": data.amount,
+                    "currency": data.currency,
+                    "name": "N3MO",
+                    "description": "Pro Subscription - 30 Days",
+                    "order_id": data.order_id,
+                    "handler": async function (response) {
+                        try {
+                            const verifyRes = await fetch('/api/verify-payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    github_id: userData.user.github_id.toString()
+                                })
+                            });
+                            
+                            if (verifyRes.ok) {
+                                alert("Payment successful! Upgraded to PRO.");
+                                window.location.reload();
+                            } else {
+                                alert("Payment verification failed. Please contact support.");
+                                upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
+                                upgradeBtn.disabled = false;
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert("Error verifying payment.");
+                            upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
+                            upgradeBtn.disabled = false;
+                        }
+                    },
+                    "prefill": {
+                        "name": userData.user.username
+                    },
+                    "theme": {
+                        "color": "#10b981"
+                    },
+                    "modal": {
+                        "ondismiss": function() {
+                            upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
+                            upgradeBtn.disabled = false;
+                        }
+                    }
+                };
+                
+                const rzp = new window.Razorpay(options);
+                rzp.on('payment.failed', function (response){
+                    alert("Payment failed: " + response.error.description);
+                    upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
+                    upgradeBtn.disabled = false;
+                });
+                rzp.open();
+                
             } else {
                 alert("Checkout failed. Please try again.");
                 upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
@@ -142,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (e) {
             console.error(e);
-            alert("Checkout failed. Please try again.");
+            alert("Checkout error. Please try again.");
             upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
             upgradeBtn.disabled = false;
         }
