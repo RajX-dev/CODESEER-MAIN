@@ -116,9 +116,9 @@ def merge_impacts(base_impacts: dict, head_impacts: dict) -> dict:
 
 def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int, total_lines: int) -> str:
     if (not merged_impacts):
-        return '### Γùê N3MO Pull Request Impact Analysis\n\nΓ£ô **Safe to change:** No active symbols were modified/affected in this Pull Request.'
+        return '### ◈ N3MO Pull Request Impact Analysis\n\n✓ **Safe to change:** No active symbols were modified/affected in this Pull Request.'
     sorted_symbols = sorted(merged_impacts.items(), key=(lambda x: (x[1]['status'], x[0])))
-    markdown = '### Γùê N3MO Pull Request Impact Analysis\n\n'
+    markdown = '### ◈ N3MO Pull Request Impact Analysis\n\n'
     markdown += f'''Analyzed {total_lines:,} lines of code. Below is the blast radius report for changes in PR #{pr_number}.
 
 '''
@@ -134,16 +134,16 @@ def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int,
         total_count = len(callers)
         status_badge = f' `{status}`'
         if (status == 'Modified'):
-            status_badge = ' ≡ƒƒá `Modified`'
+            status_badge = ' 🟠 `Modified`'
         elif (status == 'Added'):
-            status_badge = ' ≡ƒƒó `Added`'
+            status_badge = ' 🟢 `Added`'
         elif (status == 'Deleted'):
-            status_badge = ' ≡ƒö┤ `Deleted`'
+            status_badge = ' 🔴 `Deleted`'
         markdown += f'''| `{file_path}` | `{name}` | {status_badge} | {direct_count} | {total_count} | [View Details](#{name.lower()}) |
 '''
         details = f'''<a name="{name.lower()}"></a>
 '''
-        details += f'''#### Γùë `{name}` ({status})
+        details += f'''#### ◉ `{name}` ({status})
 '''
         details += f'''*   **Location:** `{file_path}:{line}`
 '''
@@ -165,12 +165,12 @@ def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int,
 '''
                 for c in sorted(ripple_callers, key=(lambda x: x['depth'])):
                     indent = ('  ' * (c['depth'] - 1))
-                    details += f'''{indent}* ΓöÇΓû╕ `{c['source']}` (`{c['file_path']}:{c['line']}`)
+                    details += f'''{indent}* ─▸ `{c['source']}` (`{c['file_path']}:{c['line']}`)
 '''
                 details += '\n</details>\n'
         details_sections.append(details)
     markdown += '\n---\n\n'
-    markdown += '### ≡ƒöì Impact Details\n\n'
+    markdown += '### 🔍 Impact Details\n\n'
     markdown += '\n'.join(details_sections)
     return markdown
 
@@ -220,7 +220,7 @@ def post_github_comment(repo_name: str, pr_number: int, body_markdown: str, inst
         logger.info('Authenticating as GitHub App...')
         token = get_github_app_installation_token(app_id, private_key_env, private_key_path, installation_id)
     if (not token):
-        logger.warning('ΓÜá∩╕Å No GITHUB_TOKEN or GITHUB_APP credentials found. Printing report to stdout.')
+        logger.warning('⚠️ No GITHUB_TOKEN or GITHUB_APP credentials found. Printing report to stdout.')
         print('\n--- REPORT COMMENT ---\n')
         print(body_markdown)
         print('\n----------------------\n')
