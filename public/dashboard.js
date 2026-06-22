@@ -114,6 +114,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             viewFree.style.display = 'block';
         }
 
+        // Fetch config to check if SaaS mode is active
+        try {
+            const configRes = await fetch('/api/config');
+            if (configRes.ok) {
+                const configData = await configRes.json();
+                if (!configData.saas_mode) {
+                    // Hide pricing and subscription views for local/free mode
+                    viewFree.style.display = 'none';
+                    viewPro.style.display = 'none';
+                    planBadge.textContent = 'COMMUNITY';
+                }
+            }
+        } catch (e) {
+            console.warn("Could not fetch config", e);
+        }
+
         // Show dashboard
         loadingState.style.display = 'none';
         dashboardContent.style.display = 'block';

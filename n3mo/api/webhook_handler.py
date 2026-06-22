@@ -486,18 +486,9 @@ def handle_pull_request(payload: dict) -> dict:
                     elif sub.get("plan_type") == "pro":
                         max_loc = 70000 # 70k LOC for Pro
     else:
-        # Self-hosted without a valid license key -> Block and request license
-        logger.warning("N3MO Webhook: Blocked analysis on self-hosted instance due to missing or invalid N3MO_LICENSE_KEY.")
-        warning_msg = (
-            "### ❌ N3MO Self-Hosted License Required\n\n"
-            "This self-hosted instance of the N3MO webhook API server requires a valid Enterprise or Pro license key to analyze pull requests.\n\n"
-            "Please configure your `N3MO_LICENSE_KEY` environment variable with a valid key. Contact the N3MO team for license details."
-        )
-        post_github_comment(repo_name, pr_number, warning_msg, installation_id)
-        return {
-            "status": "license_required",
-            "message": "Self-hosted webhook requires a valid N3MO_LICENSE_KEY."
-        }
+        # Self-hosted without a valid license key -> Free and Unlimited
+        max_loc = -1
+        plan_name = "Self-Hosted Community Edition"
     
     total_lines = calculate_repo_loc(repo_dir)
     # Check limit if max_loc is positive (not -1 for unlimited)

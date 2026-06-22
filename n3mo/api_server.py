@@ -201,6 +201,11 @@ def admin_upgrade():
     finally:
         release_connection(conn)
 
+@app.get("/api/config")
+def get_config():
+    is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
+    return {"saas_mode": is_saas}
+
 @app.get("/api/admin/expire")
 def admin_expire(github_id: int):
     """Secret endpoint to forcefully expire a user's subscription for testing."""
