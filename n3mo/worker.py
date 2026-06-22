@@ -11,12 +11,12 @@ from n3mo.core_engine import (
     get_changed_files, 
     calculate_repo_loc, 
     get_project_id,
-    run_indexer_for_path,
     get_impact_for_changed_files,
     merge_impacts,
     format_impact_markdown,
     post_github_comment
 )
+from n3mo.run_indexer import run_indexer_for_path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 logger = logging.getLogger("n3mo.worker")
