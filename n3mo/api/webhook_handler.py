@@ -17,17 +17,11 @@ import os
 import logging
 import hmac
 import hashlib
-import subprocess
 import urllib.request
 import urllib.error
 import json
 from fastapi import APIRouter, FastAPI, Request, Header, HTTPException, BackgroundTasks
 
-from n3mo.run_indexer import run_indexer_for_path
-from n3mo.database import get_connection, release_connection
-from n3mo.crawler import crawl_directory
-from n3mo.saas_db import upsert_user, upsert_organization, get_subscription
-from n3mo.license_validator import verify_license_key
 
 logger = logging.getLogger("n3mo.api")
 

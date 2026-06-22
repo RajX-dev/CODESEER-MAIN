@@ -11,7 +11,6 @@ import subprocess
 import urllib.request
 import urllib.error
 import json
-from fastapi import HTTPException
 
 from n3mo.crawler import crawl_directory
 from n3mo.database import get_connection, release_connection
@@ -173,41 +172,6 @@ def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int,
     markdown += '### 🔍 Impact Details\n\n'
     markdown += '\n'.join(details_sections)
     return markdown
-
-
-
-def get_github_app_installation_token(app_id: (str | None), private_key_env: (str | None), private_key_path: (str | None), installation_id: ((str | int) | None)) -> str:
-    if (not app_id):
-        raise HTTPException(status_code=500, detail='Missing GITHUB_APP_ID')
-    try:
-        import jwt
-        import time
-    except ImportError:
-        logger.error('jwt package not found. Please install PyJWT and cryptography.')
-        raise HTTPException(status_code=500, detail='PyJWT and cryptography packages are required for GitHub App authentication')
-    private_key = private_key_env
-    if ((not private_key) and private_key_path):
-        if os.path.exists(private_key_path):
-            with open(private_key_path, 'r') as f:
-                private_key = f.read()
-    if (not private_key):
-        raise HTTPException(status_code=500, detail='GitHub App private key is empty or not found')
-    private_key = private_key.replace('\\n', '\n')
-    now = int(time.time())
-    payload = {'iat': (now - 60), 'exp': (now + 600), 'iss': str(app_id)}
-    token_jwt = jwt.encode(payload, private_key, algorithm='RS256')
-    if (not installation_id):
-        raise HTTPException(status_code=400, detail='Missing installation ID for App token request')
-    url = f'https://api.github.com/app/installations/{installation_id}/access_tokens'
-    req = urllib.request.Request(url, headers={'Authorization': f'Bearer {token_jwt}', 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'N3MO-Impact-Tracker'}, method='POST')
-    try:
-        with urllib.request.urlopen(req) as resp:
-            data = json.loads(resp.read().decode())
-            return data.get('token')
-    except urllib.error.HTTPError as e:
-        err_msg = e.read().decode()
-        logger.error(f'Failed to get App installation token: {e.code} - {err_msg}')
-        raise HTTPException(status_code=e.code, detail=f'GitHub App Token Error: {err_msg}')
 
 
 
