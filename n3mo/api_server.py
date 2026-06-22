@@ -71,7 +71,7 @@ def trigger_indexing(req: IndexRequest):
     return {"status": "success", "summary": summary}
 
 @app.post("/api/create-order")
-def create_order(github_id: str):
+def create_order(github_id: str, country: str = "US"):
     """
     Generate a Razorpay checkout order for the Pro Plan.
     """
@@ -82,8 +82,13 @@ def create_order(github_id: str):
         key_id = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123").strip()
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
-        order_amount = 2500  # $25.00
-        order_currency = "USD"
+        
+        if country.upper() == "IN":
+            order_amount = 210000  # ₹2100.00 INR
+            order_currency = "INR"
+        else:
+            order_amount = 2500  # $25.00 USD
+            order_currency = "USD"
         
         order = client.order.create({
             "amount": order_amount,

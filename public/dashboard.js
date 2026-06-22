@@ -131,7 +131,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         upgradeBtn.disabled = true;
         
         try {
-            const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}`, { method: 'POST' });
+            let country = "US";
+            try {
+                const geoRes = await fetch("https://ipapi.co/json/");
+                if (geoRes.ok) {
+                    const geoData = await geoRes.json();
+                    if (geoData && geoData.country_code) {
+                        country = geoData.country_code;
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not fetch location, defaulting to US");
+            }
+
+            const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}&country=${country}`, { method: 'POST' });
             if (!res.ok) throw new Error("Failed to create order");
             
             const data = await res.json();
