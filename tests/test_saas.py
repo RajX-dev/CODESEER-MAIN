@@ -32,7 +32,7 @@ def test_license_validator_fallback_free():
     res = verify_license_key("")
     assert res["valid"] is False
     assert res["plan_type"] == "free"
-    assert res["max_loc"] == 15000
+    assert res["max_loc"] == 6000
 
     # No configuration set in environment
     with patch.dict(os.environ, {}, clear=True):

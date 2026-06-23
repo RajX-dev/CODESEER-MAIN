@@ -25,7 +25,7 @@ logger = logging.getLogger("n3mo.license_validator")
 DEFAULT_FREE_LIMITS = {
     "valid": False,
     "plan_type": "free",
-    "max_loc": 15000,
+    "max_loc": 6000,
     "owner": "Guest",
     "reason": "No license key provided"
 }
@@ -82,7 +82,7 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
             return {
                 "valid": False,
                 "plan_type": "free",
-                "max_loc": 15000,
+                "max_loc": 6000,
                 "owner": "Unknown",
                 "reason": "Server licensing configuration missing or unsupported algorithm"
             }
@@ -95,7 +95,7 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
                 return {
                     "valid": False,
                     "plan_type": "free",
-                    "max_loc": 15000,
+                    "max_loc": 6000,
                     "owner": payload.get("owner", "Unknown"),
                     "reason": "License has expired"
                 }
@@ -114,14 +114,14 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
             return {
                 "valid": False,
                 "plan_type": "free",
-                "max_loc": 15000,
+                "max_loc": 6000,
                 "owner": "Unknown",
                 "reason": "Server licensing configuration missing"
             }
         return {
             "valid": False,
             "plan_type": "free",
-            "max_loc": 15000,
+            "max_loc": 6000,
             "owner": "Unknown",
             "reason": f"Invalid token format: {str(e)}"
         }
@@ -129,7 +129,7 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
         return {
             "valid": False,
             "plan_type": "free",
-            "max_loc": 15000,
+            "max_loc": 6000,
             "owner": "Unknown",
             "reason": "License signature has expired"
         }
@@ -137,7 +137,7 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
         return {
             "valid": False,
             "plan_type": "free",
-            "max_loc": 15000,
+            "max_loc": 6000,
             "owner": "Unknown",
             "reason": "Invalid license key signature"
         }
@@ -146,7 +146,7 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
         return {
             "valid": False,
             "plan_type": "free",
-            "max_loc": 15000,
+            "max_loc": 6000,
             "owner": "Unknown",
             "reason": f"Decoding error: {str(e)}"
         }
