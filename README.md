@@ -116,7 +116,6 @@ graph TD
     H --> I
 
     F --> J["🤖 MCP Server"]
-    F --> K["⚓ GitHub Webhook"]
 
     style A fill:#6c63ff,stroke:#4a3fbf,color:#fff
     style B fill:#7c74ff,stroke:#4a3fbf,color:#fff
@@ -128,7 +127,6 @@ graph TD
     style H fill:#45b7d1,stroke:#2c8ea8,color:#1a202c
     style I fill:#9ae6b4,stroke:#2f855a,color:#1a202c
     style J fill:#ffd93d,stroke:#d4b800,color:#1a202c
-    style K fill:#ffd93d,stroke:#d4b800,color:#1a202c
 ```
 
 ### System flow
@@ -138,7 +136,6 @@ sequenceDiagram
     participant User as User / CI
     participant CLI as N3MO CLI
     participant DB as PostgreSQL (Docker)
-    participant API as GitHub Webhook API
     participant Viz as Graph Visualizer
 
     rect rgb(26, 27, 46)
@@ -160,16 +157,6 @@ sequenceDiagram
     DB-->>CLI: Blast radius subgraph
     CLI->>Viz: Generate orbital vis.js HTML
     CLI->>User: Launch local web server & open browser
-    end
-
-    rect rgb(26, 27, 46)
-    Note over API, DB: Webhook / PR Flow
-    API->>API: Receive GitHub webhook on PR open/update
-    API->>API: Clone/checkout head & base commit
-    API->>API: Check LOC limit vs Subscription tier
-    API->>DB: Index changes (multiprocessing AST parsing)
-    API->>DB: Resolve call graph impacts
-    API-->>User: Post markdown report comment on PR
     end
 ```
 
@@ -340,35 +327,16 @@ To use N3MO in Cursor:
 
 ---
 
-## ⚓ GitHub App Integration (Self-Hosted)
+## ⚓ GitHub Webhook Integration
 
-> [!NOTE]
-> **Hosted Service Status**: The hosted public SaaS/webhook service is currently offline. Please run N3MO **locally** using the CLI or native MCP server integrations. You can also self-host the webhook API server for team PR integrations following the steps below.
-
-N3MO is designed to run entirely locally on your machine for maximum privacy, security, and speed. There is **no hosted SaaS/cloud server**; all code parsing, graph queries, and visualizations are processed offline in your local PostgreSQL container.
-
-If you wish to use N3MO for team collaboration and automated pull-request analysis in your CI/CD pipeline, you can self-host the N3MO webhook API server and configure a custom GitHub App.
+If you wish to use N3MO for team collaboration and automated pull-request analysis in your CI/CD pipeline, please visit **[n3mo.shop](https://n3mo.shop)** to get started with our GitHub Webhook integration.
 
 ### 💰 Pricing & Licensing
 
-N3MO is fully open-source and free under the **AGPL-3.0 License** for local usage, single-developer MCP integrations, and self-hosted team setups. 
+N3MO is fully open-source and free under the **AGPL-3.0 License** for local usage and single-developer MCP integrations. 
 
 *   **100% Free & Local:** Run CLI queries, local MCP integrations, and the visualizer with zero limits.
-*   **Self-Hosted Webhook:** Set up your own instance of the webhook API server to run automated PR reviews for your team.
-*   **Offline Enterprise Licensing:** For large-scale organization deployments needing offline JWT license verification (`N3MO_LICENSE_KEY`) or commercial licensing terms, please reach out to the author.
-
-*If a self-hosted repository check exceeds the configured limits in your licensing setup, N3MO will comment on the PR prompting the team to update or configure an enterprise license key.*
-
-### ⚙️ GitHub Webhook Setup (Self-Hosted)
-
-Start the API server on your deployment instance, and configure the webhook payload URL on your GitHub App or repository settings to point to `http://<your-server-ip>:8000/github/webhook`.
-
-Set the following environment variables on your server:
-
-*   `GITHUB_TOKEN` (or `GITHUB_PAT`): A GitHub personal access token with permissions to read repository contents and post comments.
-*   `GITHUB_WEBHOOK_SECRET`: Secure webhook verification token matching the GitHub App secret.
-*   `N3MO_LICENSE_KEY`: Set this to your cryptographically signed JWT license key (offered to Enterprise subscribers) to unlock unlimited LOC checks.
-*   *For GitHub App installations*: Configure `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` (or `GITHUB_APP_PRIVATE_KEY_PATH` / `GITHUB_PRIVATE_KEY_PATH`) along with the installation ID to automatically authenticate as an App.
+*   **Enterprise Licensing:** For large-scale organization deployments or commercial licensing terms, please reach out to the author.
 
 ---
 
@@ -391,27 +359,6 @@ n3mo index
 - ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
 - ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
 
-### Git Hook Integration
-
-To automatically run incremental indexing on every commit, you can install the N3MO post-commit git hook:
-
-```bash
-# Install the post-commit hook in the current repository
-n3mo git-hook install
-```
-
-### Blast radius analysis
-
-```bash
-# Find everything affected by changing a function
-n3mo impact "authenticate_user"
-
-# Limit to a specific file or traversal depth
-n3mo impact "authenticate_user" --file api/auth.py --depth 2
-
-# Open an interactive visual graph in your browser (with depth slider)
-n3mo impact "authenticate_user" --graph
-```
 
 ### Visualizer
 
@@ -476,7 +423,6 @@ graph LR
 | **Parser** | ![Tree-sitter](https://img.shields.io/badge/Tree--sitter-AST-orange) | Error-tolerant syntax analysis across 27 languages |
 | **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql) | Relational graph storage + recursive CTE queries |
 | **Runtime** | ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python) | Core logic + multiprocessing |
-| **Webhook API** | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) | Webhook server for PR checks |
 | **Infrastructure** | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker) | Containerization |
 | **Visualization** | ![JavaScript](https://img.shields.io/badge/vis.js-Graph-yellow) | Interactive impact graph |
 | **AI Integration** | ![MCP](https://img.shields.io/badge/MCP-Server-purple) | Native tool for LLM agents |
@@ -585,7 +531,6 @@ All four development phases have been completed. N3MO is stable and actively mai
 | | Multi-language support (27 languages) | ✅ Complete |
 | **Phase 4 — Distribution** | | |
 | | MCP server (Cursor / Claude / Windsurf) | ✅ Complete |
-| | GitHub Webhook API | ✅ Complete |
 | | Real-time git-hook indexing | ✅ Complete |
 
 <details>
@@ -632,7 +577,6 @@ All four development phases have been completed. N3MO is stable and actively mai
 <summary><b>Phase 4: Distribution</b> ✅ Complete</summary>
 
 - [x] MCP server — N3MO as a tool for Cursor, Claude Code, Windsurf
-- [x] GitHub Webhook API — automated PR blast radius reports
 - [x] Real-time incremental indexing via git hooks
 
 </details>

@@ -45,9 +45,13 @@ app = FastAPI(
 
 
 
-app.include_router(webhook_router, prefix="/github")
+IS_SAAS = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
+
+if IS_SAAS:
+    app.include_router(webhook_router, prefix="/github")
+    app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])
+
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
-app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "secret")
