@@ -4,23 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy | N3MO Code Intelligence</title>
+    <meta name="description" content="N3MO is a symbol-centric code intelligence engine. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="canonical" href="https://n3mo.shop/">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://n3mo.shop/">
+    <meta property="og:title" content="Privacy Policy | N3MO Code Intelligence">
+    <meta property="og:description" content="N3MO is a symbol-centric code intelligence engine. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
+    <meta property="og:image" content="https://n3mo.shop/og-image.png">
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://n3mo.shop/">
+    <meta property="twitter:title" content="Privacy Policy | N3MO Code Intelligence">
+    <meta property="twitter:description" content="N3MO is a symbol-centric code intelligence engine. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
+    <meta property="twitter:image" content="https://n3mo.shop/og-image.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&family=Space+Grotesque:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .legal-page { padding: 120px 0 60px; min-height: 80vh; }
-        .legal-content { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.02); padding: 40px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .legal-content h1 { color: var(--accent); margin-bottom: 24px; font-size: 32px; }
-        .legal-content h2 { margin-top: 32px; margin-bottom: 16px; font-size: 24px; color: #fff; }
+        .legal-page { padding: 120px 0 60px; min-height: 80vh; position: relative; z-index: 10; }
+        .legal-content { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.02); padding: 40px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(12px); }
+        .legal-content h1 { color: var(--accent); margin-bottom: 24px; font-size: 32px; font-family: var(--font-heading); }
+        .legal-content h2 { margin-top: 32px; margin-bottom: 16px; font-size: 24px; color: #fff; font-family: var(--font-heading); }
         .legal-content p, .legal-content li { color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+        .legal-content ul { list-style-type: disc; margin-left: 20px; }
         .legal-content a { color: var(--accent); text-decoration: none; }
         .legal-content a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
+    <!-- SVG Grain Overlay -->
+    <div id="grain-overlay"></div>
+
+    <!-- Animated Gradient Field -->
+    <div id="ambient-field">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="cur-dot"></div>
+    <div class="cursor-glow"></div>
+
     <header>
         <div class="nav-container">
             <div class="logo">
@@ -57,18 +87,25 @@
     </section>
 
     <footer>
-        <div class="container footer-content" style="flex-direction: column; align-items: center; gap: 24px;">
-            <div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
-                <a href="about.html">About Us</a>
-                <a href="contact.html">Contact Us</a>
-                <a href="shipping-policy.html">Shipping Policy</a>
-                <a href="refund-policy.html">Refund Policy</a>
-                <a href="terms.html">Terms & Conditions</a>
-                <a href="privacy.html">Privacy Policy</a>
+        <div class="container footer-content"
+            style="flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: 40px 0; position: relative; z-index: 10;">
+            <div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; font-size: 14px;">
+                <a href="about.html" style="color: var(--text-secondary); text-decoration: none;">About Us</a>
+                <a href="contact.html" style="color: var(--text-secondary); text-decoration: none;">Contact Us</a>
+                <a href="shipping-policy.html" style="color: var(--text-secondary); text-decoration: none;">Shipping Policy</a>
+                <a href="refund-policy.html" style="color: var(--text-secondary); text-decoration: none;">Refund Policy</a>
+                <a href="terms.html" style="color: var(--text-secondary); text-decoration: none;">Terms & Conditions</a>
+                <a href="privacy.html" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a>
             </div>
-            <div style="display: flex; gap: 24px;">
-                <p>&copy; 2026 N3MO Code Intelligence. Licensed under AGPL-3.0.</p>
+            <div style="display: flex; gap: 24px; justify-content: center;">
+                <a href="https://github.com/RajX-dev/N3MO" target="_blank" rel="noopener noreferrer"
+                    style="color: var(--text-secondary); text-decoration: none;"><i class="fa-brands fa-github"></i>
+                    GitHub</a>
+                <a href="https://github.com/RajX-dev/N3MO/blob/main/LICENSE" target="_blank" rel="noopener noreferrer"
+                    style="color: var(--text-secondary); text-decoration: none;"><i
+                        class="fa-solid fa-scale-balanced"></i> License</a>
             </div>
+            <p style="color: var(--text-secondary); font-size: 14px;">&copy; 2026 N3MO Code Intelligence. Licensed under AGPL-3.0.</p>
         </div>
     </footer>
     <script src="script.js"></script>
