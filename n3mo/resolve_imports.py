@@ -1,3 +1,18 @@
+# Copyright (C) 2026 Raj shekhar
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import logging
 from psycopg2.extras import execute_values
@@ -40,11 +55,18 @@ def get_candidate_file_paths(importer_file, module):
         py_path = module.replace('.', '/')
         direct_path = module.replace('\\', '/')
         
-        for p in [py_path, direct_path]:
+        paths = [py_path, direct_path]
+        if importer_dir:
+            paths.append(f"{importer_dir}/{py_path}")
+            paths.append(f"{importer_dir}/{direct_path}")
+            
+        for p in paths:
+            p_clean = p.replace('//', '/').strip('/')
             for ext in ['', '.py', '.js', '.jsx', '.ts', '.tsx', '.go', '.rs', '.java', '/__init__.py', '/index.js', '/index.jsx', '/index.ts', '/index.tsx']:
-                candidates.append(p + ext)
+                candidates.append(p_clean + ext)
                 
     return [c for c in candidates if c]
+
 
 
 def resolve_import_links(project_id):

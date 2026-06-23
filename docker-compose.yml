@@ -16,36 +16,23 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
-    container_name: n3mo-es
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    ports:
-      - "9200:9200"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
   indexer:
     build: 
       context: .           # <--- CHANGED: Build from the root now
     container_name: n3mo-indexer
     depends_on:
-      - postgres
-      - elasticsearch
+      postgres:
+        condition: service_healthy
+    command: uvicorn n3mo.api_server:app --host 0.0.0.0 --port 8000
     env_file:
       - .env
+    environment:
+      - POSTGRES_HOST=postgres
     ports:
       - "8000:8000"        # <--- VITAL: Keeps the Graph Server accessible!
     volumes:
       - ./n3mo:/app/n3mo:ro  # Maps the local source code
+      - ./secrets:/app/secrets:ro  # Maps the secrets folder
       # This defaults to scanning the current folder (.) unless you set TARGET_CODE_DIR
       - ${TARGET_CODE_DIR:-.}:/app/target_code
 
@@ -60,11 +47,11 @@ services:
       PGPASSWORD: n3mo
     entrypoint: >
       bash -c "
-      echo 'N3MO: Applying database schema...' &&
+      echo 'N3MO: Applying database schemas...' &&
       ls -l /schema &&
-      psql -h postgres -U n3mo -d n3mo -f /schema/schema.sql
+      psql -h postgres -U n3mo -d n3mo -f /schema/schema.sql &&
+      psql -h postgres -U n3mo -d n3mo -f /schema/saas_schema.sql
       "
 
 volumes:
   postgres_data:
-  es_data:

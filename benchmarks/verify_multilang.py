@@ -1,3 +1,18 @@
+# Copyright (C) 2026 Raj shekhar
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import shutil
 import tempfile
@@ -15,8 +30,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from n3mo.run_indexer import main as run_indexer
-from n3mo.database import get_connection, release_connection
+from n3mo.run_indexer import main as run_indexer  # noqa: E402
+from n3mo.database import get_connection, release_connection  # noqa: E402
 
 def create_multilang_project(dir_path):
     os.makedirs(dir_path, exist_ok=True)

@@ -1,9 +1,24 @@
+# Copyright (C) 2026 Raj shekhar
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from tree_sitter import Language, Parser
 import uuid
 import os
 
 # --- MULTI-LANGUAGE BINDINGS LOAD ---
-LANGUAGES = {}
+LANGUAGES: dict[str, Language] = {}
 
 def load_lang(name, module_name, lang_func_name="language"):
     try:
@@ -46,11 +61,15 @@ load_lang("vba", "tree_sitter_vba", "language")
 def get_parser(lang_name):
     if lang_name not in LANGUAGES:
         return None
-    return Parser(LANGUAGES[lang_name])
+    try:
+        return Parser(LANGUAGES[lang_name])
+    except ValueError:
+        return None
 
-# Main Python parser instance (preserved for legacy Python extractors)
+# Main Python parser language object (preserved for legacy Python extractors)
 PY_LANGUAGE = LANGUAGES.get("python")
-parser = Parser(PY_LANGUAGE) if PY_LANGUAGE else None
+
+
 
 # --- ADAPTER (Connects your logic to the runner) ---
 def extract_symbols(file_path):
@@ -453,9 +472,14 @@ def extract_symbols_imports_calls(code_bytes, file_path="unknown"):
     """
     Returns: (symbols, imports, calls)
     """
-    if not parser:
+    if not PY_LANGUAGE:
         return [], [], []
-    tree = parser.parse(code_bytes)
+    try:
+        local_parser = Parser(PY_LANGUAGE)
+    except ValueError:
+        return [], [], []
+        
+    tree = local_parser.parse(code_bytes)
     root_node = tree.root_node
 
     symbols = []

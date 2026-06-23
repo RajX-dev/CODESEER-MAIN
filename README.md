@@ -19,9 +19,9 @@
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
-**📜 Licensed under AGPL-3.0** — Free for personal/internal use • [Contact for commercial licensing](#-license)
+**📜 Licensed under AGPL-3.0** — Open source & free for local/internal usage • [Contact for commercial licensing](#-license)
 
-[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub App & Pricing](#-github-app-integration-self-hosted) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
 
 </div>
 
@@ -116,7 +116,6 @@ graph TD
     H --> I
 
     F --> J["🤖 MCP Server"]
-    F --> K["🌐 REST API"]
 
     style A fill:#6c63ff,stroke:#4a3fbf,color:#fff
     style B fill:#7c74ff,stroke:#4a3fbf,color:#fff
@@ -128,47 +127,36 @@ graph TD
     style H fill:#45b7d1,stroke:#2c8ea8,color:#1a202c
     style I fill:#9ae6b4,stroke:#2f855a,color:#1a202c
     style J fill:#ffd93d,stroke:#d4b800,color:#1a202c
-    style K fill:#ffd93d,stroke:#d4b800,color:#1a202c
 ```
 
 ### System flow
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant CLI
-    participant Docker
-    participant Parser
-    participant DB as PostgreSQL
-    participant MCP as MCP Server
-    participant API as REST API
-    participant Viz as Visualizer
+    participant User as User / CI
+    participant CLI as N3MO CLI
+    participant DB as PostgreSQL (Docker)
+    participant Viz as Graph Visualizer
 
     rect rgb(26, 27, 46)
-    Note over User, DB: Indexing Flow
+    Note over User, DB: Indexing Flow (Local CLI)
     User->>CLI: n3mo index
-    CLI->>Docker: Start containers
-    Docker->>Parser: Mount repository
-    Parser->>Parser: Walk file tree (SHA-256 hash check)
-    Parser->>Parser: Parse AST (Tree-sitter, multiprocessing)
-    Parser->>DB: Batch insert symbols, calls, imports
-    DB-->>Parser: Confirm storage
+    CLI->>DB: Start PostgreSQL container (if not running)
+    CLI->>CLI: Walk file tree (SHA-256 hash checks)
+    CLI->>CLI: Parse AST (Tree-sitter, multiprocessing)
+    CLI->>DB: Batch insert symbols, calls, imports
+    CLI->>DB: Resolve imports & call links
+    DB-->>CLI: Success
+    CLI-->>User: Complete summary
     end
 
     rect rgb(26, 27, 46)
-    Note over User, Viz: Query Flow
-    User->>CLI: n3mo impact "function_name"
-    CLI->>DB: Recursive CTE traversal
-    DB-->>Viz: Return dependency tree
-    Viz-->>User: Interactive graph (HTML/JS)
-    end
-
-    rect rgb(26, 27, 46)
-    Note over MCP, API: Integration Flow
-    MCP->>DB: AI agent queries blast radius
-    DB-->>MCP: Structured graph response
-    API->>DB: REST client queries impact
-    DB-->>API: JSON response
+    Note over User, Viz: Query & Visualization Flow
+    User->>CLI: n3mo impact "symbol" --graph
+    CLI->>DB: Recursive CTE traversal (depth & file filters)
+    DB-->>CLI: Blast radius subgraph
+    CLI->>Viz: Generate orbital vis.js HTML
+    CLI->>User: Launch local web server & open browser
     end
 ```
 
@@ -255,9 +243,9 @@ erDiagram
 
 - **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
 - **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
-- **Premium styling** — warm beige editorial layout with `Lora` serif and `Inter` sans-serif typography
+- **Premium styling** — sleek interactive dashboard landing page UI and graph visualizer styled with `Bricolage Grotesque`, `Inter`, and `JetBrains Mono` typography
+- **[SKILL.md](SKILL.md) profile** — system instructions to configure Claude as an impact-aware coding agent
 - **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
-- **FastAPI REST layer** — `GET /impact/{symbol}`, `POST /index` for programmatic access
 - **Git hooks** — automatic re-indexing on every commit
 - **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
 
@@ -323,6 +311,9 @@ n3mo mcp install
 ```
 This registers N3MO and sets up the paths automatically. Restart Claude Desktop and you're ready!
 
+### 🧠 Claude Skill (System Instructions)
+To configure Claude to run N3MO impact queries proactively before changing code in the editor, import or copy-paste the custom instructions from the **[SKILL.md](SKILL.md)** profile.
+
 ### Cursor Setup
 To use N3MO in Cursor:
 1. Go to **Settings -> Models -> MCP**.
@@ -333,6 +324,19 @@ To use N3MO in Cursor:
    * **Command**: `n3mo mcp start` (or `uvx n3mo mcp start` to run directly)
    * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
 4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
+
+---
+
+## ⚓ GitHub Webhook Integration
+
+If you wish to use N3MO for team collaboration and automated pull-request analysis in your CI/CD pipeline, please visit **[n3mo.shop](https://n3mo.shop)** to get started with our GitHub Webhook integration.
+
+### 💰 Pricing & Licensing
+
+N3MO is fully open-source and free under the **AGPL-3.0 License** for local usage and single-developer MCP integrations. 
+
+*   **100% Free & Local:** Run CLI queries, local MCP integrations, and the visualizer with zero limits.
+*   **Enterprise Licensing:** For large-scale organization deployments or commercial licensing terms, please reach out to the author.
 
 ---
 
@@ -355,18 +359,6 @@ n3mo index
 - ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
 - ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
 
-### Blast radius analysis
-
-```bash
-# Find everything affected by changing a function
-n3mo impact "authenticate_user"
-
-# Limit to a specific file or traversal depth
-n3mo impact "authenticate_user" --file api/auth.py --depth 2
-
-# Open an interactive visual graph in your browser (with depth slider)
-n3mo impact "authenticate_user" --graph
-```
 
 ### Visualizer
 
@@ -431,7 +423,6 @@ graph LR
 | **Parser** | ![Tree-sitter](https://img.shields.io/badge/Tree--sitter-AST-orange) | Error-tolerant syntax analysis across 27 languages |
 | **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql) | Relational graph storage + recursive CTE queries |
 | **Runtime** | ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python) | Core logic + multiprocessing |
-| **API** | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) | REST layer for programmatic access |
 | **Infrastructure** | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker) | Containerization |
 | **Visualization** | ![JavaScript](https://img.shields.io/badge/vis.js-Graph-yellow) | Interactive impact graph |
 | **AI Integration** | ![MCP](https://img.shields.io/badge/MCP-Server-purple) | Native tool for LLM agents |
@@ -540,7 +531,6 @@ All four development phases have been completed. N3MO is stable and actively mai
 | | Multi-language support (27 languages) | ✅ Complete |
 | **Phase 4 — Distribution** | | |
 | | MCP server (Cursor / Claude / Windsurf) | ✅ Complete |
-| | FastAPI REST layer | ✅ Complete |
 | | Real-time git-hook indexing | ✅ Complete |
 
 <details>
@@ -587,7 +577,6 @@ All four development phases have been completed. N3MO is stable and actively mai
 <summary><b>Phase 4: Distribution</b> ✅ Complete</summary>
 
 - [x] MCP server — N3MO as a tool for Cursor, Claude Code, Windsurf
-- [x] FastAPI REST layer — `GET /impact/{symbol}`, `POST /index`
 - [x] Real-time incremental indexing via git hooks
 
 </details>
@@ -612,13 +601,7 @@ Re-running ingestion produces identical results, enabling safe incremental updat
 
 ## 🤝 Contributing
 
-Contributions are welcome. Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+Contributions are welcome! Please read the **[CONTRIBUTING.md](CONTRIBUTING.md)** guide to get started with setting up the project, coding standards, and running checks locally.
 
 ### Development Setup
 
@@ -674,7 +657,7 @@ See [LICENSE](LICENSE) for full legal details.
 
 <div align="center">
 
-**⭐ Star this repo if you find it useful!**
+**⭐ Star this repo if you find it useful! thanks for visiting**
 
 *Building tools for understanding code at scale.*
 

@@ -4,6 +4,8 @@
 # python
 __pycache__/
 *.pyc
+.pytest_cache/
+.ruff_cache/
 
 # docker
 *.log
@@ -47,3 +49,8 @@ mcp-publisher
 # Graph visualizer output
 impact_graph.html
 
+# Secrets and RSA keys
+secrets/
+
+# Local scripts
+scripts/demo_enterprise.py

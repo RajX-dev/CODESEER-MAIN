@@ -1,18 +1,39 @@
+# Copyright (C) 2026 Raj shekhar
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import sys
 import logging
 import os
-from typing import List
+from typing import List, Any
 
 # Setup simple logger
 logger = logging.getLogger("n3mo.mcp")
 
+Server: Any = None
+stdio_server: Any = None
+types: Any = None
+server: Any = None
+
 try:
-    from mcp.server import Server
-    from mcp.server.stdio import stdio_server
-    import mcp.types as types
+    from mcp.server import Server as MCPServer # type: ignore
+    from mcp.server.stdio import stdio_server as MCPStdioServer # type: ignore
+    import mcp.types as MCPTypes # type: ignore
+    Server = MCPServer
+    stdio_server = MCPStdioServer
+    types = MCPTypes
 except ImportError:
-    Server = None
-    stdio_server = None
     logger.error("The 'mcp' SDK is not installed. Run 'pip install mcp' to use the MCP Server.")
 
 
@@ -252,6 +273,3 @@ async def main():
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
-else:
-    # Basic fallback module definition if imported
-    server = None

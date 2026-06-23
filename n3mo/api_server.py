@@ -1,16 +1,45 @@
+# Copyright (C) 2026 Raj shekhar
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
+import logging
+
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from n3mo.run_indexer import run_indexer_for_path
 from n3mo.database import get_connection, release_connection
 from n3mo.cli import get_code_context
+from n3mo.api.auth import router as auth_router
+from n3mo.api.auth import get_current_user_from_token
+from fastapi import Depends
+from n3mo.saas_db import get_user_by_id
+
+from dotenv import load_dotenv
+load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(
     title="N3MO Code Intelligence API Server",
     description="REST endpoints for repository indexing and impact analysis",
     version="1.0.0"
 )
+
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 
 class IndexRequest(BaseModel):
     target_dir: str
@@ -30,6 +59,23 @@ def trigger_indexing(req: IndexRequest):
         raise HTTPException(status_code=500, detail=summary)
     
     return {"status": "success", "summary": summary}
+
+@app.get("/api/user/dashboard-data")
+def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)):
+    """Fetch all data needed for the user dashboard."""
+    user_id = current_user["user_id"]
+    user_db = get_user_by_id(user_id)
+    if not user_db:
+        raise HTTPException(status_code=401, detail="User not found in database. Please re-authenticate.")
+        
+    return {
+        "status": "success",
+        "user": {
+            "username": current_user["username"],
+            "github_id": user_db.get("github_id"),
+            "avatar_url": user_db.get("avatar_url")
+        }
+    }
 
 @app.get("/impact/{symbol}")
 def get_impact(
@@ -186,6 +232,12 @@ def get_impact(
         release_connection(conn)
 
 def start_server(host="127.0.0.1", port=8000):
+    if not os.getenv("VERCEL"):
+        if os.path.exists("public"):
+            app.mount("/", StaticFiles(directory="public", html=True), name="static")
+        elif os.path.exists("frontend"):
+            app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+
     uvicorn.run(app, host=host, port=port)
 
 if __name__ == "__main__":
