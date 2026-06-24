@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     owner_type TEXT NOT NULL CHECK (owner_type IN ('user', 'organization')),
     user_owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
     org_owner_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-    plan_type TEXT NOT NULL CHECK (plan_type IN ('free', 'pro', 'enterprise')),
+    plan_type TEXT NOT NULL CHECK (plan_type IN ('free', 'pro', 'team', 'enterprise')),
     status TEXT NOT NULL CHECK (status IN ('active', 'cancelled', 'trialing', 'past_due')),
     expires_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
@@ -82,3 +82,16 @@ CREATE INDEX IF NOT EXISTS idx_organizations_github_id ON organizations(github_i
 CREATE INDEX IF NOT EXISTS idx_organizations_installation ON organizations(installation_id);
 CREATE INDEX IF NOT EXISTS idx_projects_user_owner ON projects(user_owner_id);
 CREATE INDEX IF NOT EXISTS idx_projects_org_owner ON projects(org_owner_id);
+
+-- 7. Repository Tracking Table (Enforcing Plan Limits)
+CREATE TABLE IF NOT EXISTS saas_repo_tracking (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    org_owner_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+    repo_full_name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT uq_user_repo UNIQUE (user_owner_id, repo_full_name),
+    CONSTRAINT uq_org_repo UNIQUE (org_owner_id, repo_full_name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_repo_tracking_user ON saas_repo_tracking(user_owner_id);

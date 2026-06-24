@@ -72,9 +72,9 @@ def trigger_indexing(req: IndexRequest):
     return {"status": "success", "summary": summary}
 
 @app.post("/api/create-order")
-def create_order(github_id: str, country: str = "US", discount: str = ""):
+def create_order(github_id: str, country: str = "US", discount: str = "", plan_type: str = "pro"):
     """
-    Generate a Razorpay checkout order for the Pro Plan.
+    Generate a Razorpay checkout order for the Pro or Team Plan.
     """
     if not github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
@@ -84,11 +84,15 @@ def create_order(github_id: str, country: str = "US", discount: str = ""):
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         
+        # Set base pricing based on plan
+        base_price_usd = 9800 if plan_type == "team" else 2500
+        base_price_inr = 810000 if plan_type == "team" else 210000
+        
         if country.upper() == "IN":
-            order_amount = 210000  # ₹2100.00 INR
+            order_amount = base_price_inr
             order_currency = "INR"
         else:
-            order_amount = 2500  # $25.00 USD
+            order_amount = base_price_usd
             order_currency = "USD"
             
         # Apply discount code logic
@@ -105,7 +109,7 @@ def create_order(github_id: str, country: str = "US", discount: str = ""):
             user_db = get_user_by_github_id(int(github_id))
             if user_db:
                 expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-                update_subscription(str(user_db["id"]), "user", "pro", "active", expires_at=expires_at)
+                update_subscription(str(user_db["id"]), "user", plan_type, "active", expires_at=expires_at)
             
             return {
                 "checkout_url": "", 
@@ -141,6 +145,7 @@ class VerifyPaymentRequest(BaseModel):
     razorpay_order_id: str
     razorpay_signature: str
     github_id: str
+    plan_type: str = "pro"
 
 @app.post("/api/verify-payment")
 def verify_payment(req: VerifyPaymentRequest):
@@ -161,8 +166,8 @@ def verify_payment(req: VerifyPaymentRequest):
         user_db = get_user_by_github_id(int(req.github_id))
         if user_db:
             expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-            update_subscription(str(user_db["id"]), "user", "pro", "active", expires_at=expires_at)
-            return {"status": "success", "message": "Payment verified, upgraded to PRO."}
+            update_subscription(str(user_db["id"]), "user", req.plan_type, "active", expires_at=expires_at)
+            return {"status": "success", "message": f"Payment verified, upgraded to {req.plan_type.upper()}."}
         else:
             raise HTTPException(status_code=404, detail="User not found")
             

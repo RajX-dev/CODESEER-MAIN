@@ -12,9 +12,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Views
     const viewFree = document.getElementById('view-free');
     const viewPro = document.getElementById('view-pro');
+    const viewTeam = document.getElementById('view-team');
     
     // Buttons & Inputs
-    const upgradeBtn = document.getElementById('upgrade-btn');
+    const upgradeBtns = document.querySelectorAll('.upgrade-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const secretInput = document.getElementById('webhook-secret-input');
     const copyBtn = document.getElementById('copy-secret-btn');
@@ -95,14 +96,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             payloadUrlEl.textContent = `${window.location.origin}/github/webhook`;
         }
         
-        if (isProOrEnt && !isExpired) {
+        if (!isExpired && (isProOrEnt || planType === 'team')) {
             planBadge.className = "plan-badge pro";
-            viewPro.style.display = 'block';
-            if (planType === 'enterprise') {
+            if (planType === 'team') {
+                viewTeam.style.display = 'block';
+                planBadge.style.backgroundColor = 'var(--accent-purple)';
+                planBadge.style.borderColor = 'var(--accent-purple)';
+            } else if (planType === 'enterprise') {
+                viewPro.style.display = 'block';
                 const titleEl = document.getElementById('paid-plan-title');
                 const descEl = document.getElementById('paid-plan-desc');
                 if (titleEl) titleEl.textContent = 'Enterprise Subscription Active';
                 if (descEl) descEl.innerHTML = 'Thank you for supporting N3MO! You can now analyze repositories with <strong>unlimited lines of code</strong>.';
+            } else {
+                viewPro.style.display = 'block';
             }
         } else {
             if (isExpired) {
@@ -153,111 +160,130 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadingState.style.display = 'none';
         dashboardContent.style.display = 'block';
 
+        // Auto-checkout if triggered from landing page
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedPlan = urlParams.get('plan');
+        if (requestedPlan) {
+            const targetBtn = document.querySelector(`.upgrade-btn[data-plan="${requestedPlan}"]`);
+            if (targetBtn && targetBtn.offsetParent !== null) {
+                // Remove the parameter so it doesn't loop on refresh
+                window.history.replaceState({}, document.title, window.location.pathname);
+                targetBtn.click();
+            }
+        }
+
     } catch (err) {
         console.error("Failed to load dashboard data:", err);
         document.getElementById('loading').innerHTML = `<p class="text-red-500">Network or server error. Please try again later.</p>`;
     }
 
     // Upgrade Button flow
-    upgradeBtn.addEventListener('click', async () => {
-        if (!userData || !userData.user.github_id) return;
-        
-        upgradeBtn.innerHTML = `Loading...`;
-        upgradeBtn.disabled = true;
-        
-        try {
-            let country = "US";
+    upgradeBtns.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            if (!userData || !userData.user.github_id) return;
+            
+            const targetBtn = e.target;
+            const targetPlan = targetBtn.getAttribute('data-plan') || 'pro';
+            const originalText = targetBtn.innerHTML;
+            
+            targetBtn.innerHTML = `Loading...`;
+            targetBtn.disabled = true;
+            
             try {
-                const geoRes = await fetch("https://ipapi.co/json/");
-                if (geoRes.ok) {
-                    const geoData = await geoRes.json();
-                    if (geoData && geoData.country_code) {
-                        country = geoData.country_code;
+                let country = "US";
+                try {
+                    const geoRes = await fetch("https://ipapi.co/json/");
+                    if (geoRes.ok) {
+                        const geoData = await geoRes.json();
+                        if (geoData && geoData.country_code) {
+                            country = geoData.country_code;
+                        }
                     }
+                } catch (e) {
+                    console.warn("Could not fetch location, defaulting to US");
+                }
+
+                const discountCode = document.getElementById('discount-code').value.trim();
+                const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}&country=${country}&discount=${discountCode}&plan_type=${targetPlan}`, { method: 'POST' });
+                if (!res.ok) throw new Error("Failed to create order");
+                
+                const data = await res.json();
+                if (data.free_upgrade) {
+                    alert(`100% Discount applied! Upgraded to ${targetPlan.toUpperCase()} successfully.`);
+                    window.location.reload();
+                    return;
+                }
+                if (data.order_id) {
+                    const options = {
+                        "key": data.key_id,
+                        "amount": data.amount,
+                        "currency": data.currency,
+                        "name": "N3MO",
+                        "description": `${targetPlan.toUpperCase()} Subscription - 30 Days`,
+                        "order_id": data.order_id,
+                        "handler": async function (response) {
+                            try {
+                                const verifyRes = await fetch('/api/verify-payment', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        github_id: userData.user.github_id.toString(),
+                                        plan_type: targetPlan
+                                    })
+                                });
+                                
+                                if (verifyRes.ok) {
+                                    alert(`Payment successful! Upgraded to ${targetPlan.toUpperCase()}.`);
+                                    window.location.reload();
+                                } else {
+                                    alert("Payment verification failed. Please contact support.");
+                                    targetBtn.innerHTML = originalText;
+                                    targetBtn.disabled = false;
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                alert("Error verifying payment.");
+                                targetBtn.innerHTML = originalText;
+                                targetBtn.disabled = false;
+                            }
+                        },
+                        "prefill": {
+                            "name": userData.user.username
+                        },
+                        "theme": {
+                            "color": "#10b981"
+                        },
+                        "modal": {
+                            "ondismiss": function() {
+                                targetBtn.innerHTML = originalText;
+                                targetBtn.disabled = false;
+                            }
+                        }
+                    };
+                    
+                    const rzp = new window.Razorpay(options);
+                    rzp.on('payment.failed', function (response){
+                        alert("Payment failed: " + response.error.description);
+                        targetBtn.innerHTML = originalText;
+                        targetBtn.disabled = false;
+                    });
+                    rzp.open();
+                    
+                } else {
+                    alert("Checkout failed. Please try again.");
+                    targetBtn.innerHTML = originalText;
+                    targetBtn.disabled = false;
                 }
             } catch (e) {
-                console.warn("Could not fetch location, defaulting to US");
+                console.error(e);
+                alert("Checkout error. Please try again.");
+                targetBtn.innerHTML = originalText;
+                targetBtn.disabled = false;
             }
-
-            const discountCode = document.getElementById('discount-code').value.trim();
-            const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}&country=${country}&discount=${discountCode}`, { method: 'POST' });
-            if (!res.ok) throw new Error("Failed to create order");
-            
-            const data = await res.json();
-            if (data.free_upgrade) {
-                alert("100% Discount applied! Upgraded to PRO successfully.");
-                window.location.reload();
-                return;
-            }
-            if (data.order_id) {
-                const options = {
-                    "key": data.key_id,
-                    "amount": data.amount,
-                    "currency": data.currency,
-                    "name": "N3MO",
-                    "description": "Pro Subscription - 30 Days",
-                    "order_id": data.order_id,
-                    "handler": async function (response) {
-                        try {
-                            const verifyRes = await fetch('/api/verify-payment', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_signature: response.razorpay_signature,
-                                    github_id: userData.user.github_id.toString()
-                                })
-                            });
-                            
-                            if (verifyRes.ok) {
-                                alert("Payment successful! Upgraded to PRO.");
-                                window.location.reload();
-                            } else {
-                                alert("Payment verification failed. Please contact support.");
-                                upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
-                                upgradeBtn.disabled = false;
-                            }
-                        } catch (err) {
-                            console.error(err);
-                            alert("Error verifying payment.");
-                            upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
-                            upgradeBtn.disabled = false;
-                        }
-                    },
-                    "prefill": {
-                        "name": userData.user.username
-                    },
-                    "theme": {
-                        "color": "#10b981"
-                    },
-                    "modal": {
-                        "ondismiss": function() {
-                            upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
-                            upgradeBtn.disabled = false;
-                        }
-                    }
-                };
-                
-                const rzp = new window.Razorpay(options);
-                rzp.on('payment.failed', function (response){
-                    alert("Payment failed: " + response.error.description);
-                    upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
-                    upgradeBtn.disabled = false;
-                });
-                rzp.open();
-                
-            } else {
-                alert("Checkout failed. Please try again.");
-                upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
-                upgradeBtn.disabled = false;
-            }
-        } catch (e) {
-            console.error(e);
-            alert("Checkout error. Please try again.");
-            upgradeBtn.innerHTML = `Upgrade Now - $25/mo`;
-            upgradeBtn.disabled = false;
-        }
+        });
     });
 
     // Logout
