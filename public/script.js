@@ -156,13 +156,11 @@ document.addEventListener("DOMContentLoaded", () => {
     reveals.forEach(reveal => revealObserver.observe(reveal));
 });
 
-// LemonSqueezy / Gumroad Checkout Flow
+// Razorpay Checkout Flow
 async function handleCheckout(planType) {
-    if (planType !== 'pro') return;
-
     // Redirect to login -> dashboard flow
     // The user will upgrade from their actual dashboard once logged in.
-    window.location.href = '/api/auth/login';
+    window.location.href = `/api/auth/login?plan=${planType}`;
 }
 
 // Mouse Tracker
