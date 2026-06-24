@@ -138,35 +138,35 @@ def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int,
             status_badge = ' 🟢 `Added`'
         elif (status == 'Deleted'):
             status_badge = ' 🔴 `Deleted`'
-        markdown += f'''| `{file_path}` | `{name}` | {status_badge} | {direct_count} | {total_count} | [View Details](#{name.lower()}) |
-'''
+        if total_count == 0:
+            markdown += f'| `{file_path}` | `{name}` | {status_badge} | {direct_count} | {total_count} | Safe (No Impact) |\n'
+            continue  # Skip adding a detailed section below
+
+        markdown += f'| `{file_path}` | `{name}` | {status_badge} | {direct_count} | {total_count} | [View Details](#{name.lower()}) |\n'
         details = f'''<a name="{name.lower()}"></a>
 '''
         details += f'''#### ◉ `{name}` ({status})
 '''
         details += f'''*   **Location:** `{file_path}:{line}`
 '''
-        if (not callers):
-            details += '*   **Blast Radius:** 0 callers (safe to change, no dependencies found).\n'
-        else:
-            direct_callers = [c for c in callers if (c['depth'] == 1)]
-            ripple_callers = [c for c in callers if (c['depth'] > 1)]
-            if direct_callers:
-                details += '*   **Direct Callers:**\n'
-                for c in direct_callers:
-                    details += f'''    *   `{c['source']}` (`{c['file_path']}:{c['line']}`)
+        direct_callers = [c for c in callers if (c['depth'] == 1)]
+        ripple_callers = [c for c in callers if (c['depth'] > 1)]
+        if direct_callers:
+            details += '*   **Direct Callers:**\n'
+            for c in direct_callers:
+                details += f'''    *   `{c['source']}` (`{c['file_path']}:{c['line']}`)
 '''
-            if ripple_callers:
-                details += f'''
+        if ripple_callers:
+            details += f'''
 <details>
 <summary><b>View {len(ripple_callers)} Ripple Effects</b></summary>
 
 '''
-                for c in sorted(ripple_callers, key=(lambda x: x['depth'])):
-                    indent = ('  ' * (c['depth'] - 1))
-                    details += f'''{indent}* ─▸ `{c['source']}` (`{c['file_path']}:{c['line']}`)
+            for c in sorted(ripple_callers, key=(lambda x: x['depth'])):
+                indent = ('  ' * (c['depth'] - 1))
+                details += f'''{indent}* ─▸ `{c['source']}` (`{c['file_path']}:{c['line']}`)
 '''
-                details += '\n</details>\n'
+            details += '\n</details>\n'
         details_sections.append(details)
     markdown += '\n---\n\n'
     markdown += '### 🔍 Impact Details\n\n'
