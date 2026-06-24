@@ -41,7 +41,7 @@ html {
 body {
     background-color: var(--bg-dark);
     color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Outfit', 'Inter', sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
     cursor: none;

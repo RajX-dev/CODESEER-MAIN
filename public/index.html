@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&family=Space+Grotesque:wght@500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&family=Space+Grotesque:wght@500;600;700&display=swap"
         rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
@@ -81,7 +81,7 @@
                 <a href="#privacy">Privacy</a>
             </nav>
             <div class="nav-cta">
-                <a href="https://github.com/RajX-dev/N3MO" class="btn btn-secondary">Get GitHub App</a>
+                <a href="https://github.com/apps/n3mo-code-intelligence/installations/new" class="btn btn-secondary">Get GitHub App</a>
             </div>
         </div>
     </header>
@@ -97,6 +97,10 @@
                 <h1>Know what breaks <span class="accent-text">before you push</span></h1>
                 <p class="subtitle">N3MO parses your repository's ASTs and builds a local call graph to trace the
                     transitive blast radius of any code change instantly.</p>
+                
+                <div class="benchmark-pill" style="margin-top: 10px; margin-bottom: 20px; font-size: 12px; color: var(--accent-green); background: rgba(16, 185, 129, 0.1); display: inline-block; padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); font-family: var(--font-mono);">
+                    <i class="fa-solid fa-bolt"></i> <b>Benchmark:</b> Indexed Django's 3,021 files in 2.5 minutes
+                </div>
 
                 <div class="hero-actions">
                     <a href="https://github.com/RajX-dev/N3MO" class="btn btn-primary"><i
@@ -223,11 +227,11 @@
                 <div class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-1">
                     <div class="bento-body">
                         <div class="feature-header">
-                            <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
-                            <h3>27 Languages</h3>
+                            <i class="fa-solid fa-language feature-icon"></i>
+                            <h3>27 Languages*</h3>
                         </div>
-                        <p>Powered by Tree-sitter for robust, error-tolerant AST parsing across Python, JS, TS, Go,
-                            Rust, Java, C++, Swift, and more.</p>
+                        <p>Powered by GitHub's Tree-sitter. We parse Python, TS/JS, Java, Go, Rust, C++, Ruby, PHP, and more locally.<br><br>
+                        <span style="font-size: 11px; color: var(--text-muted);">*Tree-sitter parsing supported for 27 languages. Deep semantic call graph mapping currently optimized for Python, JS/TS, and Java.</span></p>
                         <div class="language-cloud">
                             <span class="lang-tag">Python</span>
                             <span class="lang-tag">TypeScript</span>
