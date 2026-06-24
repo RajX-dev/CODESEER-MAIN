@@ -854,7 +854,7 @@ h1 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
-    align-items: center;
+    align-items: stretch;
 }
 
 .price-card {
@@ -863,15 +863,17 @@ h1 {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 36px;
+    padding: 28px;
     transition: var(--transition-smooth);
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .price-card:hover {
-    border-color: rgba(245, 158, 11, 0.4);
-    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.12);
-    transform: translateY(-4px);
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.05);
+    transform: translateY(-8px) scale(1.02);
 }
 
 .price-card.featured {
@@ -927,11 +929,12 @@ h1 {
     margin-bottom: 32px;
     border-top: 1px solid var(--border-color);
     padding-top: 20px;
+    flex-grow: 1;
 }
 
 .price-features li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     font-size: 13px;
     margin-bottom: 14px;
@@ -941,6 +944,7 @@ h1 {
 .price-features li i {
     color: var(--accent-green);
     font-size: 11px;
+    margin-top: 3px;
 }
 
 /* CLI & Docs Section */
