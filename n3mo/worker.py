@@ -45,7 +45,7 @@ def main():
         logger.error("Missing TARGET_REPO or PR_NUMBER in environment")
         sys.exit(1)
     
-    logger.info("≡ƒÜÇ N3MO CORE ENGINE WAKING UP ≡ƒÜÇ")
+    logger.info("â‰¡Æ’ÃœÃ‡ N3MO CORE ENGINE WAKING UP â‰¡Æ’ÃœÃ‡")
     logger.info(f"Target Repository: {target_repo}")
     logger.info(f"Pull Request: #{pr_number}")
     logger.info(f"User ID: {user_id}")
@@ -79,8 +79,8 @@ def main():
         total_lines = calculate_repo_loc(repo_dir)
         
         # Check SaaS limits
-        max_loc = 6000
-        plan_name = "SaaS Free"
+        max_loc = 150000
+        plan_name = "SaaS Starter"
         
         if user_id:
             from n3mo.saas_db import get_subscription
@@ -90,13 +90,15 @@ def main():
                 plan_name = f"SaaS {plan_type_str.capitalize()}"
                 if sub.get("plan_type") == "enterprise":
                     max_loc = -1
+                elif sub.get("plan_type") == "team":
+                    max_loc = 2000000
                 elif sub.get("plan_type") == "pro":
-                    max_loc = 30000
+                    max_loc = 500000
                     
         if max_loc > 0 and total_lines > max_loc:
             logger.warning(f"LOC limit exceeded for {target_repo}: {total_lines} LOC (Limit: {max_loc} for {plan_name})")
             warning_msg = (
-                f"### ΓÜá∩╕Å N3MO Tier Limit Reached ({plan_name})\n\n"
+                f"### Î“ÃœÃ¡âˆ©â••Ã… N3MO Tier Limit Reached ({plan_name})\n\n"
                 f"This repository contains **{total_lines:,} lines of code**, which exceeds N3MO's limit of **{max_loc:,} lines** for this plan.\n\n"
                 f"To enable PR checks on this repository, please:\n"
                 f"1. **Upgrade your plan** on our SaaS platform to activate a Pro or Enterprise subscription, or\n"
@@ -104,7 +106,7 @@ def main():
                 f"*Already upgraded? Make sure your payment is active in the dashboard.*"
             )
             post_github_comment(target_repo, int(pr_number), warning_msg, os.getenv("INSTALLATION_ID"))
-            logger.info("Γ£à Exited early due to LOC limit.")
+            logger.info("Î“Â£Ã  Exited early due to LOC limit.")
             sys.exit(0)
         
         logger.info("Indexing base commit...")
@@ -132,14 +134,14 @@ def main():
         logger.info("Posting report to GitHub PR...")
         post_github_comment(target_repo, int(pr_number), markdown_report, os.getenv("INSTALLATION_ID"))
         
-        logger.info("Γ£à N3MO Core Engine finished successfully!")
+        logger.info("Î“Â£Ã  N3MO Core Engine finished successfully!")
         
     except Exception as e:
         logger.error(f"Core Engine Pipeline Failed: {e}")
         logger.error(traceback.format_exc())
         
         # Post error to PR so the user knows it failed
-        error_md = f"### ΓÜá∩╕Å N3MO Core Engine Failed\n\nAn error occurred during AST analysis:\n```\n{e}\n```"
+        error_md = f"### Î“ÃœÃ¡âˆ©â••Ã… N3MO Core Engine Failed\n\nAn error occurred during AST analysis:\n```\n{e}\n```"
         post_github_comment(target_repo, int(pr_number), error_md, os.getenv("INSTALLATION_ID"))
         sys.exit(1)
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Raj shekhar
+﻿# Copyright (C) 2026 Raj shekhar
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -32,7 +32,7 @@ def test_license_validator_fallback_free():
     res = verify_license_key("")
     assert res["valid"] is False
     assert res["plan_type"] == "free"
-    assert res["max_loc"] == 6000
+    assert res["max_loc"] == 150000
 
     # No configuration set in environment
     with patch.dict(os.environ, {}, clear=True):
