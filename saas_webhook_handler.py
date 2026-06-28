@@ -431,7 +431,7 @@ async def github_webhook(
 
     return {"message": f"Event '{x_github_event}' ignored"}
 
-def enforce_repo_limits(user_id: str, repo_full_name: str) -> bool:
+def enforce_repo_limits(user_id: str, repo_full_name: str, is_private: bool = True) -> bool:
     from n3mo.database import get_connection, release_connection
     from n3mo.saas_db import get_subscription
     
@@ -452,10 +452,15 @@ def enforce_repo_limits(user_id: str, repo_full_name: str) -> bool:
             status = sub.get("status", "active")
             
             limit = 3  # Starter/Free limit
-            if plan_type == "pro" and status == "active":
-                limit = 10
-            elif plan_type in ["team", "enterprise"] and status == "active":
+            if not is_private:
                 limit = 999999
+            else:
+                if plan_type == "pro" and status == "active":
+                    limit = 5
+                elif plan_type == "team" and status == "active":
+                    limit = 8
+                elif plan_type == "enterprise" and status == "active":
+                    limit = 999999
                 
             if repo_count >= limit:
                 return False
@@ -492,12 +497,13 @@ def handle_pull_request(payload: dict) -> dict:
     is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
     if is_saas:
         repo_owner_name = payload.get("repository", {}).get("owner", {}).get("login")
+        is_private = payload.get("repository", {}).get("private", True)
         if repo_owner_name:
             from n3mo.saas_db import get_user_by_username
             user_db = get_user_by_username(repo_owner_name)
             if user_db:
                 user_id = str(user_db.get("id"))
-                if not enforce_repo_limits(user_id, repo_name):
+                if not enforce_repo_limits(user_id, repo_name, is_private):
                     logger.warning(f"Repo limit reached for user {repo_owner_name}")
                     if installation_id:
                         # Post comment explaining repo limit
@@ -549,20 +555,25 @@ def handle_pull_request(payload: dict) -> dict:
                     if sub.get("plan_type") == "enterprise":
                         max_loc = -1 # Unlimited
                     elif sub.get("plan_type") == "team":
-                        max_loc = 2000000 # 2M LOC for Team
+                        max_loc = 1000000 # 1M LOC for Team
                     elif sub.get("plan_type") == "pro":
-                        max_loc = 500000 # 500k LOC for Pro
+                        max_loc = 100000 # 100k LOC for Pro
     else:
         # Self-hosted without a valid license key -> Free and Unlimited
         max_loc = -1
         plan_name = "Self-Hosted Community Edition"
+    
+    is_private = payload.get("repository", {}).get("private", True)
+    if not is_private:
+        max_loc = -1
+        plan_name = plan_name + " (Open Source)"
     
     total_lines = calculate_repo_loc(repo_dir)
     # Check limit if max_loc is positive (not -1 for unlimited)
     if max_loc > 0 and total_lines > max_loc:
         logger.warning(f"LOC limit exceeded for {repo_name}: {total_lines} LOC (Limit: {max_loc} for {plan_name})")
         warning_msg = (
-            f"### ΓÜá∩╕Å N3MO Tier Limit Reached ({plan_name})\n\n"
+            f"###  N3MO Tier Limit Reached ({plan_name})\n\n"
             f"This repository contains **{total_lines:,} lines of code**, which exceeds N3MO's limit of **{max_loc:,} lines** for this plan.\n\n"
             f"To enable PR checks on this repository, please:\n"
             f"1. **Upgrade your plan** on our SaaS platform to activate a Pro or Enterprise subscription, or\n"

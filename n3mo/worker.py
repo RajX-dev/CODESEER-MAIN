@@ -91,9 +91,14 @@ def main():
                 if sub.get("plan_type") == "enterprise":
                     max_loc = -1
                 elif sub.get("plan_type") == "team":
-                    max_loc = 2000000
+                    max_loc = 1000000
                 elif sub.get("plan_type") == "pro":
-                    max_loc = 500000
+                    max_loc = 100000
+                    
+        is_private = pr_details.get("base", {}).get("repo", {}).get("private", True)
+        if not is_private:
+            max_loc = -1
+            plan_name = plan_name + " (Open Source)"
                     
         if max_loc > 0 and total_lines > max_loc:
             logger.warning(f"LOC limit exceeded for {target_repo}: {total_lines} LOC (Limit: {max_loc} for {plan_name})")
