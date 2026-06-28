@@ -106,8 +106,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 viewPro.style.display = 'block';
                 const titleEl = document.getElementById('paid-plan-title');
                 const descEl = document.getElementById('paid-plan-desc');
+                const upgradeSec = document.getElementById('pro-upgrade-section');
                 if (titleEl) titleEl.textContent = 'Enterprise Subscription Active';
                 if (descEl) descEl.innerHTML = 'Thank you for supporting N3MO! You can now analyze repositories with <strong>unlimited lines of code</strong>.';
+                if (upgradeSec) upgradeSec.style.display = 'none';
             } else {
                 viewPro.style.display = 'block';
             }
