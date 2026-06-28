@@ -218,6 +218,24 @@ Welcome to the N3MO Development Diary! This is the chronological story of **N3MO
   
   This preserves the classic developer ASCII art aesthetic in a balanced footer layout while ensuring it remains perfectly rectangular and skew-free in all preview environments, while presenting a highly professional dynamic intro at the top.
 
+### Chapter 21: The SaaS Pivot and Compute-Free Architecture (June 28, 2026)
+* **The Story**:
+  I realized N3MO was too powerful to remain just a local CLI and a REST API script. It needed to become a fully-fledged developer SaaS. However, I didn't want the astronomical compute costs of cloning and parsing thousands of customer repositories (AST parsing at scale is expensive!). 
+  
+  I engineered a brilliant **Compute-Free SaaS Architecture**:
+  1. **The Webhook Handler (`saas_webhook_handler.py`)**: I built a lightweight FastAPI server that listens for GitHub pull request webhooks. When a PR is opened, the server queries a Neon Serverless PostgreSQL database to verify the customer's API key and subscription tier limits (Starter: 3 repos, Pro: 5 repos, Team: 8 repos).
+  2. **The `repository_dispatch` Trick**: Instead of parsing the code on my servers, the webhook handler fires a lightweight `repository_dispatch` API call back to the customer's repository. This triggers N3MO as a GitHub Action *inside their own CI/CD environment*. 
+  
+  **The result?** The customer brings their own compute! GitHub's runners clone the repo, parse the AST, map the call graph, and post the PR comment. My SaaS infrastructure only handles microsecond routing, making it infinitely scalable with zero compute bottlenecks.
 
+  For **Enterprise** clients requiring SOC2 and strict air-gapped security, I designed the architecture to be 100% self-hosted via Docker. They verify their tier using an **Offline JWT License Key**, ensuring their proprietary code never touches the public internet.
 
+### Chapter 22: "No Seat-Based Pricing" and the Premium UI Overhaul (June 28, 2026)
+* **The Story**:
+  If N3MO is going to compete with giant developer tools, it needs to look like one. I threw away the basic website and completely overhauled `public/index.html` and `public/dashboard.html`.
+  
+  - **The Design Language**: I implemented a gorgeous, premium dark mode aesthetic featuring deep space backgrounds, neon amber accents (`#f59e0b`), glassmorphism panels, and staggered `reveal-fade` micro-animations. 
+  - **The Pricing Philosophy**: I realized the biggest pain point in dev tools is paying per developer. I made our differentiator the headline: **"No seat-based pricing. Ever."** N3MO charges by the repository, allowing an entire engineering team to collaborate on a codebase without worrying about seat licenses.
+  - **Marketing Refinements**: I removed all naive mentions of "Open Source" to prevent tier abuse, pivoting the messaging to target specific business scales ("For individuals & hobbyists", "For growing product companies", "For security-first organizations").
+  - **SEO and Trust**: I added Trust Indicators (GitHub, GitLab, Bitbucket), a supported languages showcase (Python, Go, Java, TS, Rust, C++, C#), a robust FAQ section, and a Traditional SaaS vs N3MO Comparison Table. Finally, I wrote a custom Python script using `Pillow` to rasterize the SVG logo into perfectly sized `.ico` and `apple-touch-icon.png` files, guaranteeing flawless Google Search indexing.
 
