@@ -1,5 +1,4 @@
 import re
-import os
 
 with open('n3mo/core_engine.py', 'r', encoding='utf-8') as f:
     content = f.read()

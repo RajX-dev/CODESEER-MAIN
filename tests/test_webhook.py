@@ -17,7 +17,6 @@ import os
 import hmac
 import hashlib
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 
