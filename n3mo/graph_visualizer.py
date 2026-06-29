@@ -969,7 +969,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       
       <div class="nav-footer">
         <button class="nav-footer-btn" id="btn-theme"><i class="fa-solid fa-sun"></i> Light Mode</button>
-        <div class="version">v1.2.5</div>
+        <div class="version">v2.0.0</div>
       </div>
     </aside>
 
