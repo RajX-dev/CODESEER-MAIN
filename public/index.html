@@ -190,7 +190,7 @@
                 </div>
 
                 <!-- Small Card 3: Native MCP Server -->
-                <div id="mcp" class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-2">
+                <div class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-2">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
@@ -282,6 +282,43 @@
                     <div>
                         <h4 style="margin-bottom: 8px; font-size: 18px;">Review the Impact Report</h4>
                         <p style="font-size: 14px; color: var(--text-secondary);">Within 2 seconds, N3MO intercepts the webhook, parses the entire AST, and posts a comment on the PR detailing the exact downstream services that depend on `format_date()`. You catch the breaking change before it hits production.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MCP Integration Section -->
+    <section id="mcp" class="mcp-integration" style="padding: 80px 0; background-color: rgba(255,255,255,0.02);">
+        <div class="container">
+            <h2 class="section-title">Native MCP Server Integration</h2>
+            <p class="section-subtitle">Give AI agents like Cursor and Claude deterministic structural context instead of random file chunks.</p>
+
+            <div style="display: flex; gap: 32px; flex-wrap: wrap; margin-top: 40px;">
+                <div class="bento-card" style="flex: 1; min-width: 300px;">
+                    <div class="bento-body">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+                            <h3>Claude Desktop</h3>
+                        </div>
+                        <p style="margin-bottom: 24px;">Automatically configure N3MO as an MCP tool for Claude to map blast radius before it writes code.</p>
+                        <pre style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 14px; color: var(--text-secondary);"><code>$ cd /path/to/project
+$ n3mo mcp install</code></pre>
+                    </div>
+                </div>
+
+                <div class="bento-card highlight-card" style="flex: 1; min-width: 300px;">
+                    <div class="bento-body">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <h3>Cursor IDE</h3>
+                        </div>
+                        <p style="margin-bottom: 12px;">Add N3MO directly to Cursor settings to enable instant transitive impact queries during refactoring.</p>
+                        <ul style="color: var(--text-secondary); font-size: 14px; padding-left: 20px; line-height: 1.6;">
+                            <li>Go to <strong>Settings -> Models -> MCP</strong></li>
+                            <li>Type: <code>command</code></li>
+                            <li>Command: <code>n3mo mcp start</code></li>
+                        </ul>
                     </div>
                 </div>
             </div>
