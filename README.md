@@ -19,7 +19,7 @@
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
-**📜 Licensed under PolyForm Noncommercial 1.0.0** — Open source & free for local/internal usage • [Contact for commercial licensing](#-license)
+**📜 Licensed under PolyForm Noncommercial 1.0.0** — Free for noncommercial use • [Contact for commercial licensing](#-license)
 
 [What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub App & Pricing](#-github-app-integration-self-hosted) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
 
@@ -333,7 +333,7 @@ If you wish to use N3MO for team collaboration and automated pull-request analys
 
 ### 💰 Pricing & Licensing
 
-N3MO is fully open-source and free under the **PolyForm Noncommercial 1.0.0 License** for local usage and single-developer MCP integrations. 
+N3MO is free under the **PolyForm Noncommercial 1.0.0 License** for local usage and single-developer MCP integrations. 
 
 *   **100% Free & Local:** Run CLI queries, local MCP integrations, and the visualizer with zero limits.
 *   **Enterprise Licensing:** For large-scale organization deployments or commercial licensing terms, please reach out to the author.
@@ -626,7 +626,7 @@ pytest tests/
 Licensed under the **PolyForm Noncommercial 1.0.0** License.
 
 - ✅ Free for personal projects, academic research, and hobby tools
-- ✅ Open source — view, modify, and distribute freely
+- ✅ Source available — view, modify, and distribute for noncommercial purposes
 - ⚠️ Noncommercial — you may not use it for commercial purposes
 - ⚠️ Restrictions apply on offering it as a service
 
