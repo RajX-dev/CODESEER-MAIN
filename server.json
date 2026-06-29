@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.RajX-dev/n3mo",
+  "description": "N3MO: Code intelligence engine mapping repositories into queryable symbol graphs.",
+  "repository": {
+    "url": "https://github.com/RajX-dev/N3MO",
+    "source": "github"
+  },
+  "version": "1.2.5",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "n3mo",
+      "version": "1.2.5",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
