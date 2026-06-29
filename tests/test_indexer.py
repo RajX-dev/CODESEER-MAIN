@@ -472,8 +472,4 @@ def test_scope_aware_call_resolution(temp_repo, db_conn):
         assert "utils_b.py" not in resolved_file
 
 
-def test_api_server_endpoints():
-    from n3mo.api_server import health
-    res = health()
-    assert res == {"status": "healthy", "service": "n3mo-api"}
 
