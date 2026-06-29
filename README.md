@@ -15,13 +15,13 @@
 [![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik05Ljc5NSAxLjY5NGE0LjI4NyA0LjI4NyAwIDAgMSA2LjA2MSAwIDQuMjggNC4yOCAwIDAgMSAxLjE4MSAzLjgxOSA0LjI4MiA0LjI4MiAwIDAgMSAzLjgxOSAxLjE4MSA0LjI4NyA0LjI4NyAwIDAgMSAwIDYuMDYxbC02Ljc5MyA2Ljc5M2EuMjQ5LjI0OSAwIDAgMCAwIC4zNTNsMi42MTcgMi42MThhLjc1Ljc1IDAgMSAxLTEuMDYxIDEuMDYxbC0yLjYxNy0yLjYxOGExLjc1IDEuNzUgMCAwIDEgMC0yLjQ3NWw2Ljc5My02Ljc5M2EyLjc4NSAyLjc4NSAwIDEgMC0zLjkzOS0zLjkzOWwtNS45IDUuOWEuNzM0LjczNCAwIDAgMS0uMjQ5LjE2NS43NDkuNzQ5IDAgMCAxLS44MTItMS4yMjVsNS45LTUuOTAxYTIuNzg1IDIuNzg1IDAgMSAwLTMuOTM5LTMuOTM5TDIuOTMxIDEwLjY4QS43NS43NSAwIDEgMSAxLjg3IDkuNjE5bDcuOTI1LTcuOTI1WiIvPjxwYXRoIGQ9Ik0xMi40MiA0LjA2OWEuNzUyLjc1MiAwIDAgMSAxLjA2MSAwIC43NTIuNzUyIDAgMCAxIDAgMS4wNjFMNy4zMyAxMS4yOGEyLjc4OCAyLjc4OCAwIDAgMCAwIDMuOTQgMi43ODggMi43ODggMCAwIDAgMy45NCAwbDYuMTUtNi4xNTFhLjc1Mi43NTIgMCAwIDEgMS4wNjEgMCAuNzUyLjc1MiAwIDAgMSAwIDEuMDYxbC02LjE1MSA2LjE1YTQuMjg1IDQuMjg1IDAgMSAxLTYuMDYtNi4wNmw2LjE1LTYuMTUxWiIvPjwvc3ZnPg==)](https://registry.modelcontextprotocol.io/?q=n3mo)
 [![CI](https://img.shields.io/github/actions/workflow/status/RajX-dev/N3MO/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI)](https://github.com/RajX-dev/N3MO/actions)
 
-**A structural code intelligence layer that transforms repositories into queryable knowledge graphs.**
+**A structural code intelligence layer that transforms source code into a queryable knowledge graph for search, impact analysis, and AI-powered development.**
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
-**📜 Licensed under PolyForm Noncommercial 1.0.0** — Free for noncommercial use • [Contact for commercial licensing](#-license)
+**📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](#-license)
 
-[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub App & Pricing](#-github-app-integration-self-hosted) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub Integration](#-github-webhook-integration) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
 
 </div>
 
