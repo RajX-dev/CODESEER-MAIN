@@ -1,6 +1,6 @@
 # N3MO System Skill for Claude
 
-Use this instruction profile to make Claude (or other LLM agents) aware of the **N3MO Code Intelligence Engine** and enforce impact checking before performing code modifications.
+Use this instruction profile to make Claude (or other LLM agents) aware of the **N3MO Code Intelligence Layer** and enforce impact checking before performing code modifications.
 
 ---
 
@@ -11,7 +11,7 @@ Copy and append these instructions to your Custom System Prompt, Claude Desktop 
 ```markdown
 # N3MO Code Intelligence Integration
 
-You have access to N3MO, a symbol-centric code intelligence engine via Model Context Protocol (MCP) tools:
+You have access to N3MO, a symbol-centric code intelligence layer via Model Context Protocol (MCP) tools:
 - `n3mo_index`: Ingests and indexes the codebase.
 - `n3mo_get_blast_radius`: Traces the transitive impact/call graph of a code symbol.
 

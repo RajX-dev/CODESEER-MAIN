@@ -920,7 +920,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span>License Mode</span>
-            <span style="color: var(--text-main); font-weight: 600;">Local (AGPL-3.0)</span>
+            <span style="color: var(--text-main); font-weight: 600;">Local (PolyForm Noncommercial 1.0.0)</span>
           </div>
         </div>
       </div>

@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N3MO | Structural Code Intelligence Engine</title>
+    <title>N3MO | Structural Code Intelligence Layer</title>
     <meta name="description"
-        content="N3MO is a symbol-centric code intelligence engine. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
+        content="N3MO is a symbol-centric code intelligence layer. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png">
     <link rel="icon" href="/favicon.ico" sizes="any">
@@ -26,16 +26,16 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://n3mo.shop/">
-    <meta property="og:title" content="N3MO | Structural Code Intelligence Engine">
+    <meta property="og:title" content="N3MO | Structural Code Intelligence Layer">
     <meta property="og:description"
-        content="N3MO is a symbol-centric code intelligence engine. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
+        content="N3MO is a symbol-centric code intelligence layer. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
     <meta property="og:image" content="https://n3mo.shop/og-image.png">
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://n3mo.shop/">
-    <meta property="twitter:title" content="N3MO | Structural Code Intelligence Engine">
+    <meta property="twitter:title" content="N3MO | Structural Code Intelligence Layer">
     <meta property="twitter:description"
-        content="N3MO is a symbol-centric code intelligence engine. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
+        content="N3MO is a symbol-centric code intelligence layer. Parse ASTs, map call graphs, and trace transitive blast radius analysis in under 2 seconds.">
     <meta property="twitter:image" content="https://n3mo.shop/og-image.png">
 
     <script type="application/ld+json">
@@ -82,6 +82,7 @@
             <nav>
                 <a href="#features">Features</a>
                 <a href="#pricing">Pricing</a>
+                <a href="#mcp">MCP</a>
                 <a href="#docs">CLI & Docs</a>
                 <a href="#privacy">Privacy</a>
             </nav>
@@ -255,7 +256,7 @@
                 </div>
 
                 <!-- Small Card 3: Native MCP Server -->
-                <div class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-2">
+                <div id="mcp" class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-2">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
@@ -269,12 +270,12 @@
                     </div>
                 </div>
 
-                <!-- Large Card 4: GitHub App Webhook -->
+                <!-- Large Card 4: GitHub Webhook -->
                 <div class="bento-card col-span-2 row-span-1 highlight-card reveal-fade reveal-delay-3">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-git-pull-request"></i></div>
-                            <h3>GitHub App Webhook</h3>
+                            <h3>GitHub Webhook</h3>
                         </div>
                         <p>Enforce codebase size-aware checkpoints on every Pull Request, posting a comprehensive impact
                             markdown report directly to PR comments in under 2 seconds.</p>
@@ -344,7 +345,7 @@
                 <div class="bento-card step-card" style="padding: 24px;">
                     <div class="step-number" style="color: var(--accent);">01</div>
                     <div>
-                        <h4 style="margin-bottom: 8px; font-size: 18px;">Install the GitHub App</h4>
+                        <h4 style="margin-bottom: 8px; font-size: 18px;">Install the GitHub Webhook</h4>
                         <p style="font-size: 14px; color: var(--text-secondary);">Navigate to your repository settings
                             and grant N3MO read access to your source code. You don't need to configure CI/CD pipelines
                             or write custom workflows.</p>
@@ -385,7 +386,7 @@
                 <h4 style="font-size: 18px; margin-bottom: 12px; color: var(--text-primary);">No seat-based pricing.
                     Ever.</h4>
                 <p style="margin: 0; font-size: 15px; color: var(--text-secondary); line-height: 1.6;">N3MO prices by
-                    repositories not users so your entire engineering team can collaborate without buying additional
+                    repositories, not users, so your entire engineering team can collaborate without buying additional
                     licenses. Each repository receives continuous indexing, dependency analysis, PR impact detection,
                     and code intelligence.</p>
             </div>
@@ -703,7 +704,7 @@
                         class="fa-solid fa-scale-balanced"></i> License</a>
             </div>
             <p style="color: var(--text-secondary); font-size: 14px;">&copy; 2026 N3MO Code Intelligence. Licensed under
-                AGPL-3.0.</p>
+                PolyForm Noncommercial 1.0.0.</p>
         </div>
     </footer>
 
