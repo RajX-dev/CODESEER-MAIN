@@ -62,5 +62,5 @@
   <circle class="node-dot" cx="270" cy="140" r="5"/>
   <circle class="node-dot" cx="270" cy="50" r="5"/>
 
-  <text class="sub-text" x="400" y="180" text-anchor="middle">CODE INTELLIGENCE ENGINE</text>
+  <text class="sub-text" x="400" y="180" text-anchor="middle">CODE INTELLIGENCE LAYER</text>
 </svg>

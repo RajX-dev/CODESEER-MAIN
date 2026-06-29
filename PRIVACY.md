@@ -1,6 +1,6 @@
 # N3MO Privacy Policy
 
-N3MO ("we", "our", or "us") is dedicated to protecting the privacy of developers and organizations using our code intelligence tools.
+N3MO ("we", "our", or "us") is dedicated to protecting the privacy of developers and organizations using our code intelligence layers.
 
 ## 1. Code Privacy and Data Practices
 * **Local Ingestion:** When using the N3MO CLI or MCP server locally, all parsing, AST analysis, and database storage (PostgreSQL) occur entirely on your own local machine. We do not collect, upload, or have access to any of your source code, file structures, or indexing data.

@@ -15,7 +15,7 @@ Welcome to the N3MO Development Diary! This is the chronological story of **N3MO
   - **`imports`**: Tracks module imports (module names, aliases, and imported symbols).
   - **`calls`**: Tracks function calls, capturing the source symbol and target call name.
   
-  I added the AGPL-3.0 License (`d5921e7`) and set up the first parser wrappers, laying the groundwork for reading code skeletons.
+  I added the PolyForm Noncommercial 1.0.0 License (`d5921e7`) and set up the first parser wrappers, laying the groundwork for reading code skeletons.
 
 ### Chapter 2: Service Orchestration & Environmental Recovery (Days 4–5)
 * **Git Commits**: `8a44556` and `f1fd403`

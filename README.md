@@ -6,20 +6,20 @@
 
 <br>
 
-![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Engine-blue?style=for-the-badge)
+![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Layer-blue?style=for-the-badge)
 [![PyPI version](https://img.shields.io/pypi/v/n3mo?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/n3mo/)
-[![License: AGPL v3.0](https://img.shields.io/badge/license-AGPL%20v3.0-green?style=for-the-badge)](LICENSE)
+[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-green?style=for-the-badge)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue?style=for-the-badge&logo=python)](https://www.python.org)
 [![Docker](https://img.shields.io/badge/docker-required-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen?style=for-the-badge)]()
 [![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik05Ljc5NSAxLjY5NGE0LjI4NyA0LjI4NyAwIDAgMSA2LjA2MSAwIDQuMjggNC4yOCAwIDAgMSAxLjE4MSAzLjgxOSA0LjI4MiA0LjI4MiAwIDAgMSAzLjgxOSAxLjE4MSA0LjI4NyA0LjI4NyAwIDAgMSAwIDYuMDYxbC02Ljc5MyA2Ljc5M2EuMjQ5LjI0OSAwIDAgMCAwIC4zNTNsMi42MTcgMi42MThhLjc1Ljc1IDAgMSAxLTEuMDYxIDEuMDYxbC0yLjYxNy0yLjYxOGExLjc1IDEuNzUgMCAwIDEgMC0yLjQ3NWw2Ljc5My02Ljc5M2EyLjc4NSAyLjc4NSAwIDEgMC0zLjkzOS0zLjkzOWwtNS45IDUuOWEuNzM0LjczNCAwIDAgMS0uMjQ5LjE2NS43NDkuNzQ5IDAgMCAxLS44MTItMS4yMjVsNS45LTUuOTAxYTIuNzg1IDIuNzg1IDAgMSAwLTMuOTM5LTMuOTM5TDIuOTMxIDEwLjY4QS43NS43NSAwIDEgMSAxLjg3IDkuNjE5bDcuOTI1LTcuOTI1WiIvPjxwYXRoIGQ9Ik0xMi40MiA0LjA2OWEuNzUyLjc1MiAwIDAgMSAxLjA2MSAwIC43NTIuNzUyIDAgMCAxIDAgMS4wNjFMNy4zMyAxMS4yOGEyLjc4OCAyLjc4OCAwIDAgMCAwIDMuOTQgMi43ODggMi43ODggMCAwIDAgMy45NCAwbDYuMTUtNi4xNTFhLjc1Mi43NTIgMCAwIDEgMS4wNjEgMCAuNzUyLjc1MiAwIDAgMSAwIDEuMDYxbC02LjE1MSA2LjE1YTQuMjg1IDQuMjg1IDAgMSAxLTYuMDYtNi4wNmw2LjE1LTYuMTUxWiIvPjwvc3ZnPg==)](https://registry.modelcontextprotocol.io/?q=n3mo)
 [![CI](https://img.shields.io/github/actions/workflow/status/RajX-dev/N3MO/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI)](https://github.com/RajX-dev/N3MO/actions)
 
-**A structural code intelligence engine that transforms repositories into queryable knowledge graphs.**
+**A structural code intelligence layer that transforms repositories into queryable knowledge graphs.**
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
-**📜 Licensed under AGPL-3.0** — Open source & free for local/internal usage • [Contact for commercial licensing](#-license)
+**📜 Licensed under PolyForm Noncommercial 1.0.0** — Open source & free for local/internal usage • [Contact for commercial licensing](#-license)
 
 [What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub App & Pricing](#-github-app-integration-self-hosted) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
 
@@ -29,7 +29,7 @@
 
 ## 🎯 What is N3MO?
 
-N3MO is a symbol-centric code intelligence engine. Instead of scanning raw text, it parses your source code's ASTs, maps call graphs, and models dependencies in a queryable relational database.
+N3MO is a symbol-centric code intelligence layer. Instead of scanning raw text, it parses your source code's ASTs, maps call graphs, and models dependencies in a queryable relational database.
 
 For engineering leaders and teams, N3MO acts as a **structural insurance policy** for your codebases.
 
@@ -333,7 +333,7 @@ If you wish to use N3MO for team collaboration and automated pull-request analys
 
 ### 💰 Pricing & Licensing
 
-N3MO is fully open-source and free under the **AGPL-3.0 License** for local usage and single-developer MCP integrations. 
+N3MO is fully open-source and free under the **PolyForm Noncommercial 1.0.0 License** for local usage and single-developer MCP integrations. 
 
 *   **100% Free & Local:** Run CLI queries, local MCP integrations, and the visualizer with zero limits.
 *   **Enterprise Licensing:** For large-scale organization deployments or commercial licensing terms, please reach out to the author.
@@ -623,12 +623,12 @@ pytest tests/
 
 ## 📜 License
 
-Licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0).
+Licensed under the **PolyForm Noncommercial 1.0.0** License.
 
-- ✅ Free for personal projects and internal tools
+- ✅ Free for personal projects, academic research, and hobby tools
 - ✅ Open source — view, modify, and distribute freely
-- ⚠️ Copyleft — derivative works must also be AGPL-3.0
-- ⚠️ Network use — modified versions run as a web service must share changes
+- ⚠️ Noncommercial — you may not use it for commercial purposes
+- ⚠️ Restrictions apply on offering it as a service
 
 For commercial deployments or proprietary modifications, contact for licensing options.
 
@@ -672,7 +672,7 @@ See [LICENSE](LICENSE) for full legal details.
 ██║╚██╗██║    ╚═══██╗   ██║╚██╔╝██║   ██║   ██║
 ██║ ╚████║   ██████╔╝   ██║ ╚═╝ ██║   ╚██████╔╝
 ╚═╝  ╚═══╝    ╚═════╝   ╚═╝     ╚═╝    ╚═════╝ 
-C O D E   I N T E L L I G E N C E   E N G I N E
+C O D E   I N T E L L I G E N C E   L A Y E R
 </pre>
 
 </div>
