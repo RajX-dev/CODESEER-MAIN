@@ -1,0 +1,307 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{lipsum}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  frame=single,
+  language=SQL,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{purple},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=5pt,
+}
+
+\begin{document}
+
+\title{N3MO: A Relational Knowledge Graph for Arbitrary-Depth Code Impact Analysis\\
+{\footnotesize \textsuperscript{*}An End-to-End System for Structural Code Comprehension}}
+
+\author{\IEEEauthorblockN{Raj Shekhar}
+\IEEEauthorblockA{\textit{Delhi Technological University}\\
+Delhi, India}
+}
+
+\maketitle
+
+\begin{abstract}
+Modern software engineering relies heavily on code comprehension and the ability to safely refactor large, legacy codebases. However, developers often hesitate to modify core utility functions due to the fear of unforeseen cascading failures—a phenomenon that drastically increases technical debt and slows down feature delivery. Existing code search tools, such as text-based substring matching and shallow editor-bound references, are insufficient for mapping the full transitive blast radius of a code change. In this paper, we present N3MO, a structural code intelligence layer that transforms polyglot source code into a queryable relational knowledge graph. By leveraging Tree-sitter for robust, error-tolerant Abstract Syntax Tree (AST) parsing and PostgreSQL for recursive graph traversal, N3MO maps call graphs and dependencies across 27 programming languages. N3MO performs impact analysis—resolving callers to arbitrary depths—in under 50 milliseconds, ensuring developers know exactly what will break before initiating a refactor. We evaluate N3MO’s performance on the Django repository, demonstrating its ability to index over 43,000 symbols in 2.5 minutes using batched transactions, optimized string splitting, and multiprocessing. We further detail the mathematical formalization of the code graph, the implementation of cycle guards in Recursive Common Table Expressions (CTEs), and the system's integration with Large Language Models (LLMs) via the Model Context Protocol (MCP). The resulting graph architecture provides a robust, scalable foundation for both manual developer workflows and automated AI-agent integrations by supplying deterministic structural context.
+\end{abstract}
+
+\begin{IEEEkeywords}
+static analysis, relational knowledge graph, abstract syntax trees, impact analysis, code comprehension, recursive CTE, Model Context Protocol
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+\subsection{The Problem of Codebase Comprehension}
+As software repositories grow in complexity and scale over time, the cognitive load required to understand the codebase increases non-linearly. In monolithic architectures, or heavily coupled microservice ecosystems, a single shared module can be invoked by hundreds of downstream services. A common antipattern in software maintenance is the reluctance to refactor foundational code—such as shared utility functions, authentication middleware, or core data models—because developers cannot accurately predict the side effects. This phenomenon, often referred to as "the fear of refactoring," inevitably leads to the accumulation of technical debt, fragmented codebases, duplicated logic, and brittle system architectures. 
+
+When developers attempt to understand the impact of a proposed code change, they typically rely on two classes of tools: text search utilities and Language Server Protocols (LSPs). Text search utilities, such as \texttt{grep}, \texttt{ripgrep}, or native IDE search bars, rely purely on substring matching. They yield a flat list of results and are highly prone to false positives (e.g., matching a string literal in a comment or a similarly named function in an entirely unrelated module). More importantly, text search cannot trace transitive dependencies. If function $A$ calls function $B$, and function $B$ calls function $C$, a text search for $C$ will only reveal $B$, leaving the developer entirely unaware that $A$ is ultimately impacted by modifications to $C$.
+
+LSPs represent a significant leap in semantic code understanding by maintaining an in-memory representation of the active project. However, they are designed primarily for active editing features—such as real-time autocomplete, inline linting, and tooltips—rather than deep, structural analytical querying. When finding references, LSPs typically return only immediate callers. Constructing a deep call graph requires a developer to manually click "Find References" recursively across dozens of files. This process is cognitively taxing, highly error-prone in deep call stacks, and virtually impossible to automate across a team.
+
+\subsection{The N3MO Solution}
+To address these limitations, we introduce N3MO, a structural code intelligence layer that treats a codebase not as a collection of text files, but as a dense, queryable relational knowledge graph. N3MO indexes code structure using Abstract Syntax Trees (ASTs) and stores the resulting symbols, imports, and call graphs in a relational database. 
+
+Rather than relying on in-memory traversal during active editing, N3MO acts as an asynchronous, persistent indexing engine. By translating the impact analysis problem into a recursive database query, N3MO can instantly map the transitive "blast radius" of any symbol to an arbitrary depth. This approach decouples structural analysis from the IDE, allowing external systems, CI/CD pipelines, and AI agents to query the codebase topology via standard SQL.
+
+\subsection{Contributions}
+The main contributions of this paper are:
+\begin{enumerate}
+    \item \textbf{A polyglot structural indexing architecture} utilizing the Tree-sitter parsing framework to incrementally extract ASTs across 27 programming languages into a unified, language-agnostic relational data model.
+    \item \textbf{A scope-aware static code analysis engine} that accurately resolves function calls and dependencies across local scopes, cross-file imports, and global namespaces without requiring a heavy compiler or build step.
+    \item \textbf{An arbitrary-depth blast radius algorithm} mathematically formalized and powered by PostgreSQL recursive Common Table Expressions (CTEs), equipped with strict cycle guards to prevent infinite loops on recursive code.
+    \item \textbf{A highly optimized Python-to-PostgreSQL ingestion pipeline} demonstrating a $9\times$ speedup on real-world, enterprise-scale repositories via multiprocessing and batched driver transactions.
+    \item \textbf{A novel integration strategy for Large Language Models (LLMs)} leveraging the Model Context Protocol (MCP) to provide deterministic structural context, mitigating the risk of hallucinations in AI-assisted coding.
+\end{enumerate}
+
+\section{Related Work}
+
+Static analysis, program slicing, and code intelligence have been extensively researched for decades, balancing trade-offs between setup complexity, analysis depth, and execution speed.
+
+\subsection{Language Server Protocols (LSPs)}
+LSPs, standardized by Microsoft, provide a common JSON-RPC interface for editors to interact with language-specific semantic analyzers (e.g., \texttt{pylsp} for Python, \texttt{tsserver} for TypeScript). While LSPs excel at providing real-time, single-level references, their in-memory nature makes them unsuitable for querying deep transitive dependencies across massive codebases without significant memory overhead. They are fundamentally tied to the editor lifecycle and the active context window, rather than acting as a persistent structural database.
+
+\subsection{Compiler-Based Analysis (Kythe \& CodeQL)}
+Google's Kythe defines an ecosystem for building tools that work with code, extracting incredibly detailed, type-safe semantic graphs directly from the compiler frontend. Similarly, GitHub's CodeQL treats code as data, compiling a relational representation of the codebase to allow developers to write semantic queries to find security vulnerabilities and data-flow anomalies. Both tools are highly expressive but notoriously difficult to configure, as they require deep, bespoke integration with the project's build system (e.g., Bazel, Maven, CMake) and a successful, error-free compilation step. N3MO sacrifices deep, compiler-level type checking in favor of Tree-sitter's fast, error-tolerant AST parsing, enabling it to analyze broken, incomplete, or dynamically typed code instantly without any build prerequisites.
+
+\subsection{Semantic Code Intelligence Protocol (SCIP) and LSIF}
+Developed by Sourcegraph, SCIP (and its predecessor LSIF) is designed to index code for enterprise-scale cross-repository search. While SCIP is highly scalable and generates rich semantic graphs, it relies on complex, proprietary querying engines and specific indexing workers for each language. N3MO provides a more lightweight, locally-hostable alternative that stores its graph in a standard PostgreSQL database, allowing developers and external systems to query the repository's topology using universally understood SQL.
+
+\subsection{Program Slicing and Dynamic Analysis}
+Program slicing aims to isolate the subset of a program that affects the value of a variable at a specific point. Dynamic analysis tools map execution paths by instrumenting running code. While these approaches provide perfect accuracy for specific execution traces, they are computationally expensive, require a comprehensive test suite to exercise paths, and cannot guarantee full coverage. N3MO operates entirely statically, providing a fast, structural over-approximation of impact that is safer for refactoring.
+
+\section{Formalizing the Code Graph}
+
+Before detailing the system architecture, it is necessary to mathematically formalize the problem of structural impact analysis. We model a codebase as a directed, potentially cyclic graph $G = (V, E)$.
+
+\subsection{Vertex and Edge Definitions}
+The vertex set $V$ consists of all identifiable, structurally significant symbols within the source code (e.g., functions, classes, methods, and file entities). Each vertex $v \in V$ possesses a tuple of metadata $M(v) = (id, sig, file, line)$, representing its unique identifier, signature string, file path, and line boundaries.
+
+The edge set $E$ represents relationships between symbols. We define two primary, disjoint types of directed edges:
+\begin{itemize}
+    \item \textbf{Hierarchical Edges ($E_h$):} A directed edge $(u, v) \in E_h$ exists if $v$ is lexically encapsulated by $u$. For example, a method $v$ belonging to a class $u$, or a function $v$ defined within a file $u$. This forms a strict tree structure (a forest).
+    \item \textbf{Call Edges ($E_c$):} A directed edge $(u, v) \in E_c$ exists if the execution body of symbol $u$ contains an invocation of symbol $v$. 
+\end{itemize}
+
+\subsection{The Blast Radius Computation}
+The \textbf{Blast Radius} of a modified symbol $v$, denoted as $B(v, d)$, is defined as the set of all symbols $u$ that can be affected by a change in $v$, bounded by a depth $d$. Mathematically, this is the set of all vertices $u$ such that there exists a path of call edges in the reverse direction (from caller to callee) from $u$ to $v$ of length $l \le d$:
+
+$$B(v, d) = \{ u \in V \mid \exists \text{ path } p_{u \to v} \in E_c \text{ where } |p| \le d \}$$
+
+N3MO's primary objective is to compute $B(v, d)$ efficiently for any arbitrary depth $d$ across a massive graph where $|V| > 10^5$ and $|E_c| > 10^6$. Because $E_c$ is not guaranteed to be acyclic (due to recursive algorithms or circular dependencies), any algorithm computing $B(v, d)$ must implement cycle detection to ensure termination.
+
+\section{System Architecture}
+
+N3MO is designed around a three-stage, mathematically idempotent pipeline: \textbf{Ingestion}, \textbf{Resolution}, and \textbf{Traversal}. 
+
+\subsection{Data Ingestion Pipeline}
+N3MO relies on Tree-sitter, an incremental parsing system that generates concrete syntax trees based on Context-Free Grammars (CFGs). Unlike traditional LALR parsers used in compilers, Tree-sitter uses a Generalized LR (GLR) parsing algorithm. This allows it to handle ambiguities in dynamic languages and gracefully recover from syntax errors. This error tolerance is a critical feature, as it allows N3MO to parse syntactically invalid or incomplete code continuously during active development.
+
+The ingestion phase is orchestrated by a Python backend acting as the control plane. When initialized, N3MO executes a parallelized walk of the project directory, respecting `.gitignore` rules to exclude build artifacts. 
+
+To ensure incremental updates are virtually instantaneous, N3MO hashes the raw bytes of each file using the SHA-256 algorithm and compares the resulting digest against the state stored in the database. If the hash matches, the file is bypassed entirely, skipping the expensive parsing phase. For modified, new, or unindexed files, the file content is distributed to a worker process via Python's \texttt{ProcessPoolExecutor}.
+
+The worker utilizes Tree-sitter queries—a LISP-like query language designed for AST pattern matching—to extract symbols, import statements, and function calls from the tree. For example, a query to extract a Python function definition might look like:
+\begin{lstlisting}[language=Lisp, numbers=none]
+(function_definition
+  name: (identifier) @symbol.name
+  body: (block) @symbol.body) @symbol
+\end{lstlisting}
+This extracted raw data is serialized, batched, and prepared for the database insertion phase.
+
+\subsection{Graph Schema Definition}
+The extracted data is stored in PostgreSQL, chosen specifically for its robust support of recursive relational queries and advanced indexing. The schema is highly normalized and consists of five primary entities:
+
+\begin{itemize}
+    \item \textbf{\texttt{PROJECT}}: Stores metadata about the analyzed repository, allowing a single N3MO database instance to index multiple, disjoint codebases simultaneously (multi-tenancy).
+    \item \textbf{\texttt{FILE}}: Tracks indexed file paths and their SHA-256 hashes, acting as the source of truth for the incremental update engine.
+    \item \textbf{\texttt{SYMBOL}}: Represents structural entities. Each row stores a UUID, the symbol's signature, file path, line boundaries, and a foreign key (\texttt{parent\_id}) establishing the hierarchical edges ($E_h$).
+    \item \textbf{\texttt{CALL}}: Represents an invocation event. It initially links a \texttt{source\_symbol\_id} (the caller) to a raw text \texttt{call\_name}. After the resolution phase, it populates a \texttt{resolved\_symbol\_id}, establishing the strict call edges ($E_c$).
+    \item \textbf{\texttt{IMPORT}}: Tracks module imports, mapping internal aliases to their fully qualified module paths to aid in cross-file namespace resolution.
+\end{itemize}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.7\linewidth]{architecture.png}}
+\caption{System Architecture Flow of N3MO. The Python backend handles Tree-sitter AST parsing and orchestrates the database, while PostgreSQL acts as the graph storage and traversal engine.}
+\label{fig:architecture}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{er_diagram.png}}
+\caption{Entity-Relationship Diagram of the N3MO Knowledge Graph. The schema design enables multi-tenancy and separates hierarchical edges from call edges.}
+\label{fig:er_diagram}
+\end{figure}
+
+\subsection{Scope-Aware Call Resolution}
+A fundamental, non-trivial challenge in AST-based static analysis is resolving a raw function call string (e.g., \texttt{hash\_password()}) to its actual structural definition UUID within the project. Because N3MO does not rely on a compiler and operates on incomplete code, it must perform heuristic-based scope resolution at ingestion time, simulating the lexical scoping rules of the target language.
+
+The resolution engine follows a strict, cascading hierarchy:
+\begin{enumerate}
+    \item \textbf{Class/Parent Scope:} N3MO first checks if the call references a sibling method within the same lexical parent class or module. This resolves \texttt{self.method()} or \texttt{this.method()} invocations.
+    \item \textbf{Local File Scope:} If unresolved, N3MO searches the current file for a globally defined function matching the call name.
+    \item \textbf{Import Scope:} N3MO joins the \texttt{CALL} table with the \texttt{IMPORT} table. If the file explicitly imports the symbol or the module, N3MO traces the alias back to its origin file and resolves the symbol using the imported namespace.
+    \item \textbf{Global Scope:} As a fallback for highly dynamic languages (e.g., Python, JavaScript) or implicit globals, N3MO searches the global symbol registry across the entire project for unique matching signatures.
+\end{enumerate}
+
+Once resolved, the \texttt{CALL} record is updated with a \texttt{resolved\_symbol\_id}, converting an ambiguous textual reference into a hard, queryable relational edge.
+
+\section{Implementation Details and Optimizations}
+
+\begin{figure*}[t!]
+\begin{lstlisting}
+WITH RECURSIVE BlastRadius AS (
+    -- Base Case: The modified symbol itself
+    SELECT 
+        s.id, s.name, s.file_path, 
+        0 AS depth, 
+        ARRAY[s.id] AS path
+    FROM SYMBOL s
+    WHERE s.id = %s
+
+    UNION ALL
+
+    -- Recursive Step: Find all symbols calling the current set
+    SELECT 
+        caller.id, caller.name, caller.file_path, 
+        br.depth + 1, 
+        br.path || caller.id
+    FROM CALL c
+    JOIN SYMBOL caller ON c.source_symbol_id = caller.id
+    JOIN BlastRadius br ON c.resolved_symbol_id = br.id
+    WHERE br.depth < %s
+      -- Cycle Guard: Halt if caller is already in the path
+      AND NOT caller.id = ANY(br.path)
+)
+SELECT id, name, file_path, depth FROM BlastRadius;
+\end{lstlisting}
+\caption{The Recursive Common Table Expression (CTE) used by N3MO to compute the transitive Blast Radius. The Postgres \texttt{ARRAY} acts as an internal cycle guard to prevent infinite loops during traversal.}
+\label{fig:sql_cte}
+\end{figure*}
+
+N3MO is implemented in Python 3.10+, utilizing the \texttt{tree-sitter} C bindings for parsing and \texttt{psycopg2} for PostgreSQL database operations.
+
+\subsection{Ingestion Optimizations}
+To achieve high-performance indexing suitable for massive codebases, several optimizations were applied to the Python-PostgreSQL bridge. Early versions of N3MO (v0.3) used naive, per-symbol database insertions, resulting in severe I/O bottlenecks and unacceptable indexing times.
+
+\begin{itemize}
+    \item \textbf{Threaded Connection Pooling:} Using \texttt{psycopg2.pool.ThreadedConnectionPool}, we eliminated the TCP handshake overhead of establishing database connections for every worker process. Connections are checked out and returned to the pool dynamically.
+    \item \textbf{Batched Transactions (\texttt{execute\_values}):} Symbol, import, and call insertions are aggregated in memory per file, and inserted into the database in single bulk transactions using the \texttt{execute\_values} driver extension. This drastically reduced the number of network round trips and minimized WAL (Write-Ahead Logging) overhead in Postgres.
+    \item \textbf{Query Refactoring and String Manipulation:} The resolution engine originally relied heavily on expensive string manipulation during SQL joins to match fully qualified names. By optimizing the \texttt{SPLIT\_PART} logic in the call resolution queries and pre-computing namespaces during the Python phase, execution time for the resolution phase was cut in half.
+\end{itemize}
+
+\subsection{Blast Radius Analysis via Recursive CTEs}
+Finding the transitive impact of modifying a symbol equates to traversing a directed graph in reverse (from callee to caller). Implementing this traversal in application code (e.g., fetching a node in Python, looking up its callers, fetching those nodes, repeating) would require thousands of sequential database queries, incurring massive latency due to the N+1 query problem.
+
+Instead, N3MO pushes the traversal logic down directly to the database engine using PostgreSQL \textbf{Recursive Common Table Expressions (CTEs)}. A CTE allows SQL to iterate over a result set recursively, executing entirely within the database's memory space and leveraging its internal query planner.
+
+Real-world code frequently contains recursive functions, mutual recursion, and circular dependencies. A naive SQL graph traversal would enter an infinite loop, causing the database worker to run out of memory. To prevent this, N3MO implements mathematical cycle guards directly within the SQL CTE. 
+
+Below is the heavily optimized SQL query utilized by N3MO to compute the Blast Radius $B(v, d)$. It maintains a Postgres \texttt{ARRAY} of visited node UUIDs, referred to as the \texttt{path}.
+
+At each recursive step, the engine evaluates the \texttt{NOT = ANY()} operator. If the upcoming node ID already exists in the \texttt{path} array, the recursion halts for that specific branch, mathematically guaranteeing query termination in all scenarios, regardless of graph cyclicity.
+
+\section{Evaluation}
+
+\subsection{Performance and Indexing Metrics}
+We evaluated N3MO's performance on the open-source \textbf{Django} repository, a famously large, highly decoupled, and complex Python codebase. The repository contains over 3,000 Python files, yielding 43,000 structural symbols and 181,000 call edges. All benchmarks were executed on a consumer-grade laptop equipped with an Intel i5-13450HX processor, 24 GB of RAM, and an NVMe SSD.
+
+The optimizations applied across the development lifecycle yielded dramatic, compounding results:
+
+\begin{table}[hbt!]
+\centering
+\caption{Django Repository Full Indexing Performance}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Optimization Stage} & \textbf{Index Time} \\ \midrule
+v0.3 Baseline (Naive Inserts) & 23.4 minutes \\
++ SQL \texttt{SPLIT\_PART} Refactor & 11.2 minutes (2$\times$ speedup) \\
++ \texttt{execute\_values} Batching & 5.1 minutes (4.6$\times$ speedup) \\
++ Python Multiprocessing Pool & \textbf{2.5 minutes (9.3$\times$ speedup)} \\ \bottomrule
+\end{tabular}
+\end{table}
+
+The resulting PostgreSQL database size for the entire Django repository is approximately 65 MB, which is remarkably lightweight compared to the hundreds of megabytes required by compiler-based AST dumps. 
+
+Following the initial 2.5-minute full repository index, incremental updates are highly efficient. The SHA-256 file hashing phase scans the entire 3,000-file repository in under 1 second. If a developer modifies a single file and triggers a re-index, the Tree-sitter parsing and graph upsert process completes in $< 2$ seconds. This makes N3MO highly suitable for running continuously in the background or triggering via \texttt{git post-commit} hooks.
+
+\subsection{Query Latency vs. Depth}
+Because the code graph is heavily indexed using PostgreSQL B-Trees on the UUID columns, query latency depends solely on the size of the result subgraph, completely independent of the total repository size. 
+
+\begin{table}[hbt!]
+\centering
+\caption{Blast Radius Query Latency (Django)}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Traversal Depth ($d$)} & \textbf{Average Latency (ms)} \\ \midrule
+Depth = 1 (Direct Callers) & $< 10$ ms \\
+Depth = 3 (Transitive) & $25 - 35$ ms \\
+Depth = 5 (Deep Transitive) & $< 50$ ms \\
+Depth = 10 (Full System Trace) & $120 - 150$ ms \\ \bottomrule
+\end{tabular}
+\end{table}
+
+Even at an extreme depth of 10, the database resolves the subgraph in a fraction of a second. By comparison, achieving a transitive trace of depth 5 using a text search utility like \texttt{ripgrep} requires a human to execute at least 5 sequential, manual queries, taking several minutes of wall-clock time and risking false positives. While an LSP (like \texttt{pylsp}) is extremely fast for a single-level reference lookup, querying it recursively requires scripting a custom client to orchestrate the RPC calls, incurring IPC overhead that N3MO bypasses via direct SQL graph traversal.
+
+\section{Use Cases and Integrations}
+
+\subsection{Manual Developer Workflows and Visualization}
+Consider a practical scenario where a security vulnerability is found in a low-level utility, such as \texttt{utils.py::hash\_password}. A standard text search reveals it is used in \texttt{auth.py::login}. However, patching the hash function might break downstream contracts. N3MO’s recursive query instantly traces the graph: \texttt{hash\_password} $\rightarrow$ \texttt{login} $\rightarrow$ \texttt{POST /api/login} $\rightarrow$ \texttt{api\_gateway}. The developer immediately knows that modifying the hash function will alter the API gateway's response contract, a realization that would take hours of manual tracing across decoupled files. 
+
+To aid in human comprehension, N3MO provides a built-in, local web dashboard powered by \texttt{vis.js}, allowing developers to query a symbol and visually explore the force-directed graph interactively.
+
+\subsection{AI Agent Integration via MCP}
+Modern Large Language Models (LLMs) used for code generation (e.g., Anthropic's Claude 3.5, OpenAI's GPT-4o) are severely limited by their context windows. They cannot ingest an entire 500,000-line enterprise repository to understand structural dependencies, resulting in "hallucinations" where the AI generates code that calls non-existent functions or breaks downstream dependencies.
+
+N3MO acts as a deterministic reasoning engine for these models. We have integrated N3MO with the open-source \textbf{Model Context Protocol (MCP)}. By wrapping N3MO's CLI in an MCP server, LLM agents operating in modern IDEs (such as Cursor, Windsurf, or Claude Desktop) can proactively query the database as a tool. 
+
+When a developer asks an AI agent to "refactor the authentication system," the agent can autonomously issue an impact query to N3MO, retrieve the exact blast radius subgraph in JSON format, and intelligently load only those highly relevant files into its context window. This Retrieval-Augmented Generation (RAG) approach utilizing structural graphs reduces the likelihood of context poisoning and allows LLMs to safely refactor monolithic codebases. Formal quantitative evaluation of AI correctness utilizing this graph remains a subject for future study.
+
+\section{Limitations and Threats to Validity}
+
+While N3MO presents a highly scalable architecture for structural code intelligence, several limitations must be acknowledged:
+\begin{enumerate}
+    \item \textbf{Single-Language Evaluation:} The system's resolution heuristics and performance benchmarks have primarily been evaluated on a single, albeit massive, Python repository (Django). While Tree-sitter natively supports dozens of languages, ensuring the resolution engine accurately maps scope rules for other paradigms (e.g., Go, JavaScript) requires further empirical validation.
+    \item \textbf{AST vs. Compiler Accuracy:} Because N3MO relies on heuristics rather than a compiler, it is subject to inaccuracies in heavily dynamic or reflective code (e.g., Python's \texttt{getattr} or metaprogramming). It provides an over-approximation of impact, meaning false positives are possible where a compiler would definitively rule out a connection.
+    \item \textbf{Lack of Data-Flow Tracking:} N3MO currently builds a purely structural graph ($E_c$ and $E_h$). It does not track data-flow or variable state propagation. It cannot perform true program slicing, limiting its ability to trace vulnerabilities that propagate via variable assignments rather than explicit function invocations.
+\end{enumerate}
+
+\section{Conclusion and Future Work}
+
+N3MO demonstrates that treating source code as a strictly relational knowledge graph enables instantaneous, arbitrary-depth impact analysis. Its architecture—combining Tree-sitter's polyglot, error-tolerant AST generation with PostgreSQL's highly optimized recursive querying—provides a scalable, deterministic code intelligence layer that resolves the critical "fear of refactoring." The system proves that we can achieve near-compiler levels of structural awareness without the massive computational overhead or setup friction of build systems.
+
+Future work will focus on three primary areas:
+\begin{enumerate}
+    \item \textbf{Expanded Language Support:} Enhancing the ingestion engine to fully support dynamically typed aspects of Ruby and PHP.
+    \item \textbf{Data-Flow Tracking:} Extending the AST queries to track variable assignments, enabling basic taint analysis and slicing within the graph.
+    \item \textbf{Vector Graph Embeddings:} Implementing vector embeddings on the symbol nodes, allowing for hybrid queries that combine semantic natural language intent with rigid structural graph traversal. This would enable queries such as "Find all functions related to 'payment processing' that ultimately call the Stripe API."
+\end{enumerate}
+
+\begin{thebibliography}{00}
+\bibitem{b1} PostgreSQL Global Development Group. (2023). \textit{PostgreSQL Documentation: WITH Queries (Common Table Expressions).}
+\bibitem{b2} GitHub. (2023). \textit{Tree-sitter: An incremental parsing system for programming tools.}
+\bibitem{b3} Google. (2020). \textit{Kythe: A pluggable codebase software tool ecosystem.}
+\bibitem{b4} Sourcegraph. (2023). \textit{SCIP: Semantic Code Intelligence Protocol.}
+\bibitem{b5} Microsoft. (2023). \textit{Language Server Protocol Specification.}
+\bibitem{b6} Weiser, M. (1981). \textit{Program Slicing}. Proceedings of the 5th International Conference on Software Engineering (ICSE '81).
+\bibitem{b7} Anthropic. (2024). \textit{Model Context Protocol (MCP) Specification.}
+\end{thebibliography}
+
+\end{document}
