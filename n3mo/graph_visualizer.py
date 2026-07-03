@@ -39,7 +39,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>N3MO Orbit View — Repository Knowledge Graph</title>
-  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -360,15 +360,33 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     .risk-pill {
       padding: 4px 10px;
-      background: rgba(244, 63, 94, 0.1);
-      border: 1px solid var(--red);
       border-radius: 20px;
-      color: var(--red);
       font-family: "Bricolage Grotesque", sans-serif;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
       white-space: nowrap;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-panel-raised);
+      color: var(--text-muted);
+    }
+    
+    .risk-pill.high {
+      background: rgba(244, 63, 94, 0.1);
+      border-color: var(--red);
+      color: var(--red);
+    }
+    
+    .risk-pill.medium {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+    
+    .risk-pill.low {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--cyan);
+      color: var(--cyan);
     }
 
     .tag-pill {
@@ -430,13 +448,33 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     /* Work Area split panels layout */
     #work-area {
       flex: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 380px;
+      position: relative;
+      display: flex;
       min-height: 0;
+      overflow: hidden;
+    }
+    #info-panels {
+      position: absolute;
+      right: -400px;
+      top: 16px;
+      bottom: 16px;
+      width: 350px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      z-index: 20;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    #work-area.panel-open #info-panels {
+      right: 16px;
     }
 
     /* Knowledge Graph Canvas Panel */
     #graph-panel {
+      flex: 1;
       position: relative;
       min-width: 0;
       overflow: hidden;
@@ -454,6 +492,48 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       inset: 0;
       z-index: 1;
       pointer-events: none;
+    }
+
+    #symbol-search {
+      width: 100%;
+      padding: 10px 16px;
+      padding-left: 36px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      outline: none;
+      box-shadow: var(--shadow);
+      transition: all 0.2s ease;
+    }
+    
+    #symbol-search:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+    
+    #symbol-search::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .search-container {
+      position: absolute; 
+      top: 16px; 
+      left: 16px; 
+      z-index: 10; 
+      width: 320px;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 14px;
     }
 
     /* Floating Canvas Toolbar */
@@ -925,19 +1005,6 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         </div>
       </div>
 
-      <div class="nav-section">
-        <div class="nav-section-title">Diagnostics</div>
-        <div class="control-group" style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-          <div style="display: flex; justify-content: space-between;">
-            <span>Repo Size</span>
-            <span style="color: var(--text-main); font-weight: 600; font-family: var(--font-mono);">__REPO_SIZE__</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span>Index Time</span>
-            <span style="color: var(--text-main); font-weight: 600; font-family: var(--font-mono);">__INDEX_TIME__</span>
-          </div>
-        </div>
-      </div>
 
       <div class="nav-section">
         <div class="nav-section-title">Layout Engine</div>
@@ -1011,8 +1078,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
           <div id="mynetwork"></div>
 
           <!-- Canvas Floating Search Bar -->
-          <div class="search" style="position: absolute; top: 16px; left: 16px; z-index: 10; width: 300px;">
-            <input id="symbol-search" type="search" placeholder="Search symbol... (Press '/' to focus)" autocomplete="off">
+          <div class="search-container">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input id="symbol-search" type="search" placeholder="Search symbol... (Press '/')" autocomplete="off">
           </div>
 
           <div class="canvas-toolbar">
@@ -1031,15 +1099,15 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
             </div>
             <div class="legend-row">
               <span class="legend-color-dot" style="background: var(--cyan);"></span>
-              <span class="legend-text">Direct Caller (Depth 1)</span>
+              <span class="legend-text">Direct Impact (Depth 1)</span>
             </div>
             <div class="legend-row">
               <span class="legend-color-dot" style="background: var(--amber);"></span>
-              <span class="legend-text">Indirect Caller (Depth 2)</span>
+              <span class="legend-text">Indirect Impact (Depth 2)</span>
             </div>
             <div class="legend-row">
               <span class="legend-color-dot" style="background: var(--blue);"></span>
-              <span class="legend-text">Deep Caller (Depth &ge; 3)</span>
+              <span class="legend-text">Deep Impact (Depth &ge; 3)</span>
             </div>
           </div>
         </section>
@@ -1048,9 +1116,12 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         <aside id="info-panels">
           <!-- Panel 1: Real-time Analysis -->
           <div class="panel-section" id="analysis-panel" style="flex: 1; display: flex; flex-direction: column;">
-            <div class="panel-header" style="flex-shrink: 0;">
-              <i class="fa-solid fa-magnifying-glass-chart icon"></i>
-              <h3>Real-Time Analysis</h3>
+            <div class="panel-header" style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-magnifying-glass-chart icon"></i>
+                <h3 style="margin: 0;">Real-Time Analysis</h3>
+              </div>
+              <button id="close-panel-btn" class="tb-btn" style="width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="panel-body" id="inspector-content" style="flex: 1; overflow-y: auto;">
               <div class="empty-state">
@@ -1111,10 +1182,22 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     document.getElementById('target-name').textContent = targetName;
     document.getElementById('stat-direct').textContent = nodesData.filter(node => node.group === 1).length;
-    document.getElementById('stat-total').textContent = nodesData.filter(node => node.group > 0).length;
+    
+    const totalNodesImpacted = nodesData.filter(node => node.group > 0).length;
+    document.getElementById('stat-total').textContent = totalNodesImpacted;
     document.getElementById('stat-files').textContent = new Set(nodesData.filter(node => node.path).map(node => node.path)).size;
-    document.getElementById('risk-pill').textContent =
-      nodesData.filter(node => node.group > 0).length > 10 ? 'High impact' : 'Moderate impact';
+    
+    const riskPill = document.getElementById('risk-pill');
+    if (totalNodesImpacted > 100) {
+      riskPill.textContent = 'High Impact';
+      riskPill.className = 'risk-pill high';
+    } else if (totalNodesImpacted > 20) {
+      riskPill.textContent = 'Moderate Impact';
+      riskPill.className = 'risk-pill medium';
+    } else {
+      riskPill.textContent = 'Low Impact';
+      riskPill.className = 'risk-pill low';
+    }
 
     const fileColor = (path, currentTheme) => {
       let hash = 0;
@@ -1199,19 +1282,19 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       const visible = nodesData.filter(node => node.group <= currentDepth);
       positions[targetName] = { x: 0, y: 0 };
       
+      let currentBaseRadius = 160;
       for (let depth = 1; depth <= currentDepth; depth += 1) {
         const ringNodes = visible.filter(node => node.group === depth);
         ringNodes.sort((a, b) => a.label.localeCompare(b.label));
+        if (ringNodes.length === 0) continue;
         
-        const maxPerRing = 10;
+        const maxPerRing = 10 + (depth * 5);
         const numSubRings = Math.ceil(ringNodes.length / maxPerRing);
-        const baseRadius = 160 + ((depth - 1) * 160);
         
         ringNodes.forEach((node, index) => {
           const subRingIdx = index % numSubRings;
           const ringSpacing = 45;
-          const offsetRadius = (subRingIdx - (numSubRings - 1) / 2) * ringSpacing;
-          const radius = baseRadius + offsetRadius;
+          const radius = currentBaseRadius + (subRingIdx * ringSpacing);
           
           const nodesInThisSubRing = Math.ceil(ringNodes.length / numSubRings);
           const nodeIdxInSubRing = Math.floor(index / numSubRings);
@@ -1224,6 +1307,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
             y: Math.sin(angle) * radius
           };
         });
+        currentBaseRadius += (numSubRings * 45) + 80;
       }
       return positions;
     }
@@ -1485,10 +1569,11 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     function inspectNode(nodeId) {
       const node = nodesData.find(item => item.id === nodeId);
       if (!node) return;
+      document.getElementById('work-area').classList.add('panel-open');
       selectedId = nodeId;
       traceToTarget(nodeId);
       const classification = node.group === 0 ? 'target' : node.group === 1 ? 'inner' : node.group === 2 ? 'mid' : 'outer';
-      const classText = node.group === 0 ? 'Target node' : node.group === 1 ? 'Direct caller / Depth 1' : node.group === 2 ? 'Indirect caller / Depth 2' : `Deep caller / Depth ${node.group}`;
+      const classText = node.group === 0 ? 'Target node' : node.group === 1 ? 'Direct Impact / Depth 1' : node.group === 2 ? 'Indirect Impact / Depth 2' : `Deep Impact / Depth ${node.group}`;
       const location = node.path ? `${node.path}:${node.line || 1}` : 'Target definition';
       const editorLink = node.path ? `vscode://file/${encodeURI(node.path)}:${node.line || 1}` : '#';
       const codeHtml = renderCodePreview(node);
@@ -1553,8 +1638,17 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         selectedId = null;
         clearTrace();
         document.getElementById('inspector-content').innerHTML = defaultEmptyState;
+        document.getElementById('work-area').classList.remove('panel-open');
       }
     });
+
+    document.getElementById('close-panel-btn').onclick = () => {
+      document.getElementById('work-area').classList.remove('panel-open');
+    };
+
+    document.getElementById('nav-toggle').onclick = () => {
+      document.getElementById('nav-sidebar').classList.toggle('collapsed');
+    };
 
     network.on('hoverNode', params => {
       nodes.update({
@@ -1590,24 +1684,24 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
         : 'rgba(0, 0, 0, 0.05)';
       
       const visible = nodesData.filter(node => node.group <= currentDepth);
+      let currentBaseRadius = 160;
       
       for (let depth = 1; depth <= currentDepth; depth += 1) {
         const ringNodes = visible.filter(node => node.group === depth);
         if (ringNodes.length === 0) continue;
         
-        const maxPerRing = 10;
+        const maxPerRing = 10 + (depth * 5);
         const numSubRings = Math.ceil(ringNodes.length / maxPerRing);
-        const baseRadius = 160 + ((depth - 1) * 160);
         
         for (let subRingIdx = 0; subRingIdx < numSubRings; subRingIdx++) {
           const ringSpacing = 45;
-          const offsetRadius = (subRingIdx - (numSubRings - 1) / 2) * ringSpacing;
-          const radius = baseRadius + offsetRadius;
+          const radius = currentBaseRadius + (subRingIdx * ringSpacing);
           
           context.beginPath();
           context.arc(0, 0, radius, 0, Math.PI * 2);
           context.stroke();
         }
+        currentBaseRadius += (numSubRings * 45) + 80;
       }
       context.restore();
     });
@@ -1733,8 +1827,6 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     page = page.replace("__NODES_JSON__", json.dumps(nodes_list))
     page = page.replace("__EDGES_JSON__", json.dumps(edges_list))
     page = page.replace("__MAX_DEPTH__", str(max(1, max_depth)))
-    page = page.replace("__REPO_SIZE__", "14.2 MB")
-    page = page.replace("__INDEX_TIME__", "1.82s")
 
     filename = "impact_graph.html"
     with open(filename, "w", encoding="utf-8") as graph_file:

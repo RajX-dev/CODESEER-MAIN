@@ -1,4 +1,3 @@
-
 <!-- mcp-name: io.github.RajX-dev/n3mo -->
 <div align="center">
 
@@ -9,10 +8,10 @@
 ![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Layer-blue?style=for-the-badge)
 [![PyPI version](https://img.shields.io/pypi/v/n3mo?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/n3mo/)
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-green?style=for-the-badge)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10+-blue?style=for-the-badge&logo=python)](https://www.python.org)
+[![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=for-the-badge&logo=python)](https://www.python.org)
 [![Docker](https://img.shields.io/badge/docker-required-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen?style=for-the-badge)]()
-[![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik05Ljc5NSAxLjY5NGE0LjI4NyA0LjI4NyAwIDAgMSA2LjA2MSAwIDQuMjggNC4yOCAwIDAgMSAxLjE4MSAzLjgxOSA0LjI4MiA0LjI4MiAwIDAgMSAzLjgxOSAxLjE4MSA0LjI4NyA0LjI4NyAwIDAgMSAwIDYuMDYxbC02Ljc5MyA2Ljc5M2EuMjQ5LjI0OSAwIDAgMCAwIC4zNTNsMi42MTcgMi42MThhLjc1Ljc1IDAgMSAxLTEuMDYxIDEuMDYxbC0yLjYxNy0yLjYxOGExLjc1IDEuNzUgMCAwIDEgMC0yLjQ3NWw2Ljc5My02Ljc5M2EyLjc4NSAyLjc4NSAwIDEgMC0zLjkzOS0zLjkzOWwtNS45IDUuOWEuNzM0LjczNCAwIDAgMS0uMjQ5LjE2NS43NDkuNzQ5IDAgMCAxLS44MTItMS4yMjVsNS45LTUuOTAxYTIuNzg1IDIuNzg1IDAgMSAwLTMuOTM5LTMuOTM5TDIuOTMxIDEwLjY4QS43NS43NSAwIDEgMSAxLjg3IDkuNjE5bDcuOTI1LTcuOTI1WiIvPjxwYXRoIGQ9Ik0xMi40MiA0LjA2OWEuNzUyLjc1MiAwIDAgMSAxLjA2MSAwIC43NTIuNzUyIDAgMCAxIDAgMS4wNjFMNy4zMyAxMS4yOGEyLjc4OCAyLjc4OCAwIDAgMCAwIDMuOTQgMi43ODggMi43ODggMCAwIDAgMy45NCAwbDYuMTUtNi4xNTFhLjc1Mi43NTIgMCAwIDEgMS4wNjEgMCAuNzUyLjc1MiAwIDAgMSAwIDEuMDYxbC02LjE1MSA2LjE1YTQuMjg1IDQuMjg1IDAgMSAxLTYuMDYtNi4wNmw2LjE1LTYuMTUxWiIvPjwvc3ZnPg==)](https://registry.modelcontextprotocol.io/?q=n3mo)
+[![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge)](https://registry.modelcontextprotocol.io/?q=n3mo)
 [![CI](https://img.shields.io/github/actions/workflow/status/RajX-dev/N3MO/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI)](https://github.com/RajX-dev/N3MO/actions)
 
 **A structural code intelligence layer that transforms source code into a queryable knowledge graph for search, impact analysis, and AI-powered development.**
@@ -21,7 +20,7 @@
 
 **📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](#-license)
 
-[What is N3MO](#-what-is-n3mo) • [Architecture](#-architecture) • [Installation](#-installation) • [GitHub Integration](#-github-webhook-integration) • [Usage](#-usage) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Benchmarks](#-benchmarks) • [Architecture](#-architecture) • [Installation](#-installation) • [MCP](#-model-context-protocol-mcp) • [Usage](#-usage) • [Roadmap](#-roadmap)
 
 </div>
 
@@ -29,15 +28,16 @@
 
 ## 🎯 What is N3MO?
 
-N3MO is a symbol-centric code intelligence layer. Instead of scanning raw text, it parses your source code's ASTs, maps call graphs, and models dependencies in a queryable relational database.
+N3MO is a symbol-centric code intelligence layer. Instead of scanning raw text, it parses your source code's ASTs, maps call graphs, and models dependencies in a queryable relational database — deterministically, with **zero LLM calls at index time**.
 
 For engineering leaders and teams, N3MO acts as a **structural insurance policy** for your codebases.
 
 ### 💡 Why N3MO?
 
-*   **🛡️ Eliminate Regression Risks:** Utility functions are rarely refactored because developers fear unknown side effects. N3MO maps the transitive blast radius of any symbol to arbitrary depth, showing you exactly what will break before you make the edit.
-*   **🏎️ Rapid Developer Onboarding:** Instead of senior engineers spending hours explaining codebase flow to new hires, developers can run one command to visualize complex call chains and parent-child dependencies interactively.
-*   **🤖 AI-Agent Ready Infrastructure:** Modern LLM agents (Cursor, Claude Desktop) are limited by context windows and text search. N3MO's native MCP server lets AI agents query the actual code graph, enabling fast, hallucination-free refactoring.
+* **🛡️ Eliminate Regression Risks** — Utility functions are rarely refactored because developers fear unknown side effects. N3MO maps the transitive blast radius of any symbol to arbitrary depth, showing you exactly what will break before you make the edit.
+* **🏎️ Rapid Developer Onboarding** — Instead of senior engineers spending hours explaining codebase flow to new hires, developers run one command to visualize complex call chains and parent-child dependencies interactively.
+* **🤖 AI-Agent Ready Infrastructure** — Modern LLM agents (Cursor, Claude Desktop) are limited by context windows and text search. N3MO's native MCP server lets agents query the actual code graph, enabling fast, hallucination-free refactoring.
+* **⚡ No Embeddings, No Drift** — N3MO is pure static analysis: Tree-sitter AST parsing into PostgreSQL. There's no vector index to keep in sync, no embedding cost per repo, and no semantic-similarity guesswork — every edge in the graph is an exact, verifiable relationship.
 
 ### 📊 How N3MO Compares
 
@@ -48,7 +48,8 @@ For engineering leaders and teams, N3MO acts as a **structural insurance policy*
 | **Blast Radius Mapping** | ❌ None | ❌ Flat search-result list | 🎨 **Interactive visual orbit map** |
 | **CI/CD Integration** | ❌ None | ❌ Bound to IDE runtime | ⚙️ **Dockerized CLI + CTE queries** |
 | **AI Agent Integration** | ❌ Injected file chunks | ⚠️ Manual context copy | 🤖 **Native MCP server** |
-| **Language Coverage** | ✅ Any text file | ⚠️ Language-specific plugins | ✅ **27 languages via Tree-sitter** |
+| **Language Coverage** | ✅ Any text file | ⚠️ Language-specific plugins | ✅ **27 Tree-sitter grammars** |
+| **Indexing Method** | N/A | N/A | ✅ **Deterministic AST parse — no embeddings, no LLM calls** |
 
 ### 🛠️ The Core Problem N3MO Solves
 
@@ -90,6 +91,91 @@ Result:    3 direct callers → 5 ripple effects
 | 💥 | What is the **blast radius** of changing this function? | Interactive orbit map with depth slider |
 | 🕸️ | How do these components actually connect? | Call graph + parent-child hierarchy |
 | 🤖 | Can my AI agent understand this codebase structurally? | Native MCP server for Cursor / Claude |
+
+---
+
+## 📊 Benchmarks
+
+All benchmarks measured on **Intel i5-13450HX, 24 GB RAM, NVMe SSD**.
+
+### Django — Optimization History
+
+Django is the primary benchmark target: **3,021 files**, **~43K symbols**, **~181K calls**.
+
+```
+Django Index Time (minutes)
+═══════════════════════════════════════════════════════════════
+
+v0.3 Baseline       ██████████████████████████████████████████████  23 min   1×
+SPLIT_PART Fix      ██████████████████████                          11 min   2×
+Batch Inserts       █████████                                        5 min   4.6×
++ Multiprocessing   ████                                           2.5 min   9× 🚀
+
+═══════════════════════════════════════════════════════════════
+```
+
+| Optimization | Index Time | Speedup | What Changed |
+|:---|:---|:---|:---|
+| v0.3 baseline | 23 min | 1× | Per-symbol DB inserts, naive call resolution |
+| + SPLIT_PART query fix | 11 min | 2× | Eliminated redundant string splitting in call resolution |
+| + Batch inserts | 5 min | 4.6× | Symbols, imports, and calls batched per file (1 transaction) |
+| + Multiprocessing | ~2.5 min | **~9×** | `ProcessPoolExecutor` distributes AST parsing across cores |
+
+> ✅ All results are real measurements on the [Django](https://github.com/django/django) repository. Multiprocessing gains scale with core count.
+
+### TensorFlow — Enterprise-Scale Monorepo
+
+**Tested on [TensorFlow](https://github.com/tensorflow/tensorflow)** — a 36,000-file, multi-language (C++/Python) monorepo.
+
+| Metric | Result |
+|:---|:---|
+| **Repo size (total files)** | ~36,000 |
+| **Files processed & indexed** | **14,611** *(after filtering tests, configs, and non-source files)* |
+| **Total symbols extracted** | **79,523** |
+| **Total call edges extracted** | **480,851** |
+| **Full index time (cold start)** | **14.06 minutes** |
+| **Peak memory (Docker container)** | **185 MB RAM** |
+| **CPU utilization** | **~5%** |
+
+> N3MO scales from a 3K-file pure-Python repo (Django) to a 36K-file multi-language enterprise monorepo (TensorFlow) — roughly a **5× larger indexing job at near-linear throughput**, without significant resource overhead. Symbol/edge-per-file and incremental (warm) re-index numbers for TensorFlow are being finalized in the full benchmark report.
+
+### ScanCode Toolkit — Large Codebase
+
+**Tested on [ScanCode Toolkit](https://github.com/nexB/scancode-toolkit)** — ~600K lines of Python.
+
+| Metric | Result |
+|:---|:---|
+| **Lines of code** | ~600,000 |
+| **Full index time** | ~3 minutes |
+| **Processing mode** | Single-threaded (v0.3) |
+
+### Incremental Re-Indexing
+
+N3MO uses SHA-256 file hashing to skip unchanged files on subsequent runs.
+
+| Scenario | Time | Notes |
+|:---|:---|:---|
+| **Full index** (first run) | Baseline | All files parsed and inserted |
+| **No changes** (re-run) | **< 1 second** | Hash comparison only, zero DB writes |
+| **1 file modified** | **< 2 seconds** | Only the changed file is re-parsed and upserted |
+
+> These results are from the built-in benchmark script on a 20-file synthetic repository. Real-world incremental performance is proportional to the number of changed files, not the total repository size.
+
+### Query Performance
+
+Impact analysis uses PostgreSQL recursive CTEs with cycle guards. Query times are independent of repository size — they depend only on the size of the result subgraph.
+
+| Query Type | Typical Latency |
+|:---|:---|
+| Direct callers of a symbol | **< 10 ms** |
+| Full blast radius (depth ≤ 5) | **< 50 ms** |
+| Complete graph traversal | **< 200 ms** |
+
+### Running the Benchmark
+
+```bash
+python benchmarks/benchmark_indexing.py
+```
 
 ---
 
@@ -219,35 +305,35 @@ erDiagram
 
 ### Ingestion & Parsing
 
-- **Multi-language support** — 27 languages via dynamic Tree-sitter grammar loading (Python, JS/TS, Go, Rust, Java, C/C++, C#, Kotlin, Swift, Scala, Ruby, PHP, Haskell, Perl, and more)
-- **Parallel AST ingestion** — `ProcessPoolExecutor` distributes CPU-bound parsing across all available cores
-- **Incremental re-indexing** — SHA-256 file hashing skips unchanged files automatically
-- **Idempotent operations** — re-indexing updates existing data without duplication
-- **Smart exclusions** — case-insensitive directory filters and camelCase-aware filename checks prevent false positives (e.g. allows `contest.py` while skipping `test_*.py`)
+* **Multi-language support** — 27 Tree-sitter grammars supported (dynamically loaded); actively benchmarked on 10 major languages including Python, JS/TS, Go, Java, and C/C++
+* **Parallel AST ingestion** — `ProcessPoolExecutor` distributes CPU-bound parsing across all available cores
+* **Incremental re-indexing** — SHA-256 file hashing skips unchanged files automatically
+* **Idempotent operations** — re-indexing updates existing data without duplication
+* **Smart exclusions** — case-insensitive directory filters and camelCase-aware filename checks prevent false positives (e.g. allows `contest.py` while skipping `test_*.py`)
 
 ### Analysis & Querying
 
-- **Symbol extraction** — functions, classes, methods with full file path + line context
-- **Hierarchical modeling** — parent-child relationships (Module → Class → Method)
-- **Call graph construction** — who calls whom, resolved at ingestion time
-- **Scope-aware resolution** — class scope > local file > imports > qualified dot paths > global
-- **Blast radius analysis** — recursive CTE traversal to arbitrary depth with cycle guards
+* **Symbol extraction** — functions, classes, methods with full file path + line context
+* **Hierarchical modeling** — parent-child relationships (Module → Class → Method)
+* **Call graph construction** — who calls whom, resolved at ingestion time
+* **Scope-aware resolution** — class scope > local file > imports > qualified dot paths > global
+* **Blast radius analysis** — recursive CTE traversal to arbitrary depth with cycle guards
 
 ### Performance
 
-- **Connection pooling** — `ThreadedConnectionPool` eliminates per-symbol DB round trips
-- **Batch inserts** — symbols, imports, and calls batched per file in single transactions
-- **Optimized queries** — `SPLIT_PART` fix delivered a 2× speedup on call resolution
+* **Connection pooling** — `ThreadedConnectionPool` eliminates per-symbol DB round trips
+* **Batch inserts** — symbols, imports, and calls batched per file in single transactions
+* **Optimized queries** — `SPLIT_PART` fix delivered a 2× speedup on call resolution
 
 ### Visualization & Integration
 
-- **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
-- **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
-- **Premium styling** — sleek interactive dashboard landing page UI and graph visualizer styled with `Bricolage Grotesque`, `Inter`, and `JetBrains Mono` typography
-- **[SKILL.md](SKILL.md) profile** — system instructions to configure Claude as an impact-aware coding agent
-- **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
-- **Git hooks** — automatic re-indexing on every commit
-- **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
+* **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
+* **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
+* **Premium styling** — sleek interactive dashboard landing page UI and graph visualizer styled with `Bricolage Grotesque`, `Inter`, and `JetBrains Mono` typography
+* **[SKILL.md](SKILL.md)** profile — system instructions to configure Claude as an impact-aware coding agent
+* **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
+* **Git hooks** — automatic re-indexing on every commit
+* **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
 
 ---
 
@@ -266,6 +352,8 @@ erDiagram
 | ![Bash](https://img.shields.io/badge/Bash-4EAA25?logo=gnubash&logoColor=white) | ![Zig](https://img.shields.io/badge/Zig-F7A41D?logo=zig&logoColor=black) | ![OCaml](https://img.shields.io/badge/OCaml-EC6813?logo=ocaml&logoColor=white) | *…and more* |
 
 </div>
+
+> 27 grammars are wired up via Tree-sitter; Python, JS/TS, Go, Java, C/C++, and 4 others are actively covered by the benchmark suite above. Full per-language benchmark coverage is on the roadmap.
 
 ---
 
@@ -304,7 +392,6 @@ n3mo setup
 N3MO includes a native MCP server that exposes repository analysis and graph traversal tools to LLM agents (like Claude, Cursor, or Windsurf).
 
 ### Automatic Claude Desktop Setup
-To automatically configure N3MO in your local Claude Desktop:
 ```bash
 # Navigate to the workspace you want Claude to analyze, then run:
 n3mo mcp install
@@ -315,8 +402,7 @@ This registers N3MO and sets up the paths automatically. Restart Claude Desktop 
 To configure Claude to run N3MO impact queries proactively before changing code in the editor, import or copy-paste the custom instructions from the **[SKILL.md](SKILL.md)** profile.
 
 ### Cursor Setup
-To use N3MO in Cursor:
-1. Go to **Settings -> Models -> MCP**.
+1. Go to **Settings → Models → MCP**.
 2. Click **+ Add New MCP Server**.
 3. Set the configuration details:
    * **Name**: `n3mo`
@@ -325,18 +411,28 @@ To use N3MO in Cursor:
    * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
 4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
 
+### 🧰 Available MCP Tools
+
+| Tool | Description |
+|:---|:---|
+| `n3mo_index` | Ingests and indexes the codebase |
+| `n3mo_search_symbol` | Locates the definition of a symbol across the workspace (file path, line number) |
+| `n3mo_get_dependencies` | Finds all external symbols that a given symbol calls (forward-dependency graph) |
+| `n3mo_get_file_symbols` | Lists all classes and functions defined inside a specific file |
+| `n3mo_get_blast_radius` | Traces the transitive impact/call graph of a code symbol |
+
 ---
 
 ## ⚓ GitHub Webhook Integration
 
-If you wish to use N3MO for team collaboration and automated pull-request analysis in your CI/CD pipeline, please visit **[n3mo.shop](https://n3mo.shop)** to get started with our GitHub Webhook integration.
+For team collaboration and automated pull-request analysis in your CI/CD pipeline, visit **[n3mo.shop](https://n3mo.shop)** to get started with the GitHub Webhook integration.
 
 ### 💰 Pricing & Licensing
 
-N3MO is free under the **PolyForm Noncommercial 1.0.0 License** for local usage and single-developer MCP integrations. 
+N3MO is free under the **PolyForm Noncommercial 1.0.0 License** for local usage and single-developer MCP integrations.
 
-*   **100% Free & Local:** Run CLI queries, local MCP integrations, and the visualizer with zero limits.
-*   **Enterprise Licensing:** For large-scale organization deployments or commercial licensing terms, please reach out to the author.
+* **100% Free & Local** — CLI queries, local MCP integrations, and the visualizer with zero limits.
+* **Enterprise Licensing** — for large-scale organization deployments or commercial licensing terms, reach out to the author.
 
 ---
 
@@ -345,20 +441,16 @@ N3MO is free under the **PolyForm Noncommercial 1.0.0 License** for local usage 
 ### Index a repository
 
 ```bash
-# Navigate to any repository
 cd /path/to/your/project
-
-# Run the indexer
 n3mo index
 ```
 
 **What gets indexed:**
-- ✅ Source files in all 27 supported languages
-- ❌ Virtual environments (`venv/`, `.venv/`)
-- ❌ Dependencies (`node_modules/`, `site-packages/`)
-- ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
-- ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
-
+* ✅ Source files in all 27 supported languages
+* ❌ Virtual environments (`venv/`, `.venv/`)
+* ❌ Dependencies (`node_modules/`, `site-packages/`)
+* ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
+* ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
 
 ### Visualizer
 
@@ -431,80 +523,9 @@ graph LR
 
 ---
 
-## 📊 Benchmarks
-
-All benchmarks measured on **Intel i5-13450HX, 24 GB RAM, NVMe SSD**.
-
-### Django — Optimization History
-
-Django is the primary benchmark target: **3,021 files**, **~43k symbols**, **~181k calls**.
-
-```
-Django Index Time (minutes)
-═══════════════════════════════════════════════════════════════
-
-v0.3 Baseline       ██████████████████████████████████████████████  23 min   1×
-SPLIT_PART Fix      ██████████████████████                          11 min   2×
-Batch Inserts       █████████                                        5 min   4.6×
-+ Multiprocessing   ████                                           2.5 min   9× 🚀
-
-═══════════════════════════════════════════════════════════════
-```
-
-| Optimization | Index Time | Speedup | What Changed |
-|:---|:---|:---|:---|
-| v0.3 baseline | 23 min | 1× | Per-symbol DB inserts, naive call resolution |
-| + SPLIT_PART query fix | 11 min | 2× | Eliminated redundant string splitting in call resolution |
-| + Batch inserts | 5 min | 4.6× | Symbols, imports, and calls batched per file (1 transaction) |
-| + Multiprocessing | ~2.5 min | **~9×** | `ProcessPoolExecutor` distributes AST parsing across cores |
-
-> ✅ All results are real measurements on the [Django](https://github.com/django/django) repository. Multiprocessing gains scale with core count.
-
-### ScanCode Toolkit — Large Codebase
-
-**Tested on [ScanCode Toolkit](https://github.com/nexB/scancode-toolkit)** — ~600k lines of Python.
-
-| Metric | Result |
-|:---|:---|
-| **Lines of code** | ~600,000 |
-| **Full index time** | ~3 minutes |
-| **Processing mode** | Single-threaded (v0.3) |
-
-### Incremental Re-Indexing
-
-N3MO uses SHA-256 file hashing to skip unchanged files on subsequent runs.
-
-| Scenario | Time | Notes |
-|:---|:---|:---|
-| **Full index** (first run) | Baseline | All files parsed and inserted |
-| **No changes** (re-run) | **< 1 second** | Hash comparison only, zero DB writes |
-| **1 file modified** | **< 2 seconds** | Only the changed file is re-parsed and upserted |
-
-> These results are from the built-in benchmark script on a 20-file synthetic repository. Real-world incremental performance is proportional to the number of changed files, not the total repository size.
-
-### Query Performance
-
-Impact analysis uses PostgreSQL recursive CTEs with cycle guards. Query times are independent of repository size — they depend only on the size of the result subgraph.
-
-| Query Type | Typical Latency |
-|:---|:---|
-| Direct callers of a symbol | **< 10 ms** |
-| Full blast radius (depth ≤ 5) | **< 50 ms** |
-| Complete graph traversal | **< 200 ms** |
-
-### Running the Benchmark
-
-```bash
-python benchmarks/benchmark_indexing.py
-```
-
----
-
 ## 🗺️ Roadmap
 
 All four development phases have been completed. N3MO is stable and actively maintained.
-
-### Development Timeline
 
 | Phase | Component | Status |
 |-------|-----------|--------|
@@ -555,7 +576,7 @@ All four development phases have been completed. N3MO is stable and actively mai
 - [x] `--file` and `--depth` CLI flags for targeted impact analysis
 - [x] Interactive depth slider in visualizer
 
-**Results:** Django (3,021 files, ~43k symbols, ~181k calls) — 23min → 5min (4.6× faster)
+**Results:** Django (3,021 files, ~43K symbols, ~181K calls) — 23min → 2.5min (9× faster)
 
 </details>
 
@@ -625,10 +646,10 @@ pytest tests/
 
 Licensed under the **PolyForm Noncommercial 1.0.0** License.
 
-- ✅ Free for personal projects, academic research, and hobby tools
-- ✅ Source available — view, modify, and distribute for noncommercial purposes
-- ⚠️ Noncommercial — you may not use it for commercial purposes
-- ⚠️ Restrictions apply on offering it as a service
+* ✅ Free for personal projects, academic research, and hobby tools
+* ✅ Source available — view, modify, and distribute for noncommercial purposes
+* ⚠️ Noncommercial — you may not use it for commercial purposes
+* ⚠️ Restrictions apply on offering it as a service
 
 For commercial deployments or proprietary modifications, contact for licensing options.
 
@@ -636,7 +657,7 @@ See [LICENSE](LICENSE) for full legal details.
 
 ---
 
-## 👨‍💻 Author
+## 👨💻 Author
 
 **Raj Shekhar** — Delhi Technological University
 
@@ -647,17 +668,17 @@ See [LICENSE](LICENSE) for full legal details.
 
 ## 🙏 Acknowledgments
 
-- **[Tree-sitter](https://tree-sitter.github.io/)** — for robust, incremental, error-tolerant parsing
-- **[PostgreSQL](https://www.postgresql.org/)** — for making recursive graph queries possible without a graph database
-- **[Docker](https://www.docker.com/)** — for reproducible, single-command environments
-- **[vis.js](https://visjs.org/)** — for the interactive graph visualization
-- **[FastAPI](https://fastapi.tiangolo.com/)** — for the high-performance REST layer
+* **[Tree-sitter](https://tree-sitter.github.io/)** — for robust, incremental, error-tolerant parsing
+* **[PostgreSQL](https://www.postgresql.org/)** — for making recursive graph queries possible without a graph database
+* **[Docker](https://www.docker.com/)** — for reproducible, single-command environments
+* **[vis.js](https://visjs.org/)** — for the interactive graph visualization
+* **[FastAPI](https://fastapi.tiangolo.com/)** — for the high-performance REST layer
 
 ---
 
 <div align="center">
 
-**⭐ Star this repo if you find it useful! thanks for visiting**
+**⭐ Star this repo if you find it useful — thanks for visiting!**
 
 *Building tools for understanding code at scale.*
 
