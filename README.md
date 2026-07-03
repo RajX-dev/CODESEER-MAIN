@@ -353,7 +353,7 @@ erDiagram
 
 </div>
 
-> 27 grammars are wired up via Tree-sitter; Python, JS/TS, Go, Java, C/C++, and 4 others are actively covered by the benchmark suite above. Full per-language benchmark coverage is on the roadmap.
+> Tree-sitter parsing supported for 27 languages. Deep semantic call graph mapping currently optimized for Python, JS/TS, and Java.
 
 ---
 

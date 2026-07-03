@@ -393,7 +393,7 @@ if Server is not None:
                     
                     cur.execute(
                         "SELECT name, kind, signature, start_line, end_line FROM symbols WHERE file_path LIKE %s AND project_id = %s ORDER BY start_line ASC",
-                        ('%' + file_path + '%', project_id)
+                        ('%' + str(file_path) + '%', project_id)
                     )
                     results = cur.fetchall()
                     
