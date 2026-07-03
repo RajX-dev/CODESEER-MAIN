@@ -135,7 +135,8 @@ nav a:hover {
 .btn-primary:hover {
     background-color: #fbbf24;
     border-color: #fbbf24;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.2);
 }
 
 .btn-secondary {
@@ -228,6 +229,21 @@ h1 {
 
 .accent-text {
     color: var(--accent);
+}
+
+@keyframes shine {
+    to {
+        background-position: 200% center;
+    }
+}
+
+.shiny-text {
+    background: linear-gradient(110deg, var(--accent) 30%, #fff 50%, var(--accent) 70%);
+    background-size: 200% auto;
+    color: transparent !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    animation: shine 3s linear infinite;
 }
 
 .subtitle {
@@ -680,8 +696,8 @@ h1 {
 }
 
 .bento-card:hover {
-    border-color: rgba(245, 158, 11, 0.4);
-    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.12), inset 0 0 20px rgba(245, 158, 11, 0.05);
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.12), inset 0 0 20px rgba(245, 158, 11, 0.05), 0 0 20px rgba(245, 158, 11, 0.3);
     transform: translateY(-4px);
 }
 
@@ -1212,7 +1228,7 @@ footer {
 .reveal-fade {
     opacity: 0;
     transform: translateY(30px);
-    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .reveal-fade.active {
