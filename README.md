@@ -325,6 +325,14 @@ To use N3MO in Cursor:
    * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
 4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
 
+### 🧰 Available MCP Tools
+Once configured, the following advanced code intelligence tools are exposed to your agent:
+* `n3mo_index`: Ingests and indexes the codebase.
+* `n3mo_search_symbol`: Locates the definition of a symbol across the workspace (file path, line number).
+* `n3mo_get_dependencies`: Finds all external symbols that a given symbol calls (the forward-dependency graph).
+* `n3mo_get_file_symbols`: Lists all classes and functions defined inside a specific file.
+* `n3mo_get_blast_radius`: Traces the transitive impact/call graph of a code symbol.
+
 ---
 
 ## ⚓ GitHub Webhook Integration
@@ -469,6 +477,15 @@ Batch Inserts       █████████                                 
 | **Lines of code** | ~600,000 |
 | **Full index time** | ~3 minutes |
 | **Processing mode** | Single-threaded (v0.3) |
+
+### TensorFlow — Massive Codebase
+
+**Tested on TensorFlow (Core C++ & Python)** — ~9,000 files.
+
+| Metric | Result |
+|:---|:---|
+| **Files indexed** | ~9,000 files |
+| **Full index time** | **1.82 seconds** 🚀 |
 
 ### Incremental Re-Indexing
 
