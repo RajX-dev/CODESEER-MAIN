@@ -1,9 +1,9 @@
 # Copyright (C) 2026 Raj shekhar
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This file is part of N3MO.
+# N3MO is licensed under the PolyForm Noncommercial License 1.0.0.
+# You may obtain a copy of the License at
+# https://polyformproject.org/licenses/noncommercial/1.0.0
 
 import os
 import logging
