@@ -6,12 +6,12 @@
     "url": "https://github.com/RajX-dev/N3MO",
     "source": "github"
   },
-  "version": "2.0.0",
+  "version": "2.0.1",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "n3mo",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "transport": {
         "type": "stdio"
       }
