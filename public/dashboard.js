@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        planBadge.textContent = planType.toUpperCase();
+        planBadge.textContent = planType === 'free' ? 'UNLICENSED' : planType.toUpperCase();
         
         // Show webhook section for everyone who is logged in
         const webhookSection = document.getElementById('webhook-section');
