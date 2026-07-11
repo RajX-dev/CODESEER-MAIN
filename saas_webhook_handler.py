@@ -418,10 +418,21 @@ async def github_webhook(
                 if secret_from_db:
                     secret_to_use = str(secret_from_db)
                     
-                # Check subscription expiration
+                # Check subscription expiration — check BOTH status field AND expires_at timestamp
                 from n3mo.saas_db import get_subscription
+                import datetime as _dt
                 sub = get_subscription(str(user_db.get("id")), "user")
-                if sub.get("status") == "expired":
+                
+                is_expired = sub.get("status") == "expired"
+                if not is_expired and sub.get("expires_at") is not None:
+                    exp = sub["expires_at"]
+                    now = _dt.datetime.now(_dt.timezone.utc)
+                    if exp.tzinfo is None:
+                        exp = exp.replace(tzinfo=_dt.timezone.utc)
+                    if exp < now:
+                        is_expired = True
+                
+                if is_expired:
                     installation = payload.get("installation")
                     installation_id = installation.get("id") if isinstance(installation, dict) else None
                     if installation_id:

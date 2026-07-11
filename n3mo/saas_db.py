@@ -7,6 +7,7 @@
 
 import logging
 import secrets
+import datetime
 from n3mo.database import get_connection, release_connection
 from cryptography.fernet import Fernet
 import os
@@ -161,11 +162,33 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                 if owner_type == "user" and username == admin_username:
                     return {"plan_type": "enterprise", "status": "active", "expires_at": None}
                 
+                db_status = row[2]
+                expires_at = row[3]
+                
+                # Auto-detect expiry from expires_at — don't trust the DB status field alone
+                now = datetime.datetime.now(datetime.timezone.utc)
+                if expires_at is not None and db_status != "expired":
+                    # Make expires_at timezone-aware if it isn't
+                    if expires_at.tzinfo is None:
+                        expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
+                    if expires_at < now:
+                        db_status = "expired"
+                        # Update the DB so subsequent reads are consistent
+                        try:
+                            cur.execute(
+                                "UPDATE subscriptions SET status = 'expired' WHERE id = %s",
+                                (row[0],)
+                            )
+                            conn.commit()
+                            logger.info(f"Auto-expired subscription {row[0]} for {owner_type} {owner_id}")
+                        except Exception as upd_err:
+                            logger.warning(f"Could not update subscription status to expired: {upd_err}")
+                
                 return {
                     "id": row[0],
                     "plan_type": row[1],
-                    "status": row[2],
-                    "expires_at": row[3],
+                    "status": db_status,
+                    "expires_at": expires_at,
                     "created_at": row[5]
                 }
                 
