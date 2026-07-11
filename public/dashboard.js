@@ -82,10 +82,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         planBadge.textContent = planType === 'free' ? 'UNLICENSED' : planType.toUpperCase();
         
-        // Show webhook section for everyone who is logged in
+        // Show webhook section only for active paid plans
         const webhookSection = document.getElementById('webhook-section');
         if (webhookSection) {
-            webhookSection.style.display = 'block';
+            webhookSection.style.display = (planType !== 'free' && !isExpired) ? 'block' : 'none';
         }
         
         secretInput.value = data.webhook_secret;
