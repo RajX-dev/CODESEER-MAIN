@@ -275,6 +275,59 @@ def get_github_app_installation_token(
         logger.error(f"Failed to get App installation token: {e.code} - {err_msg}")
         raise HTTPException(status_code=e.code, detail=f"GitHub App Token Error: {err_msg}")
 
+def delete_github_app_installation(
+    app_id: str | None,
+    private_key_env: str | None,
+    private_key_path: str | None,
+    installation_id: str | int | None
+) -> bool:
+    if not app_id or not installation_id:
+        return False
+        
+    try:
+        import jwt
+        import time
+    except ImportError:
+        return False
+        
+    private_key = private_key_env
+    if not private_key and private_key_path:
+        if os.path.exists(private_key_path):
+            with open(private_key_path, "r") as f:
+                private_key = f.read()
+                
+    if not private_key:
+        return False
+        
+    private_key = private_key.replace("\\n", "\n")
+    
+    now = int(time.time())
+    payload = {
+        "iat": now - 60,
+        "exp": now + 600,
+        "iss": str(app_id)
+    }
+    
+    token_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+    
+    url = f"https://api.github.com/app/installations/{installation_id}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Authorization": f"Bearer {token_jwt}",
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "N3MO-SaaS"
+        },
+        method="DELETE"
+    )
+    
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return True
+    except Exception as e:
+        logger.error(f"Failed to delete App installation {installation_id}: {e}")
+        return False
+
 def post_github_comment(
     repo_name: str,
     pr_number: int,
@@ -364,6 +417,20 @@ async def github_webhook(
                 secret_from_db = user_db.get("webhook_secret")
                 if secret_from_db:
                     secret_to_use = str(secret_from_db)
+                    
+                # Check subscription expiration
+                from n3mo.saas_db import get_subscription
+                sub = get_subscription(str(user_db.get("id")), "user")
+                if sub.get("status") == "expired":
+                    installation = payload.get("installation")
+                    installation_id = installation.get("id") if isinstance(installation, dict) else None
+                    if installation_id:
+                        app_id = os.getenv("GITHUB_APP_ID")
+                        private_key_env = os.getenv("GITHUB_APP_PRIVATE_KEY")
+                        private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH") or os.getenv("GITHUB_PRIVATE_KEY_PATH")
+                        delete_github_app_installation(app_id, private_key_env, private_key_path, installation_id)
+                        logger.warning(f"Subscription expired for user {user_db.get('id')}. Revoked GitHub App installation {installation_id}.")
+                    return {"status": "error", "message": "Subscription expired. GitHub webhook token revoked."}
 
     # Verify signature if a secret is configured (either global or personal)
     if secret_to_use:
