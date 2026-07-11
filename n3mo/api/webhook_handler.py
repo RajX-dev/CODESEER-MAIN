@@ -91,7 +91,6 @@ async def github_webhook(
                     app_id = os.getenv("GITHUB_APP_ID")
                     private_key_env = os.getenv("GITHUB_APP_PRIVATE_KEY")
                     private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH") or os.getenv("GITHUB_PRIVATE_KEY_PATH")
-                    from n3mo.saas_db import delete_github_app_installation # Need to import it if they ever use GitHub App
                     # We will just log it for now to avoid import errors if the function is missing
                     logger.warning(f"Subscription expired for user {user_db.get('id')}. GitHub App token should be revoked.")
                 return {"status": "error", "message": "Subscription expired. GitHub webhook token revoked."}
