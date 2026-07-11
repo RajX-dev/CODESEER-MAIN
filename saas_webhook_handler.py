@@ -423,7 +423,7 @@ async def github_webhook(
                 import datetime as _dt
                 sub = get_subscription(str(user_db.get("id")), "user")
                 
-                is_expired = sub.get("status") == "expired"
+                is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "free"
                 if not is_expired and sub.get("expires_at") is not None:
                     exp = sub["expires_at"]
                     now = _dt.datetime.now(_dt.timezone.utc)
