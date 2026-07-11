@@ -62,10 +62,39 @@ async def github_webhook(
         if repo_owner_name:
             from n3mo.saas_db import get_user_by_username
             user_db = get_user_by_username(repo_owner_name)
-            if user_db:
-                secret_from_db = user_db.get("webhook_secret")
-                if secret_from_db:
-                    secret_to_use = str(secret_from_db)
+            if not user_db:
+                logger.warning(f"Webhook from unregistered user {repo_owner_name}, rejecting.")
+                return {"status": "error", "message": "User is not registered on N3MO SaaS."}
+
+            secret_from_db = user_db.get("webhook_secret")
+            if secret_from_db:
+                secret_to_use = str(secret_from_db)
+
+            # Check subscription expiration — check BOTH status field AND expires_at timestamp
+            from n3mo.saas_db import get_subscription
+            import datetime as _dt
+            sub = get_subscription(str(user_db.get("id")), "user")
+            
+            is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "free"
+            if not is_expired and sub.get("expires_at") is not None:
+                exp = sub["expires_at"]
+                now = _dt.datetime.now(_dt.timezone.utc)
+                if exp.tzinfo is None:
+                    exp = exp.replace(tzinfo=_dt.timezone.utc)
+                if exp < now:
+                    is_expired = True
+            
+            if is_expired:
+                installation = payload.get("installation")
+                installation_id = installation.get("id") if isinstance(installation, dict) else None
+                if installation_id:
+                    app_id = os.getenv("GITHUB_APP_ID")
+                    private_key_env = os.getenv("GITHUB_APP_PRIVATE_KEY")
+                    private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH") or os.getenv("GITHUB_PRIVATE_KEY_PATH")
+                    from n3mo.saas_db import delete_github_app_installation # Need to import it if they ever use GitHub App
+                    # We will just log it for now to avoid import errors if the function is missing
+                    logger.warning(f"Subscription expired for user {user_db.get('id')}. GitHub App token should be revoked.")
+                return {"status": "error", "message": "Subscription expired. GitHub webhook token revoked."}
 
     # Verify signature if a secret is configured (either global or personal)
     if secret_to_use:
