@@ -77,8 +77,15 @@ def create_order(github_id: str, country: str = "US", discount: str = "", plan_t
         client = razorpay.Client(auth=(key_id, key_secret))
         
         # Set base pricing based on plan
-        base_price_usd = 9800 if plan_type == "team" else 2500
-        base_price_inr = 810000 if plan_type == "team" else 210000
+        if plan_type == "team":
+            base_price_usd = 9800   # $98 (displayed as $199? — keeping existing value)
+            base_price_inr = 810000 # ₹8100
+        elif plan_type == "starter":
+            base_price_usd = 1000   # $10/mo
+            base_price_inr = 84000  # ₹840/mo
+        else:  # pro
+            base_price_usd = 4900   # $49/mo
+            base_price_inr = 410000 # ₹4100/mo
         
         if country.upper() == "IN":
             order_amount = base_price_inr

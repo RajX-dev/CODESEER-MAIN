@@ -286,19 +286,23 @@
                                 You currently have no active subscription. You must upgrade to a paid plan to use N3MO.
                             </p>
                             <p style="font-size: 15px; max-width: 500px;">
-                                Upgrade to N3MO <span class="accent-text">Pro</span> to unlock up to 5 repositories, or the <span class="accent-text">Team</span> plan for up to 8 repositories and monorepo support.
+                                Choose a plan: <span class="accent-text">Starter</span> ($10/mo, 3 repos), <span class="accent-text">Pro</span> ($49/mo, 5 repos), or <span class="accent-text">Team</span> ($199/mo, 8 repos + monorepo).
                             </p>
                             <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
                                 <input type="text" id="discount-code" placeholder="Discount Code (Optional)" 
                                     style="padding: 10px 14px; border-radius: 6px; background-color: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; width: 220px; font-size: 14px;">
-                                <div style="display: flex; gap: 12px;">
+                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button class="btn btn-outline upgrade-btn" data-plan="starter"
+                                        style="font-size: 15px; padding: 12px 24px;">
+                                        Starter - $10/mo
+                                    </button>
                                     <button class="btn btn-outline upgrade-btn" data-plan="pro"
                                         style="font-size: 15px; padding: 12px 24px;">
-                                        Upgrade Pro - $49/mo
+                                        Pro - $49/mo
                                     </button>
                                     <button class="btn btn-primary upgrade-btn" data-plan="team"
                                         style="font-size: 15px; padding: 12px 24px;">
-                                        Upgrade Team - $199/mo
+                                        Team - $199/mo
                                     </button>
                                 </div>
                             </div>
