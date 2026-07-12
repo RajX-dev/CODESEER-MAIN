@@ -230,7 +230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.warn("Could not fetch location, defaulting to US");
                 }
 
-                const discountCode = document.getElementById('discount-code').value.trim();
+                const discountCodeEl = document.getElementById('discount-code');
+                const discountCode = discountCodeEl ? discountCodeEl.value.trim() : '';
                 // Call the new subscription API. By default passing billing_cycle=monthly, they can add a toggle later.
                 const res = await fetch(`/api/create-subscription?github_id=${userData.user.github_id}&country=${country}&discount=${discountCode}&plan_type=${targetPlan}&billing_cycle=monthly`, { method: 'POST' });
                 if (!res.ok) throw new Error("Failed to create subscription");
