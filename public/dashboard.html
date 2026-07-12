@@ -6,26 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>N3MO | Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <!-- Use the main styling -->
+    
     <link rel="stylesheet" href="style.css">
-    <!-- Include fonts used in style.css -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for icons -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Razorpay Checkout -->
+    
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="https://n3mo.shop/dashboard.html">
-    <!-- Open Graph / Facebook -->
+    
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://n3mo.shop/dashboard.html">
     <meta property="og:title" content="N3MO | Dashboard">
     <meta property="og:description" content="Manage your N3MO API keys, repositories, and subscription plans securely.">
     <meta property="og:image" content="https://n3mo.shop/og-image.png">
-    <!-- Twitter -->
+    
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://n3mo.shop/dashboard.html">
     <meta property="twitter:title" content="N3MO | Dashboard">
@@ -206,11 +206,11 @@
 </head>
 
 <body>
-    <!-- Mouse Tracker -->
-    <!-- SVG Grain Overlay -->
+    
+    
     <div id="grain-overlay"></div>
 
-    <!-- Animated Gradient Field -->
+    
     <div id="ambient-field">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -218,7 +218,7 @@
         <div class="orb orb-4"></div>
     </div>
 
-    <!-- Custom Cursor -->
+    
     <div class="cur-dot"></div>
     <div class="cursor-glow"></div>
 
@@ -239,17 +239,17 @@
 
     <main class="container dashboard-container">
 
-        <!-- Loading State -->
+        
         <div id="loading">
             <div class="spinner"></div>
             <p style="color: var(--text-muted); font-family: var(--font-mono); font-size: 13px;">Loading profile...</p>
         </div>
 
-        <!-- Dashboard Content -->
+        
         <div id="dashboard-content" style="display: none;">
             <div class="dashboard-grid">
 
-                <!-- Profile Card (Left) -->
+                
                 <div class="bento-card profile-card">
                     <h2 style="font-family: var(--font-heading); font-size: 22px;">Profile</h2>
 
@@ -279,10 +279,10 @@
                     </div>
                 </div>
 
-                <!-- Action Area (Right) -->
+                
                 <div class="action-area">
 
-                    <!-- Free Tier View -->
+                    
                     <div id="view-free" class="free-view bento-card" style="display: none; margin-bottom: 24px; padding: 32px;">
                         <div style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 24px;">
                             <div>
@@ -297,7 +297,7 @@
                                 </p>
                             </div>
                             
-                            <!-- Promotional Code -->
+                            
                             <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 16px; width: 320px;">
                                 <h4 style="font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
                                     Have a promotional code?
@@ -310,9 +310,9 @@
                             </div>
                         </div>
 
-                        <!-- 3-Column Pricing Grid -->
+                        
                         <div class="pricing-grid" style="margin-bottom: 0; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
-                            <!-- Starter Tier -->
+                            
                             <div class="price-card">
                                 <div class="price-header">
                                     <h4>Starter Plan</h4>
@@ -328,7 +328,7 @@
                                 <button class="btn btn-outline btn-full upgrade-btn" data-plan="starter">Select Starter</button>
                             </div>
 
-                            <!-- Pro Tier -->
+                            
                             <div class="price-card">
                                 <div class="price-header">
                                     <h4>Pro Plan</h4>
@@ -344,7 +344,7 @@
                                 <button class="btn btn-outline btn-full upgrade-btn" data-plan="pro">Select Pro</button>
                             </div>
 
-                            <!-- Team Tier -->
+                            
                             <div class="price-card featured">
                                 <div class="featured-badge" style="background: var(--accent-purple); color: white;"><i class="fa-solid fa-star"></i> Recommended</div>
                                 <div class="price-header">
@@ -364,7 +364,7 @@
                         </div>
                     </div>
 
-                    <!-- Pro Tier View -->
+                    
                     <div id="view-pro" class="pro-view" style="display: none;">
                         <div class="bento-card"
                             style="border-color: rgba(16, 185, 129, 0.4); background-image: linear-gradient(to bottom right, rgba(16, 185, 129, 0.05), transparent); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08); margin-bottom: 24px;">
@@ -384,7 +384,7 @@
                         </div>
                     </div>
 
-                    <!-- Team Tier View -->
+                    
                     <div id="view-team" style="display: none;">
                         <div class="bento-card"
                             style="border-color: rgba(139, 92, 246, 0.4); background-image: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), transparent); box-shadow: 0 10px 30px rgba(139, 92, 246, 0.08); margin-bottom: 24px;">
@@ -398,7 +398,7 @@
                         </div>
                     </div>
 
-                    <!-- Webhook Settings (Visible to everyone) -->
+                    
                     <div id="webhook-section" style="display: none;">
                         <div class="bento-card" style="margin-bottom: 24px;">
                             <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px;">Your
@@ -439,16 +439,24 @@
     </main>
 
     <footer>
-        <div class="container footer-content" style="flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: 40px 0;">
-            <div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; font-size: 14px;">
-                <a href="about.html" style="color: var(--text-secondary); text-decoration: none;">About Us</a>
-                <a href="contact.html" style="color: var(--text-secondary); text-decoration: none;">Contact Us</a>
-                <a href="shipping-policy.html" style="color: var(--text-secondary); text-decoration: none;">Shipping Policy</a>
-                <a href="refund-policy.html" style="color: var(--text-secondary); text-decoration: none;">Refund Policy</a>
-                <a href="terms.html" style="color: var(--text-secondary); text-decoration: none;">Terms & Conditions</a>
-                <a href="privacy.html" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a>
+        <div class="container footer-content site-footer">
+            <div class="footer-links">
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact Us</a>
+                <a href="shipping-policy.html">Shipping Policy</a>
+                <a href="refund-policy.html">Refund Policy</a>
+                <a href="terms.html">Terms & Conditions</a>
+                <a href="privacy.html">Privacy Policy</a>
             </div>
-            <p style="color: var(--text-secondary); font-size: 14px;">&copy; 2026 N3MO Code Intelligence. Licensed under PolyForm Noncommercial 1.0.0.</p>
+            <div class="footer-socials">
+                <a href="https://github.com/RajX-dev/N3MO" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fa-brands fa-github"></i>
+                </a>
+                <a href="https://twitter.com/n3mo_ai" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                    <i class="fa-brands fa-x-twitter"></i>
+                </a>
+            </div>
+            <p class="footer-copyright">&copy; 2026 N3MO Code Intelligence. All rights reserved.</p>
         </div>
     </footer>
 
