@@ -63,6 +63,20 @@ def trigger_indexing(req: IndexRequest):
     
     return {"status": "success", "summary": summary}
 
+import urllib.request
+import json
+
+def get_usd_to_inr_rate() -> float:
+    """Fetch live USD to INR conversion rate, fallback to 84.0 if API fails."""
+    try:
+        req = urllib.request.Request("https://open.er-api.com/v6/latest/USD", headers={"User-Agent": "N3MO-SaaS/1.0"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            return float(data["rates"]["INR"])
+    except Exception as e:
+        logging.warning(f"Failed to fetch live USD-INR rate, falling back to 84.0: {e}")
+        return 84.0
+
 @app.post("/api/create-order")
 def create_order(github_id: str, country: str = "US", discount: str = "", plan_type: str = "pro"):
     """
@@ -76,16 +90,19 @@ def create_order(github_id: str, country: str = "US", discount: str = "", plan_t
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         
-        # Set base pricing based on plan (in INR paise)
-        # We use INR as the base currency for all orders so that UPI is available.
-        # Razorpay handles international cards and auto-converts for foreign users.
-        # Conversion rate approx $1 = ₹84
+        # Fetch live conversion rate
+        conversion_rate = get_usd_to_inr_rate()
+        
+        # Base pricing in USD
         if plan_type == "team":
-            order_amount = 1671600   # $199/mo -> ~₹16716
+            price_usd = 199
         elif plan_type == "starter":
-            order_amount = 84000     # $10/mo -> ₹840
+            price_usd = 10
         else:  # pro
-            order_amount = 411600    # $49/mo -> ~₹4116
+            price_usd = 49
+            
+        # Calculate final amount in INR paise
+        order_amount = int(price_usd * conversion_rate * 100)
         
         order_currency = "INR"
             
