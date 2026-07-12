@@ -206,8 +206,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const discountCode = document.getElementById('discount-code').value.trim();
-                const res = await fetch(`/api/create-order?github_id=${userData.user.github_id}&country=${country}&discount=${discountCode}&plan_type=${targetPlan}`, { method: 'POST' });
-                if (!res.ok) throw new Error("Failed to create order");
+                // Call the new subscription API. By default passing billing_cycle=monthly, they can add a toggle later.
+                const res = await fetch(`/api/create-subscription?github_id=${userData.user.github_id}&country=${country}&discount=${discountCode}&plan_type=${targetPlan}&billing_cycle=monthly`, { method: 'POST' });
+                if (!res.ok) throw new Error("Failed to create subscription");
                 
                 const data = await res.json();
                 if (data.free_upgrade) {
@@ -215,14 +216,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     window.location.reload();
                     return;
                 }
-                if (data.order_id) {
+                if (data.subscription_id) {
                     const options = {
                         "key": data.key_id,
-                        "amount": data.amount,
-                        "currency": data.currency,
                         "name": "N3MO",
-                        "description": `${targetPlan.toUpperCase()} Subscription - 30 Days`,
-                        "order_id": data.order_id,
+                        "description": `${targetPlan.toUpperCase()} Subscription`,
+                        "subscription_id": data.subscription_id,
                         "handler": async function (response) {
                             try {
                                 const verifyRes = await fetch('/api/verify-payment', {
@@ -230,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         razorpay_payment_id: response.razorpay_payment_id,
-                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_subscription_id: response.razorpay_subscription_id,
                                         razorpay_signature: response.razorpay_signature,
                                         github_id: userData.user.github_id.toString(),
                                         plan_type: targetPlan

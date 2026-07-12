@@ -155,7 +155,7 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_payment_id: str
-    razorpay_order_id: str
+    razorpay_subscription_id: str
     razorpay_signature: str
     github_id: str
     plan_type: str = "pro"
@@ -167,13 +167,13 @@ def verify_payment(req: VerifyPaymentRequest):
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         params_dict = {
-            'razorpay_order_id': req.razorpay_order_id,
+            'razorpay_subscription_id': req.razorpay_subscription_id,
             'razorpay_payment_id': req.razorpay_payment_id,
             'razorpay_signature': req.razorpay_signature
         }
         
         # Verify signature
-        client.utility.verify_payment_signature(params_dict)
+        client.utility.verify_subscription_payment_signature(params_dict)
         
         # If successful, upgrade the user
         user_db = get_user_by_github_id(int(req.github_id))
