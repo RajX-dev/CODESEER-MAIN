@@ -70,6 +70,7 @@ def trigger_indexing(req: IndexRequest):
 def get_usd_to_inr_rate() -> float:
     """Fetch live USD to INR conversion rate, fallback to 84.0 if API fails."""
     try:
+        import urllib.request
         req = urllib.request.Request("https://open.er-api.com/v6/latest/USD", headers={"User-Agent": "N3MO-SaaS/1.0"})
         with urllib.request.urlopen(req, timeout=3) as resp:
             data = json.loads(resp.read().decode())
@@ -149,6 +150,7 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
             }
             
         # Create Subscription
+        import urllib.request # Ensure it is imported here in case it was missed at the top
         # Razorpay handles the currency (which is locked to the Plan's currency - INR in our case)
         total_billing_cycles = 10 if billing_cycle == "bulk" else 120
         subscription_payload = {
