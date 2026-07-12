@@ -75,8 +75,8 @@ def get_usd_to_inr_rate() -> float:
             data = json.loads(resp.read().decode())
             return float(data["rates"]["INR"])
     except Exception as e:
-        logging.warning(f"Failed to fetch live USD-INR rate, falling back to 84.0: {e}")
-        return 84.0
+        logging.warning(f"Failed to fetch live USD-INR rate, falling back to 95.33: {e}")
+        return 95.33
 
 # Live Razorpay Plan IDs (USD + INR Bulk)
 PLAN_MAPPINGS = {
