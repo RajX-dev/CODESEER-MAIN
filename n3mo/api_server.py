@@ -76,15 +76,18 @@ def create_order(github_id: str, country: str = "US", discount: str = "", plan_t
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         
-        # Set base pricing based on plan (in USD cents)
+        # Set base pricing based on plan (in INR paise)
+        # We use INR as the base currency for all orders so that UPI is available.
+        # Razorpay handles international cards and auto-converts for foreign users.
+        # Conversion rate approx $1 = ₹84
         if plan_type == "team":
-            order_amount = 9800   # $98
+            order_amount = 1671600   # $199/mo -> ~₹16716
         elif plan_type == "starter":
-            order_amount = 1000   # $10/mo
+            order_amount = 84000     # $10/mo -> ₹840
         else:  # pro
-            order_amount = 4900   # $49/mo
+            order_amount = 411600    # $49/mo -> ~₹4116
         
-        order_currency = "USD"
+        order_currency = "INR"
             
         # Apply discount code logic
         if discount and discount.upper() == "LAUNCH":
