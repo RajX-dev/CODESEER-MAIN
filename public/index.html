@@ -48,8 +48,12 @@
       "url": "https://n3mo.shop/",
       "offers": {
         "@type": "Offer",
-        "price": "10",
-        "priceCurrency": "USD"
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "minPrice": "0",
+          "maxPrice": "199",
+          "priceCurrency": "USD"
+        }
       },
       "description": "An automated PR review and impact analysis tool that visualizes code changes and calculates blast radius."
     }
@@ -422,22 +426,38 @@ $ n3mo mcp install</code></pre>
                 <p style="margin: 0; font-size: 15px; color: var(--text-secondary); line-height: 1.6;">N3MO prices by
                     repositories, not users, so your entire engineering team can collaborate without buying additional
                     licenses. Each repository receives continuous indexing, dependency analysis, PR impact detection,
-                    and code intelligence.</p>
+                    and code intelligence. Start free with local MCP — upgrade only when you want automated PR checks 
+                    across your team.</p>
             </div>
 
             <div class="pricing-grid">
                 <!-- Free Tier -->
                 <div class="price-card reveal-fade">
                     <div class="price-header">
+                        <h4>Free</h4>
+                        <div class="price-amount">$0<span>/forever</span></div>
+                        <p>For local use & AI agents</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> Unlimited local indexing</li>
+                        <li><i class="fa-solid fa-check"></i> Full MCP Server (Cursor, Claude, Windsurf)</li>
+                        <li><i class="fa-solid fa-check"></i> Full CLI access</li>
+                        <li><i class="fa-solid fa-check"></i> No repo limit — self-managed</li>
+                    </ul>
+                    <a href="#docs" class="btn btn-outline btn-full">pip install n3mo</a>
+                </div>
+
+                <!-- Starter Tier -->
+                <div class="price-card reveal-fade">
+                    <div class="price-header">
                         <h4>Starter Plan</h4>
                         <div class="price-amount">$10<span>/month</span></div>
-                        <p>For individuals & hobbyists.</p>
+                        <p>For solo devs (1 person)</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span>Up to <strong>3 repos</strong> limit</span></li>
                         <li><i class="fa-solid fa-check"></i> Real-time PR Impact Analysis</li>
                         <li><i class="fa-solid fa-check"></i> Interactive Dependency Graph</li>
-                        <li><i class="fa-solid fa-check"></i> Built-in MCP Server for AI Agents</li>
                     </ul>
                     <button onclick="handleCheckout('starter')" class="btn btn-outline btn-full">Get Started - $10/mo</button>
                 </div>
@@ -447,7 +467,7 @@ $ n3mo mcp install</code></pre>
                     <div class="price-header">
                         <h4>Pro Plan</h4>
                         <div class="price-amount">$49<span>/month</span></div>
-                        <p>For small engineering teams.</p>
+                        <p>For small teams (2–5 devs)</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span>Up to <strong>5 repos</strong> limit</span></li>
@@ -464,7 +484,7 @@ $ n3mo mcp install</code></pre>
                     <div class="price-header">
                         <h4>Team Plan</h4>
                         <div class="price-amount">$199<span>/month</span></div>
-                        <p>For growing product companies.</p>
+                        <p>For growing teams (6–20 devs)</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span>Up to <strong>8 repos</strong> limit</span></li>
@@ -482,7 +502,7 @@ $ n3mo mcp install</code></pre>
                     <div class="price-header">
                         <h4>Enterprise</h4>
                         <div class="price-amount">Custom</div>
-                        <p>For security-first organizations.</p>
+                        <p>For large orgs (20+ devs)</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span><strong>Unlimited</strong> repos & LOC</span></li>
@@ -608,9 +628,7 @@ $ n3mo mcp install</code></pre>
                     <div>
                         <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What happens if I
                             exceed the limit?</h5>
-                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">N3MO will stop
-                            analyzing pull requests for any repositories that push you over your tier limit until you
-                            upgrade your plan.</p>
+                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">You'll get a heads-up before any repo stops syncing, with a one-click upgrade — no PRs are ever silently blocked without warning.</p>
                     </div>
                 </div>
             </div>
