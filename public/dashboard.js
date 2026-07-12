@@ -185,6 +185,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loading').innerHTML = `<p class="text-red-500">Network or server error. Please try again later.</p>`;
     }
 
+    // Apply Discount Button Logic
+    const applyBtn = document.getElementById('apply-discount-btn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const codeInput = document.getElementById('discount-code');
+            const msg = document.getElementById('discount-msg');
+            if (codeInput.value.trim().length > 0) {
+                msg.style.display = 'block';
+                msg.textContent = 'Code saved! Select a plan below to continue.';
+                msg.style.color = 'var(--accent-green)';
+            } else {
+                msg.style.display = 'block';
+                msg.textContent = 'Please enter a valid code.';
+                msg.style.color = 'var(--accent-red)';
+            }
+        });
+    }
+
     // Upgrade Button flow
     upgradeBtns.forEach(btn => {
         btn.addEventListener('click', async (e) => {
