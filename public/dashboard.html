@@ -277,36 +277,75 @@
                 <div class="action-area">
 
                     <!-- Free Tier View -->
-                    <div id="view-free" class="bento-card free-view" style="display: none; border-color: rgba(245, 158, 11, 0.4); background-image: linear-gradient(to bottom right, rgba(245, 158, 11, 0.05), transparent); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08); margin-bottom: 24px;">
-                        <div class="bento-body">
+                    <div id="view-free" class="free-view" style="display: none; margin-bottom: 24px;">
+                        <div class="bento-card" style="border-color: rgba(245, 158, 11, 0.4); background-image: linear-gradient(to bottom right, rgba(245, 158, 11, 0.05), transparent); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08); margin-bottom: 24px;">
                             <div class="feature-header">
                                 <h3 style="font-size: 24px; color: var(--accent);">No Active Plan</h3>
                             </div>
                             <p style="font-size: 15px; color: var(--text-secondary); max-width: 500px; margin-bottom: 16px;">
                                 You currently have no active subscription. You must upgrade to a paid plan to use N3MO.
                             </p>
-                            <p style="font-size: 15px; max-width: 500px;">
-                                Choose a plan: <span class="accent-text">Starter</span> ($10/mo, 3 repos), <span class="accent-text">Pro</span> ($49/mo, 5 repos), or <span class="accent-text">Team</span> ($199/mo, 8 repos + monorepo).
+                            <p style="font-size: 13px; color: rgba(255, 255, 255, 0.7); font-style: italic;">
+                                Don't worry, your indexed repos stay safe for 30 days!
                             </p>
-                            <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
-                                <input type="text" id="discount-code" placeholder="Discount Code (Optional)" 
-                                    style="padding: 10px 14px; border-radius: 6px; background-color: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; width: 220px; font-size: 14px;">
-                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                                    <button class="btn btn-outline upgrade-btn" data-plan="starter"
-                                        style="font-size: 15px; padding: 12px 24px;">
-                                        Starter - $10/mo
-                                    </button>
-                                    <button class="btn btn-outline upgrade-btn" data-plan="pro"
-                                        style="font-size: 15px; padding: 12px 24px;">
-                                        Pro - $49/mo
-                                    </button>
-                                    <button class="btn btn-primary upgrade-btn" data-plan="team"
-                                        style="font-size: 15px; padding: 12px 24px;">
-                                        Team - $199/mo
-                                    </button>
+                        </div>
+
+                        <!-- 3-Column Pricing Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                            <!-- Starter -->
+                            <div class="bento-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+                                <div>
+                                    <h4 style="font-size: 18px; font-family: var(--font-heading); margin-bottom: 8px;">Starter</h4>
+                                    <div style="font-size: 24px; font-weight: bold; font-family: var(--font-mono); margin-bottom: 16px;">$10<span style="font-size: 14px; font-weight: normal; color: var(--text-secondary);">/mo</span></div>
+                                    <ul style="list-style: none; padding: 0; margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 6px;"></i> 3 Repositories</li>
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 6px;"></i> Basic Semantics</li>
+                                    </ul>
                                 </div>
+                                <button class="btn btn-outline upgrade-btn" data-plan="starter" style="width: 100%;">Select Starter</button>
+                            </div>
+
+                            <!-- Pro -->
+                            <div class="bento-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+                                <div>
+                                    <h4 style="font-size: 18px; font-family: var(--font-heading); margin-bottom: 8px;">Pro</h4>
+                                    <div style="font-size: 24px; font-weight: bold; font-family: var(--font-mono); margin-bottom: 16px;">$49<span style="font-size: 14px; font-weight: normal; color: var(--text-secondary);">/mo</span></div>
+                                    <ul style="list-style: none; padding: 0; margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 6px;"></i> 10 Repositories</li>
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 6px;"></i> Advanced Semantics</li>
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 6px;"></i> Transitive Analysis</li>
+                                    </ul>
+                                </div>
+                                <button class="btn btn-outline upgrade-btn" data-plan="pro" style="width: 100%;">Select Pro</button>
+                            </div>
+
+                            <!-- Team -->
+                            <div class="bento-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px; border-color: var(--accent-purple); background-image: linear-gradient(to bottom right, rgba(139, 92, 246, 0.1), transparent);">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <h4 style="font-size: 18px; font-family: var(--font-heading); color: var(--accent-purple);">Team</h4>
+                                        <span style="font-size: 10px; background: var(--accent-purple); color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase;">Recommended</span>
+                                    </div>
+                                    <div style="font-size: 24px; font-weight: bold; font-family: var(--font-mono); margin-bottom: 16px;">$199<span style="font-size: 14px; font-weight: normal; color: var(--text-secondary);">/mo</span></div>
+                                    <ul style="list-style: none; padding: 0; margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent-purple); margin-right: 6px;"></i> Unlimited Repos</li>
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent-purple); margin-right: 6px;"></i> Monorepo Support</li>
+                                        <li><i class="fa-solid fa-check" style="color: var(--accent-purple); margin-right: 6px;"></i> Priority Sync</li>
+                                    </ul>
+                                </div>
+                                <button class="btn btn-primary upgrade-btn" data-plan="team" style="width: 100%; background: var(--accent-purple); border-color: var(--accent-purple); box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);">Select Team</button>
                             </div>
                         </div>
+
+                        <!-- Collapsible Discount Code -->
+                        <details style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px 16px; cursor: pointer;">
+                            <summary style="font-size: 14px; color: var(--text-secondary); font-weight: 500; outline: none; user-select: none;">
+                                Have a promotional code?
+                            </summary>
+                            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                <input type="text" id="discount-code" placeholder="Enter code here" style="padding: 10px 14px; border-radius: 6px; background-color: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; flex: 1; font-size: 14px;">
+                            </div>
+                        </details>
                     </div>
 
                     <!-- Pro Tier View -->

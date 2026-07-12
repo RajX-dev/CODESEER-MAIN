@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         userData = data;
         
         // Populate Profile
-        avatarEl.src = data.user.avatar_url || `https://avatars.githubusercontent.com/u/${data.user.github_id}?v=4`;
+        avatarEl.src = `https://github.com/${data.user.username}.png`;
         nameEl.textContent = data.user.username;
         githubIdEl.textContent = `GitHub ID: ${data.user.github_id}`;
         
@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const planType = data.subscription?.plan_type || 'free';
         const isProOrEnt = planType === 'pro' || planType === 'enterprise';
         let isExpired = false;
+        let isTrial = false;
         
         // Show subscription details
         const subDetails = document.getElementById('sub-details');
@@ -55,16 +56,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (isProOrEnt) {
             subDetails.style.display = 'block';
+            let startD, expD;
             
             if (data.subscription && data.subscription.created_at) {
-                const startD = new Date(data.subscription.created_at);
+                startD = new Date(data.subscription.created_at);
                 subStart.textContent = startD.toLocaleDateString();
             } else {
                 subStart.textContent = "N/A";
             }
             
             if (data.subscription && data.subscription.expires_at) {
-                const expD = new Date(data.subscription.expires_at);
+                expD = new Date(data.subscription.expires_at);
                 const now = new Date();
                 const diffTime = expD - now;
                 if (diffTime > 0) {
@@ -74,6 +76,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     subExpires.textContent = "Expired";
                     subExpires.style.color = "#ef4444";
                     isExpired = true;
+                    // Check if it was a trial (lasted less than 30 days total)
+                    if (startD && (expD - startD) < (30 * 24 * 60 * 60 * 1000)) {
+                        isTrial = true;
+                    }
                 }
             } else {
                 subExpires.textContent = "Lifetime / Active";
@@ -115,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } else {
             if (isExpired) {
-                planBadge.textContent = "EXPIRED";
+                planBadge.textContent = isTrial ? "TRIAL ENDED" : "EXPIRED";
                 planBadge.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
                 planBadge.style.color = "#ef4444";
                 planBadge.style.border = "1px solid rgba(239, 68, 68, 0.5)";
