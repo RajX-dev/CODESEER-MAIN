@@ -869,7 +869,7 @@ h1 {
 
 .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 32px;
     align-items: stretch;
 }
@@ -1179,6 +1179,9 @@ footer {
 }
 
 @media (max-width: 991px) {
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
     h1 {
         font-size: 38px;
     }
