@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.addEventListener('click', async (e) => {
             if (!userData || !userData.user.github_id) return;
             
-            const targetBtn = e.target;
+            const targetBtn = e.currentTarget;
             const targetPlan = targetBtn.getAttribute('data-plan') || 'pro';
             const originalText = targetBtn.innerHTML;
             
@@ -306,7 +306,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } catch (e) {
                 console.error(e);
-                alert("Checkout error. Please try again.");
+                if (e.message && e.message.includes('Razorpay is not defined')) {
+                    alert("Please disable your adblocker to proceed with checkout (Razorpay was blocked).");
+                } else if (e.message === "Failed to create subscription") {
+                    alert("Server error creating checkout. Please check console.");
+                } else {
+                    alert("Checkout error: " + (e.message || "Unknown error. Please try again."));
+                }
                 targetBtn.innerHTML = originalText;
                 targetBtn.disabled = false;
             }
