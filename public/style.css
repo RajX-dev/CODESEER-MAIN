@@ -869,8 +869,8 @@ h1 {
 
 .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
     align-items: stretch;
 }
 
@@ -880,38 +880,49 @@ h1 {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 28px;
-    transition: var(--transition-smooth);
+    padding: 32px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .price-card:hover {
     border-color: rgba(245, 158, 11, 0.6);
-    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.05);
-    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.15);
+    transform: translateY(-6px);
 }
 
 .price-card.featured {
     border: 1.5px solid var(--accent);
-    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.05);
-    background-color: rgba(245, 158, 11, 0.01);
-    position: relative;
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(0, 0, 0, 0) 100%), var(--glass-bg);
+}
+
+.price-card.featured:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(245, 158, 11, 0.25);
+    transform: translateY(-6px);
 }
 
 .featured-badge {
     position: absolute;
-    top: -12px;
-    left: 24px;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
     background-color: var(--accent);
     color: #000;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
+    padding: 4px 16px;
+    border-radius: 20px;
     text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 3px;
-    letter-spacing: 0.04em;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    z-index: 2;
+}
+
+.price-header {
+    margin-bottom: 24px;
 }
 
 .price-header h4 {

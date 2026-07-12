@@ -35,22 +35,26 @@
     <style>
         /* Dashboard-specific tweaks reusing tokens */
         .dashboard-container {
-            padding-top: 120px;
-            padding-bottom: 80px;
-            min-height: 100vh;
-        }
+    padding-top: 120px;
+    padding-bottom: 80px;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 32px;
-        }
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
 
-        @media (min-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr 2fr;
-            }
-        }
+@media (min-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 280px 1fr;
+        gap: 48px;
+        align-items: start;
+    }
+}
 
         .profile-card {
             display: flex;
@@ -293,7 +297,7 @@
                         </div>
 
                         <!-- 3-Column Pricing Grid -->
-                        <div class="pricing-grid" style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                        <div class="pricing-grid" style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
                             <!-- Starter Tier -->
                             <div class="price-card">
                                 <div class="price-header">
