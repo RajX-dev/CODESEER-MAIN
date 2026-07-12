@@ -7,6 +7,8 @@
 
 import os
 import logging
+import urllib.request
+import json
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
@@ -63,8 +65,7 @@ def trigger_indexing(req: IndexRequest):
     
     return {"status": "success", "summary": summary}
 
-import urllib.request
-import json
+
 
 def get_usd_to_inr_rate() -> float:
     """Fetch live USD to INR conversion rate, fallback to 84.0 if API fails."""
