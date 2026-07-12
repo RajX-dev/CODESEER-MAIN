@@ -78,10 +78,21 @@ def get_usd_to_inr_rate() -> float:
         logging.warning(f"Failed to fetch live USD-INR rate, falling back to 84.0: {e}")
         return 84.0
 
-@app.post("/api/create-order")
-def create_order(github_id: str, country: str = "US", discount: str = "", plan_type: str = "pro"):
+# Dummy mapping - you will replace these after running setup_razorpay_plans.py
+PLAN_MAPPINGS = {
+    "starter_monthly": "plan_STARTER_M",
+    "starter_yearly": "plan_STARTER_Y",
+    "pro_monthly": "plan_PRO_M",
+    "pro_yearly": "plan_PRO_Y",
+    "team_monthly": "plan_TEAM_M",
+    "team_quarterly": "plan_TEAM_Q",
+}
+
+@app.post("/api/create-subscription")
+def create_subscription(github_id: str, country: str = "US", discount: str = "", plan_type: str = "pro", billing_cycle: str = "monthly"):
     """
-    Generate a Razorpay checkout order for the Pro or Team Plan.
+    Generate a Razorpay checkout subscription for the specified plan and billing cycle.
+    billing_cycle can be 'monthly' or 'bulk' (which maps to yearly for starter/pro, quarterly for team)
     """
     if not github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
@@ -91,34 +102,19 @@ def create_order(github_id: str, country: str = "US", discount: str = "", plan_t
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         
-        # Base pricing in USD
-        if plan_type == "team":
-            price_usd = 199
-        elif plan_type == "starter":
-            price_usd = 10
-        else:  # pro
-            price_usd = 49
-            
-        # Determine currency based on user location
-        if country.upper() == "IN":
-            # Fetch live conversion rate for India
-            conversion_rate = get_usd_to_inr_rate()
-            order_amount = int(price_usd * conversion_rate * 100)
-            order_currency = "INR"
+        # Determine the correct plan mapping key
+        if billing_cycle == "bulk":
+            if plan_type == "team":
+                plan_key = "team_quarterly"
+            else:
+                plan_key = f"{plan_type}_yearly"
         else:
-            # Native USD pricing for the rest of the world (amount in cents)
-            order_amount = int(price_usd * 100)
-            order_currency = "USD"
+            plan_key = f"{plan_type}_monthly"
             
-        # Apply discount code logic
-        if discount and discount.upper() == "LAUNCH":
-            # 20% off discount
-            order_amount = int(order_amount * 0.8)
-        elif discount and discount.upper() == "RAJ":
-            # 100% off discount
-            order_amount = 0
-            
-        if order_amount == 0:
+        plan_id = PLAN_MAPPINGS.get(plan_key, "plan_PRO_M")
+        
+        # Apply 100% discount manually if needed (Razorpay subscriptions require special handling for 100% off)
+        if discount and discount.upper() == "RAJ":
             from n3mo.saas_db import update_subscription, get_user_by_github_id
             from datetime import datetime, timedelta, timezone
             user_db = get_user_by_github_id(int(github_id))
@@ -128,31 +124,33 @@ def create_order(github_id: str, country: str = "US", discount: str = "", plan_t
             
             return {
                 "checkout_url": "", 
-                "order_id": "FREE_UPGRADE",
+                "subscription_id": "FREE_UPGRADE",
                 "key_id": key_id,
-                "amount": 0,
-                "currency": order_currency,
                 "free_upgrade": True
             }
-        
-        order = client.order.create({
-            "amount": order_amount,
-            "currency": order_currency,
-            "receipt": f"receipt_github_{github_id}",
+            
+        # Create Subscription
+        # Razorpay handles the currency (which is locked to the Plan's currency - INR in our case)
+        subscription_payload = {
+            "plan_id": plan_id,
+            "total_count": 12 if billing_cycle == "bulk" and plan_type != "team" else 1, # Number of billing cycles before it stops
+            "customer_notify": 1,
             "notes": {
-                "github_id": github_id
+                "github_id": github_id,
+                "plan_type": plan_type,
+                "billing_cycle": billing_cycle
             }
-        })
+        }
+        
+        subscription = client.subscription.create(subscription_payload)
         
         return {
-            "checkout_url": "", 
-            "order_id": order["id"],
-            "key_id": key_id,
-            "amount": order_amount,
-            "currency": order_currency
+            "checkout_url": subscription.get("short_url", ""), 
+            "subscription_id": subscription["id"],
+            "key_id": key_id
         }
     except Exception as e:
-        logging.error(f"Error creating Razorpay order: {e} with key {os.getenv('RAZORPAY_KEY_ID')}")
+        logging.error(f"Error creating Razorpay subscription: {e}")
         raise HTTPException(status_code=500, detail="Failed to create checkout session")
 
 class VerifyPaymentRequest(BaseModel):
