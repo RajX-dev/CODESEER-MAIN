@@ -242,12 +242,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     window.location.reload();
                     return;
                 }
-                if (data.subscription_id) {
+                if (data.order_id) {
                     const options = {
                         "key": data.key_id,
                         "name": "N3MO",
                         "description": `${targetPlan.toUpperCase()} Subscription`,
-                        "subscription_id": data.subscription_id,
+                        "order_id": data.order_id,
                         "handler": async function (response) {
                             try {
                                 const verifyRes = await fetch('/api/verify-payment', {
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         razorpay_payment_id: response.razorpay_payment_id,
-                                        razorpay_subscription_id: response.razorpay_subscription_id,
+                                        razorpay_order_id: response.razorpay_order_id,
                                         razorpay_signature: response.razorpay_signature,
                                         github_id: userData.user.github_id.toString(),
                                         plan_type: targetPlan

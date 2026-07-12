@@ -106,67 +106,40 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         
-        is_inr = country.upper() == "IN"
+        prices_usd_monthly = {"starter": 10, "pro": 49, "team": 199}
+        prices_usd_bulk = {"starter": 102, "pro": 558, "team": 537}
         
-        if billing_cycle == "bulk":
-            plan_key = f"{'team_quarterly' if plan_type == 'team' else plan_type + '_yearly'}_{'inr' if is_inr else 'usd'}"
-            plan_id = PLAN_MAPPINGS.get(plan_key)
+        amount_usd_raw = prices_usd_bulk.get(plan_type, 558) if billing_cycle == "bulk" else prices_usd_monthly.get(plan_type, 49)
+
+        if country.upper() == "IN":
+            live_rate = get_usd_to_inr_rate()
+            amount = int(amount_usd_raw * live_rate * 100)
+            currency = "INR"
         else:
-            if not is_inr:
-                plan_key = f"{plan_type}_monthly_usd"
-                plan_id = PLAN_MAPPINGS.get(plan_key)
-            else:
-                # Dynamic INR Monthly Plan Creation
-                live_rate = get_usd_to_inr_rate()
-                prices_usd = {"starter": 10, "pro": 49, "team": 199}
-                amount_usd = prices_usd.get(plan_type, 49)
-                amount_inr = int(amount_usd * live_rate * 100)
-                
-                try:
-                    plan_resp = client.plan.create({
-                        "period": "monthly",
-                        "interval": 1,
-                        "item": {
-                            "name": f"N3MO {plan_type.title()} Monthly (INR)",
-                            "amount": amount_inr,
-                            "currency": "INR"
-                        }
-                    })
-                    plan_id = plan_resp["id"]
-                except Exception as e:
-                    logging.warning(f"Plan creation failed: {e}. Searching existing plans...")
-                    plans = client.plan.all({"count": 100})
-                    target_name = f"N3MO {plan_type.title()} Monthly (INR)"
-                    existing = next((p for p in plans.get("items", []) if p["item"]["name"] == target_name), None)
-                    if existing:
-                        plan_id = existing["id"]
-                    else:
-                        raise HTTPException(status_code=500, detail=f"Failed to create or find INR plan on Razorpay: {e}")
+            amount = int(amount_usd_raw * 100)
+            currency = "USD"
         
-        # Apply 100% discount manually if needed (Razorpay subscriptions require special handling for 100% off)
+        # Apply 100% discount manually if needed
         if discount and discount.upper() == "RAJ":
             from n3mo.saas_db import update_subscription, get_user_by_github_id
             from datetime import datetime, timedelta, timezone
             user_db = get_user_by_github_id(int(github_id))
             if user_db:
-                expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                expires_at = datetime.now(timezone.utc) + timedelta(days=365 if billing_cycle == 'bulk' else 30)
                 update_subscription(str(user_db["id"]), "user", plan_type, "active", expires_at=expires_at)
             
             return {
                 "checkout_url": "", 
-                "subscription_id": "FREE_UPGRADE",
+                "order_id": "FREE_UPGRADE",
                 "key_id": key_id,
                 "free_upgrade": True
             }
             
-        # Create Subscription
-        import urllib.request # Ensure it is imported here in case it was missed at the top
-        # Razorpay handles the currency (which is locked to the Plan's currency - INR in our case)
-        total_billing_cycles = 10 if billing_cycle == "bulk" else 120
-        subscription_payload = {
-            "plan_id": plan_id,
-            "total_count": total_billing_cycles, # Number of billing cycles before it stops (e.g. 120 months = 10 years)
-            "customer_notify": 1,
+        # Create Order
+        order_payload = {
+            "amount": amount,
+            "currency": currency,
+            "receipt": f"receipt_{github_id}_{plan_type}",
             "notes": {
                 "github_id": github_id,
                 "plan_type": plan_type,
@@ -174,11 +147,11 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
             }
         }
         
-        subscription = client.subscription.create(subscription_payload)
+        order = client.order.create(order_payload)
         
         return {
-            "checkout_url": subscription.get("short_url", ""), 
-            "subscription_id": subscription["id"],
+            "checkout_url": "", 
+            "order_id": order["id"],
             "key_id": key_id
         }
     except Exception as e:
@@ -187,7 +160,7 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_payment_id: str
-    razorpay_subscription_id: str
+    razorpay_order_id: str
     razorpay_signature: str
     github_id: str
     plan_type: str = "pro"
@@ -199,13 +172,13 @@ def verify_payment(req: VerifyPaymentRequest):
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         params_dict = {
-            'razorpay_subscription_id': req.razorpay_subscription_id,
+            'razorpay_order_id': req.razorpay_order_id,
             'razorpay_payment_id': req.razorpay_payment_id,
             'razorpay_signature': req.razorpay_signature
         }
         
         # Verify signature
-        client.utility.verify_subscription_payment_signature(params_dict)
+        client.utility.verify_payment_signature(params_dict)
         
         # If successful, upgrade the user
         user_db = get_user_by_github_id(int(req.github_id))
