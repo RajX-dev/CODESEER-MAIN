@@ -122,16 +122,26 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
                 amount_usd = prices_usd.get(plan_type, 49)
                 amount_inr = int(amount_usd * live_rate * 100)
                 
-                plan_resp = client.plan.create({
-                    "period": "monthly",
-                    "interval": 1,
-                    "item": {
-                        "name": f"N3MO {plan_type.title()} Monthly (INR)",
-                        "amount": amount_inr,
-                        "currency": "INR"
-                    }
-                })
-                plan_id = plan_resp["id"]
+                try:
+                    plan_resp = client.plan.create({
+                        "period": "monthly",
+                        "interval": 1,
+                        "item": {
+                            "name": f"N3MO {plan_type.title()} Monthly (INR)",
+                            "amount": amount_inr,
+                            "currency": "INR"
+                        }
+                    })
+                    plan_id = plan_resp["id"]
+                except Exception as e:
+                    logging.warning(f"Plan creation failed: {e}. Searching existing plans...")
+                    plans = client.plan.all({"count": 100})
+                    target_name = f"N3MO {plan_type.title()} Monthly (INR)"
+                    existing = next((p for p in plans.get("items", []) if p["item"]["name"] == target_name), None)
+                    if existing:
+                        plan_id = existing["id"]
+                    else:
+                        raise HTTPException(status_code=500, detail=f"Failed to create or find INR plan on Razorpay: {e}")
         
         # Apply 100% discount manually if needed (Razorpay subscriptions require special handling for 100% off)
         if discount and discount.upper() == "RAJ":
