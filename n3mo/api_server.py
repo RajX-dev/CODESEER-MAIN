@@ -91,9 +91,6 @@ def create_order(github_id: str, country: str = "US", discount: str = "", plan_t
         key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
         client = razorpay.Client(auth=(key_id, key_secret))
         
-        # Fetch live conversion rate
-        conversion_rate = get_usd_to_inr_rate()
-        
         # Base pricing in USD
         if plan_type == "team":
             price_usd = 199
@@ -102,10 +99,16 @@ def create_order(github_id: str, country: str = "US", discount: str = "", plan_t
         else:  # pro
             price_usd = 49
             
-        # Calculate final amount in INR paise
-        order_amount = int(price_usd * conversion_rate * 100)
-        
-        order_currency = "INR"
+        # Determine currency based on user location
+        if country.upper() == "IN":
+            # Fetch live conversion rate for India
+            conversion_rate = get_usd_to_inr_rate()
+            order_amount = int(price_usd * conversion_rate * 100)
+            order_currency = "INR"
+        else:
+            # Native USD pricing for the rest of the world (amount in cents)
+            order_amount = int(price_usd * 100)
+            order_currency = "USD"
             
         # Apply discount code logic
         if discount and discount.upper() == "LAUNCH":
