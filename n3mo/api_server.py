@@ -150,9 +150,10 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
             
         # Create Subscription
         # Razorpay handles the currency (which is locked to the Plan's currency - INR in our case)
+        total_billing_cycles = 10 if billing_cycle == "bulk" else 120
         subscription_payload = {
             "plan_id": plan_id,
-            "total_count": 12 if billing_cycle == "bulk" and plan_type != "team" else 1, # Number of billing cycles before it stops
+            "total_count": total_billing_cycles, # Number of billing cycles before it stops (e.g. 120 months = 10 years)
             "customer_notify": 1,
             "notes": {
                 "github_id": github_id,
