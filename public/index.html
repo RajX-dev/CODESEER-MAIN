@@ -408,6 +408,215 @@ $ n3mo mcp install</code></pre>
         </div>
     </section>
 
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Plans & Pricing</h2>
+            <p class="section-subtitle">Scale N3MO's PR impact check capabilities dynamically to fit the size of your
+                team's codebases.</p>
+
+            <div
+                style="max-width: 650px; margin: 32px auto 48px auto; background: var(--panel-bg); border-left: 4px solid var(--border-highlight); padding: 20px 24px; text-align: left; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h4 style="font-size: 18px; margin-bottom: 12px; color: var(--text-primary);">No seat-based pricing.
+                    Ever.</h4>
+                <p style="margin: 0; font-size: 15px; color: var(--text-secondary); line-height: 1.6;">N3MO prices by
+                    repositories, not users, so your entire engineering team can collaborate without buying additional
+                    licenses. Each repository receives continuous indexing, dependency analysis, PR impact detection,
+                    and code intelligence.</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Free Tier -->
+                <div class="price-card reveal-fade">
+                    <div class="price-header">
+                        <h4>Starter Plan</h4>
+                        <div class="price-amount">$10<span>/month</span></div>
+                        <p>For individuals & hobbyists.</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> <span>Up to <strong>3 repos</strong> limit</span></li>
+                        <li><i class="fa-solid fa-check"></i> Real-time PR Impact Analysis</li>
+                        <li><i class="fa-solid fa-check"></i> Interactive Dependency Graph</li>
+                        <li><i class="fa-solid fa-check"></i> Built-in MCP Server for AI Agents</li>
+                    </ul>
+                    <button onclick="handleCheckout('starter')" class="btn btn-outline btn-full">Get Started - $10/mo</button>
+                </div>
+
+                <!-- Pro Tier -->
+                <div class="price-card reveal-fade reveal-delay-1">
+                    <div class="price-header">
+                        <h4>Pro Plan</h4>
+                        <div class="price-amount">$49<span>/month</span></div>
+                        <p>For small engineering teams.</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> <span>Up to <strong>5 repos</strong> limit</span></li>
+                        <li><i class="fa-solid fa-check"></i> Everything in Starter Plan</li>
+                        <li><i class="fa-solid fa-check"></i> High-priority index queues</li>
+                        <li><i class="fa-solid fa-check"></i> Email & community support</li>
+                    </ul>
+                    <button onclick="handleCheckout('pro')" class="btn btn-outline btn-full">Upgrade</button>
+                </div>
+
+                <!-- Team Tier -->
+                <div class="price-card featured reveal-fade reveal-delay-1">
+                    <div class="featured-badge"><i class="fa-solid fa-star"></i> Popular</div>
+                    <div class="price-header">
+                        <h4>Team Plan</h4>
+                        <div class="price-amount">$199<span>/month</span></div>
+                        <p>For growing product companies.</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> <span>Up to <strong>8 repos</strong> limit</span></li>
+                        <li><i class="fa-solid fa-check"></i> Monorepo support & Priority indexing</li>
+                        <li><i class="fa-solid fa-check"></i> Team workspaces & Org dashboard</li>
+                        <li><i class="fa-solid fa-check"></i> Slack notifications & RBAC</li>
+                        <li><i class="fa-solid fa-check"></i> Priority SLA support</li>
+                    </ul>
+                    <button onclick="handleCheckout('team')" class="btn btn-primary btn-full">Start 14-Day
+                        Trial</button>
+                </div>
+
+                <!-- Enterprise Tier -->
+                <div class="price-card reveal-fade reveal-delay-2">
+                    <div class="price-header">
+                        <h4>Enterprise</h4>
+                        <div class="price-amount">Custom</div>
+                        <p>For security-first organizations.</p>
+                    </div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> <span><strong>Unlimited</strong> repos & LOC</span></li>
+                        <li><i class="fa-solid fa-check"></i> Self-hosted deployment & Offline JWT</li>
+                        <li><i class="fa-solid fa-check"></i> SSO/SAML & Audit logs</li>
+                        <li><i class="fa-solid fa-check"></i> Dedicated Success Engineer</li>
+                        <li><i class="fa-solid fa-check"></i> Custom SLA</li>
+                    </ul>
+                    <a href="mailto:raj_shekhar@n3mo.shop?subject=N3MO%20Enterprise%20Inquiry"
+                        class="btn btn-outline btn-full">Contact Sales</a>
+                </div>
+            </div>
+            <div
+                style="text-align: center; margin-top: 32px; color: var(--text-secondary); font-size: 13px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                <p><em>*Fair use applies. Repository limits are intended for typical engineering teams. Extremely large
+                        monorepos may count against your codebase quota. <a href="mailto:raj_shekhar@n3mo.shop"
+                            style="color: var(--accent-green); text-decoration: none;">Contact us</a> for larger
+                        deployments.</em></p>
+            </div>
+
+            <!-- Trust Indicators -->
+            <div
+                style="text-align: center; margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border-color);">
+                <p
+                    style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
+                    Works with</p>
+                <div
+                    style="display: flex; justify-content: center; gap: 24px; color: var(--text-primary); font-weight: 500; font-size: 16px; margin-bottom: 32px;">
+                    <span><i class="fa-brands fa-github"></i> GitHub</span>
+                    <span><i class="fa-brands fa-gitlab"></i> GitLab</span>
+                    <span><i class="fa-brands fa-bitbucket"></i> Bitbucket</span>
+                </div>
+
+                <p
+                    style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
+                    Supports</p>
+                <div
+                    style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; max-width: 600px; margin: 0 auto;">
+                    <span
+                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Python</span>
+                    <span
+                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Go</span>
+                    <span
+                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Java</span>
+                    <span
+                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">TypeScript</span>
+                    <span
+                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Rust</span>
+                    <span
+                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">C++</span>
+                    <span
+                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">C#</span>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div style="margin-top: 80px; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <h3 style="text-align: center; font-size: 24px; margin-bottom: 32px; color: var(--text-primary);">Why
+                    repositories instead of seats?</h3>
+                <div
+                    style="background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: var(--panel-raised); border-bottom: 1px solid var(--border-color);">
+                                <th
+                                    style="padding: 16px 24px; font-weight: 500; color: var(--text-secondary); width: 50%;">
+                                    Traditional SaaS</th>
+                                <th style="padding: 16px 24px; font-weight: 500; color: var(--accent); width: 50%;">N3MO
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px 24px; color: var(--text-secondary);">Pay per developer</td>
+                                <td style="padding: 16px 24px; color: var(--text-primary);">Pay per repository</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px 24px; color: var(--text-secondary);">More employees = higher
+                                    bill</td>
+                                <td style="padding: 16px 24px; color: var(--text-primary);">Unlimited teammates</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px 24px; color: var(--text-secondary);">Seat licenses</td>
+                                <td style="padding: 16px 24px; color: var(--text-primary);">Repository intelligence</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 16px 24px; color: var(--text-secondary);">Penalizes team growth</td>
+                                <td style="padding: 16px 24px; color: var(--text-primary);">Encourages collaboration
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div
+                style="margin-top: 80px; max-width: 800px; margin-left: auto; margin-right: auto; padding-bottom: 40px;">
+                <h3 style="text-align: center; font-size: 24px; margin-bottom: 40px; color: var(--text-primary);">
+                    Frequently Asked Questions</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
+                    <div>
+                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What counts as a
+                            repository?</h5>
+                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Any GitHub
+                            repository that you connect to N3MO and actively analyze using our webhook integrations.</p>
+                    </div>
+                    <div>
+                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">Can I invite
+                            unlimited teammates?</h5>
+                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Yes! Once a
+                            repository is indexed, anyone on your team can view PR impact reports and use the
+                            interactive graph without needing their own license.</p>
+                    </div>
+                    <div>
+                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What is a monorepo?
+                        </h5>
+                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">A single repository
+                            containing multiple distinct projects or services. Monorepo support on the Team plan ensures
+                            we index all nested dependencies properly.</p>
+                    </div>
+                    <div>
+                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What happens if I
+                            exceed the limit?</h5>
+                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">N3MO will stop
+                            analyzing pull requests for any repositories that push you over your tier limit until you
+                            upgrade your plan.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- CLI Section -->
     <section id="docs" class="docs-section">
         <div class="container">
@@ -473,61 +682,6 @@ $ n3mo mcp install</code></pre>
                             Total impacted: 8 references │ depth &le; 3
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing-section" style="padding: 100px 0; border-top: 1px solid var(--glass-border);">
-        <div class="container">
-            <h2 class="section-title">Simple, Transparent Pricing</h2>
-            <p class="section-subtitle">Scale your code intelligence with your team's needs.</p>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 48px;">
-                <!-- Starter -->
-                <div class="bento-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 32px;">
-                    <div>
-                        <h4 style="font-size: 24px; font-family: var(--font-heading); margin-bottom: 8px;">Starter</h4>
-                        <div style="font-size: 32px; font-weight: bold; font-family: var(--font-mono); margin-bottom: 24px;">$10<span style="font-size: 16px; font-weight: normal; color: var(--text-secondary);">/mo</span></div>
-                        <ul style="list-style: none; padding: 0; margin: 0 0 32px 0; color: var(--text-secondary); font-size: 16px; display: flex; flex-direction: column; gap: 12px;">
-                            <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 8px;"></i> Up to 3 Repositories</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 8px;"></i> Basic Syntax Trees</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 8px;"></i> Standard Search</li>
-                        </ul>
-                    </div>
-                    <a href="/api/auth/login?plan=starter" class="btn btn-outline" style="width: 100%; text-align: center;">Get Started</a>
-                </div>
-
-                <!-- Pro -->
-                <div class="bento-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 32px;">
-                    <div>
-                        <h4 style="font-size: 24px; font-family: var(--font-heading); margin-bottom: 8px;">Pro</h4>
-                        <div style="font-size: 32px; font-weight: bold; font-family: var(--font-mono); margin-bottom: 24px;">$49<span style="font-size: 16px; font-weight: normal; color: var(--text-secondary);">/mo</span></div>
-                        <ul style="list-style: none; padding: 0; margin: 0 0 32px 0; color: var(--text-secondary); font-size: 16px; display: flex; flex-direction: column; gap: 12px;">
-                            <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 8px;"></i> Up to 10 Repositories</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 8px;"></i> Semantic Graph Mapping</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--accent); margin-right: 8px;"></i> Deep Transitive Analysis</li>
-                        </ul>
-                    </div>
-                    <a href="/api/auth/login?plan=pro" class="btn btn-outline" style="width: 100%; text-align: center;">Get Started</a>
-                </div>
-
-                <!-- Team -->
-                <div class="bento-card highlight-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 32px; border-color: var(--accent-purple); background-image: linear-gradient(to bottom right, rgba(139, 92, 246, 0.1), transparent);">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <h4 style="font-size: 24px; font-family: var(--font-heading); color: var(--accent-purple);">Team</h4>
-                            <span style="font-size: 12px; background: var(--accent-purple); color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase;">Recommended</span>
-                        </div>
-                        <div style="font-size: 32px; font-weight: bold; font-family: var(--font-mono); margin-bottom: 24px;">$199<span style="font-size: 16px; font-weight: normal; color: var(--text-secondary);">/mo</span></div>
-                        <ul style="list-style: none; padding: 0; margin: 0 0 32px 0; color: var(--text-secondary); font-size: 16px; display: flex; flex-direction: column; gap: 12px;">
-                            <li><i class="fa-solid fa-check" style="color: var(--accent-purple); margin-right: 8px;"></i> Unlimited Repositories</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--accent-purple); margin-right: 8px;"></i> Monorepo Support</li>
-                            <li><i class="fa-solid fa-check" style="color: var(--accent-purple); margin-right: 8px;"></i> Priority Cloud Sync</li>
-                        </ul>
-                    </div>
-                    <a href="/api/auth/login?plan=team" class="btn btn-primary" style="width: 100%; text-align: center; background: var(--accent-purple); border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);">Upgrade to Team</a>
                 </div>
             </div>
         </div>
