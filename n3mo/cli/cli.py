@@ -8,15 +8,15 @@
 import sys
 import os
 import argparse
-from n3mo.database import get_connection
-from n3mo.graph_visualizer import generate_solar_graph_html
+from n3mo.core.database import get_connection
+from n3mo.cli.graph_visualizer import generate_solar_graph_html
 
 from typing import Any
 
 # Try to import the indexer logic
 run_indexer_logic: Any = None
 try:
-    from n3mo.run_indexer import main as run_indexer_logic_impl
+    from n3mo.core.run_indexer import main as run_indexer_logic_impl
     run_indexer_logic = run_indexer_logic_impl
 except ImportError:
     pass
@@ -314,7 +314,7 @@ def cmd_setup(args):
             print(f"  {AMBER}⚠️{R} Could not copy .env: {e}")
 
     # 4. Start Docker services
-    from n3mo.run_indexer import start_docker_services, wait_for_postgres_and_schema
+    from n3mo.core.run_indexer import start_docker_services, wait_for_postgres_and_schema
     print(f"  {CYAN}▸{R} Starting PostgreSQL container...")
     start_docker_services()
     
@@ -458,7 +458,7 @@ def cmd_mcp(args):
         # Default subcommand: start the stdio server
         try:
             import asyncio
-            from n3mo.mcp_server import main as mcp_main
+            from n3mo.mcp.mcp_server import main as mcp_main
             asyncio.run(mcp_main())
         except KeyboardInterrupt:
             print(f"\n  {CYAN}◈{R}  MCP Server stopped.")
@@ -476,7 +476,7 @@ def cmd_api(args):
 
 
 def cmd_hook(args):
-    from n3mo.git_hooks import install_git_hook
+    from n3mo.common.git_hooks import install_git_hook
     target_dir = args.target_dir or os.getenv("TARGET_CODE_DIR", os.getcwd())
     install_git_hook(target_dir)
 

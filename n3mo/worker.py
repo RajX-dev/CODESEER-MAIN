@@ -6,7 +6,7 @@ import urllib.error
 import json
 import traceback
 
-from n3mo.core_engine import (
+from n3mo.core.core_engine import (
     checkout_repo, 
     get_changed_files, 
     calculate_repo_loc, 
@@ -16,7 +16,7 @@ from n3mo.core_engine import (
     format_impact_markdown,
     post_github_comment
 )
-from n3mo.run_indexer import run_indexer_for_path
+from n3mo.core.run_indexer import run_indexer_for_path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 logger = logging.getLogger("n3mo.worker")

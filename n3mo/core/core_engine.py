@@ -12,8 +12,8 @@ import urllib.request
 import urllib.error
 import json
 
-from n3mo.crawler import crawl_directory
-from n3mo.database import get_connection, release_connection
+from n3mo.core.crawler import crawl_directory
+from n3mo.core.database import get_connection, release_connection
 
 logger = logging.getLogger("n3mo.core_engine")
 

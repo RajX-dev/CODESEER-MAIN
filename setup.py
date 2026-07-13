@@ -27,7 +27,7 @@ setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'n3mo=n3mo.cli:main',
+            'n3mo=n3mo.cli.cli:main',
         ],
     },
 )
