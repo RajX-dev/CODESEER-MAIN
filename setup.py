@@ -15,7 +15,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="n3mo",
-    version="2.0.2",
+    version="2.0.3",
     description="N3MO: The Impact Tracker",
     long_description=long_description,
     long_description_content_type="text/markdown",
