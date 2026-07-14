@@ -683,6 +683,7 @@ See [LICENSE](LICENSE) for full legal details.
 *Building tools for understanding code at scale.*
 
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=RajX-dev.N3MO)
+![Alt](https://repobeats.axiom.co/api/embed/c4cb93bd38f8cf6cdc088bb8ad615ce5ba8a143d.svg "Repobeats analytics image")
 
 <br><br>
 
