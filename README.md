@@ -11,9 +11,11 @@
 [![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=for-the-badge&logo=python)](https://www.python.org)
 [![Docker](https://img.shields.io/badge/docker-required-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen?style=for-the-badge)]()
-[![Discord](https://img.shields.io/badge/Discord-Join_Community-7289da?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cTgZKHf2G)
 [![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge)](https://registry.modelcontextprotocol.io/?q=n3mo)
 [![CI](https://img.shields.io/github/actions/workflow/status/RajX-dev/N3MO/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI)](https://github.com/RajX-dev/N3MO/actions)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/n3mo?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/n3mo)
+[![Discord](https://img.shields.io/badge/Discord-Join_Community-7289da?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cTgZKHf2G)
+
 
 **A structural code intelligence layer that transforms source code into a queryable knowledge graph for search, impact analysis, and AI-powered development.**
 
