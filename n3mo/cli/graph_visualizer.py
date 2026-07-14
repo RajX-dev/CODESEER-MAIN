@@ -62,23 +62,25 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     body.dark-mode {
       /* Premium Dark Mode tokens */
-      --bg-space: #07080b;
-      --bg-panel: #0d0f14;
-      --bg-panel-solid: #0d0f14;
-      --bg-panel-raised: #151821;
-      --border-soft: rgba(255, 255, 255, 0.05);
-      --border-medium: rgba(255, 255, 255, 0.1);
-      --text-main: #f1f5f9;
-      --text-muted: #64748b;
+      --bg-space: #030712;
+      --bg-panel: rgba(17, 24, 39, 0.75);
+      --bg-panel-solid: #111827;
+      --bg-panel-raised: rgba(31, 41, 55, 0.6);
+      --border-soft: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.15);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
       --blue: #3b82f6;
       --amber: #f59e0b;
       --red: #f43f5e;
       --cyan: #06b6d4;
       --green: #10b981;
       --accent: #f59e0b;
-      --accent-hover: #d97706;
+      --accent-hover: #ea580c;
       --accent-bg-active: rgba(245, 158, 11, 0.15);
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.3);
+      --glass-blur: blur(16px);
     }
 
     * { box-sizing: border-box; }
@@ -86,6 +88,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     body {
       color: var(--text-main);
       background: var(--bg-space);
+      background-image: radial-gradient(circle at 50% 0%, #1f2937 0%, transparent 70%);
       font-family: var(--font-ui);
       transition: background-color 0.3s ease, color 0.3s ease;
     }
@@ -105,7 +108,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     #nav-sidebar {
       width: 250px;
-      background: var(--bg-panel-solid);
+      background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       border-right: 1px solid var(--border-soft);
       display: flex;
       flex-direction: column;
@@ -173,8 +178,8 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
 
     .nav-item.active {
-      color: var(--text-main);
-      background: var(--accent-bg-active);
+      color: #ffffff;
+      background: linear-gradient(90deg, var(--accent-bg-active), transparent);
       border-left: 3px solid var(--accent);
       border-top-left-radius: 2px;
       border-bottom-left-radius: 2px;
@@ -251,9 +256,11 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
 
     .action-btn:hover, .action-btn.active {
-      background: var(--accent-bg-active);
-      border-color: var(--accent);
-      color: var(--text-main);
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: var(--shadow-glow);
+      transform: translateY(-1px);
     }
 
     .nav-footer {
@@ -306,7 +313,9 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     /* Top bar Header */
     #top-bar {
       height: 72px;
-      background: var(--bg-panel-solid);
+      background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       border-bottom: 1px solid var(--border-soft);
       display: flex;
       justify-content: space-between;
@@ -405,6 +414,8 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       min-width: 90px;
       padding: 6px 12px;
       background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--border-soft);
       border-radius: 6px;
       display: flex;
@@ -452,6 +463,8 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
       bottom: 16px;
       width: 350px;
       background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--border-soft);
       border-radius: 12px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -622,7 +635,7 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
 
     .panel-section {
-      background: var(--bg-panel);
+      background: rgba(0, 0, 0, 0.2);
       border: 1px solid var(--border-soft);
       border-radius: 8px;
       display: flex;
@@ -661,16 +674,18 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
 
     /* Card Panels Styling */
     .card {
-      background: var(--bg-panel-raised);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-soft);
       border-radius: 6px;
       padding: 12px;
       margin-bottom: 12px;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .card:hover {
       border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     .card-label {
@@ -743,19 +758,20 @@ def generate_solar_graph_html(nodes, edges, target_name, max_depth=3):
     }
 
     .action.primary {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border-color: transparent;
       color: #ffffff;
     }
 
     .action.primary:hover {
-      background: var(--accent-hover);
-      border-color: var(--accent-hover);
+      box-shadow: var(--shadow-glow);
+      transform: translateY(-1px);
     }
 
     .action:not(.primary):hover {
       border-color: var(--accent);
       background: var(--accent-bg-active);
+      transform: translateY(-1px);
     }
 
     /* Empty State */
