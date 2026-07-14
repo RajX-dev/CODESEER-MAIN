@@ -12,7 +12,7 @@ Whether you're fixing a bug, adding a new Tree-sitter grammar, or improving our 
 
 Since we are building this in public, communication is key. Please follow these guidelines on where to post:
 
-* **Questions & Ideas:** If you need help using N3MO, want to discuss architectural changes, or have an idea for a feature, please use [GitHub Discussions](https://github.com/RajX-dev/N3MO/discussions).
+* **Questions & Ideas:** If you need help using N3MO, want to discuss architectural changes, or have an idea for a feature, please use [GitHub Discussions](https://github.com/RajX-dev/N3MO/discussions) or join our [Discord Server](https://discord.gg/cTgZKHf2G).
 * **Bug Reports:** If you found a confirmed bug in the parsing engine, CLI, or MCP server, open a [GitHub Issue](https://github.com/RajX-dev/N3MO/issues) using the Bug Report template.
 * **Good First Issues:** If you're new to the codebase, check the `good first issue` or `help wanted` tags in the issue tracker. Drop a comment saying "I'd like to work on this!" so we can assign it to you.
 
