@@ -115,63 +115,76 @@ def merge_impacts(base_impacts: dict, head_impacts: dict) -> dict:
 
 def format_impact_markdown(merged_impacts: dict, repo_name: str, pr_number: int, total_lines: int) -> str:
     if (not merged_impacts):
-        return '### ◈ N3MO Pull Request Impact Analysis\n\n✓ **Safe to change:** No active symbols were modified/affected in this Pull Request.'
-    sorted_symbols = sorted(merged_impacts.items(), key=(lambda x: (x[1]['status'], x[0])))
-    markdown = '### ◈ N3MO Pull Request Impact Analysis\n\n'
-    markdown += f'''Analyzed {total_lines:,} lines of code. Below is the blast radius report for changes in PR #{pr_number}.
+        return '### ◈ N3MO Pull Request Impact Analysis\n\n✅ **No impact detected.** No active symbols were modified or affected in this PR.'
 
-'''
-    markdown += '| File | Symbol | Status | Direct Callers | Total Impacted | Details |\n'
-    markdown += '| :--- | :--- | :--- | :---: | :---: | :--- |\n'
-    details_sections = []
-    for (name, data) in sorted_symbols:
+    # Separate symbols into impactful (have callers) and safe (zero callers)
+    impactful_symbols = []
+    safe_symbols = []
+    for (name, data) in sorted(merged_impacts.items(), key=(lambda x: (x[1]['status'], x[0]))):
+        callers = data['callers']
+        direct_count = len([c for c in callers if (c['depth'] == 1)])
+        total_count = len(callers)
+        if total_count > 0:
+            impactful_symbols.append((name, data, direct_count, total_count))
+        else:
+            safe_symbols.append((name, data))
+
+    markdown = '### ◈ N3MO Pull Request Impact Analysis\n\n'
+    markdown += f'Analyzed **{total_lines:,}** lines of code. Blast radius for PR #{pr_number}.\n\n'
+
+    # If nothing is impactful, keep it very short
+    if not impactful_symbols:
+        markdown += f'✅ All **{len(safe_symbols)}** modified symbols have **0 callers** — safe to merge.\n'
+        return markdown
+
+    # Summary table — only symbols with callers
+    markdown += '| File | Symbol | Status | Direct Callers | Total Impacted |\n'
+    markdown += '| :--- | :--- | :--- | :---: | :---: |\n'
+    for (name, data, direct_count, total_count) in impactful_symbols:
+        status = data['status']
+        file_path = data['file_path']
+        status_badge = _format_status_badge(status)
+        markdown += f'| `{file_path}` | `{name}` | {status_badge} | {direct_count} | {total_count} |\n'
+
+    # One-liner for safe symbols
+    if safe_symbols:
+        safe_count = len(safe_symbols)
+        markdown += f'\n✅ {safe_count} other symbol{"s" if safe_count != 1 else ""} modified with **0 callers** (safe to change).\n'
+
+    # Collapsible details — only for impactful symbols
+    markdown += '\n<details>\n<summary><b>🔍 View Impact Details</b></summary>\n\n'
+    for (name, data, direct_count, total_count) in impactful_symbols:
         status = data['status']
         file_path = data['file_path']
         line = data['line']
         callers = data['callers']
-        direct_count = len([c for c in callers if (c['depth'] == 1)])
-        total_count = len(callers)
-        status_badge = f' `{status}`'
-        if (status == 'Modified'):
-            status_badge = ' 🟠 `Modified`'
-        elif (status == 'Added'):
-            status_badge = ' 🟢 `Added`'
-        elif (status == 'Deleted'):
-            status_badge = ' 🔴 `Deleted`'
-        if total_count == 0:
-            markdown += f'| `{file_path}` | `{name}` | {status_badge} | {direct_count} | {total_count} | Safe (No Impact) |\n'
-            continue  # Skip adding a detailed section below
-
-        markdown += f'| `{file_path}` | `{name}` | {status_badge} | {direct_count} | {total_count} | [View Details](#{name.lower()}) |\n'
-        details = f'''<a name="{name.lower()}"></a>
-'''
-        details += f'''#### ◉ `{name}` ({status})
-'''
-        details += f'''*   **Location:** `{file_path}:{line}`
-'''
+        markdown += f'#### ◉ `{name}` ({status})\n'
+        markdown += f'*   **Location:** `{file_path}:{line}`\n'
         direct_callers = [c for c in callers if (c['depth'] == 1)]
         ripple_callers = [c for c in callers if (c['depth'] > 1)]
         if direct_callers:
-            details += '*   **Direct Callers:**\n'
+            markdown += '*   **Direct Callers:**\n'
             for c in direct_callers:
-                details += f'''    *   `{c['source']}` (`{c['file_path']}:{c['line']}`)
-'''
+                markdown += f'    *   `{c["source"]}` (`{c["file_path"]}:{c["line"]}`)\n'
         if ripple_callers:
-            details += f'''
-<details>
-<summary><b>View {len(ripple_callers)} Ripple Effects</b></summary>
-
-'''
+            markdown += f'\n<details>\n<summary>View {len(ripple_callers)} Ripple Effects</summary>\n\n'
             for c in sorted(ripple_callers, key=(lambda x: x['depth'])):
                 indent = ('  ' * (c['depth'] - 1))
-                details += f'''{indent}* ─▸ `{c['source']}` (`{c['file_path']}:{c['line']}`)
-'''
-            details += '\n</details>\n'
-        details_sections.append(details)
-    markdown += '\n---\n\n'
-    markdown += '### 🔍 Impact Details\n\n'
-    markdown += '\n'.join(details_sections)
+                markdown += f'{indent}* ─▸ `{c["source"]}` (`{c["file_path"]}:{c["line"]}`)\n'
+            markdown += '\n</details>\n\n'
+    markdown += '</details>\n'
     return markdown
+
+
+def _format_status_badge(status: str) -> str:
+    """Return a compact status badge string for the markdown table."""
+    if (status == 'Modified'):
+        return '🟠 Modified'
+    elif (status == 'Added'):
+        return '🟢 Added'
+    elif (status == 'Deleted'):
+        return '🔴 Deleted'
+    return status
 
 
 

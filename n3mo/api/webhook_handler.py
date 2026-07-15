@@ -127,7 +127,8 @@ async def github_webhook(
                 "client_payload": {
                     "repository": target_repo,
                     "pr_number": str(pr_number),
-                    "user_id": str(user_db.get("id")) if 'user_db' in locals() and user_db else ""
+                    "user_id": str(user_db.get("id")) if 'user_db' in locals() and user_db else "",
+                    "installation_id": str(payload.get("installation", {}).get("id", "")) if isinstance(payload.get("installation"), dict) else ""
                 }
             }
             
