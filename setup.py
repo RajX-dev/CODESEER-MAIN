@@ -5,7 +5,7 @@
 # You may obtain a copy of the License at
 # https://polyformproject.org/licenses/noncommercial/1.0.0
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages  # type: ignore
 
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()

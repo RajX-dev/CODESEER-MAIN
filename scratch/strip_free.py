@@ -1,4 +1,3 @@
-import os
 
 files_to_fix = [
     "saas_webhook_handler.py",

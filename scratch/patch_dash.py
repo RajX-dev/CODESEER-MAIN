@@ -1,4 +1,3 @@
-import re
 
 with open('public/dashboard.js', 'r') as f:
     content = f.read()

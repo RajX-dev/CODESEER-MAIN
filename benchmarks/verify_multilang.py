@@ -13,7 +13,7 @@ import sys
 # Reconfigure stdout to use utf-8 for Windows emoji support
 if sys.stdout.encoding != 'utf-8':
     try:
-        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stdout.reconfigure(encoding='utf-8')  # type: ignore[union-attr]
     except Exception:
         pass
 

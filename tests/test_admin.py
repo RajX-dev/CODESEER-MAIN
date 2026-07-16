@@ -1,6 +1,5 @@
-import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from n3mo.api_server import app
 from n3mo.api.auth import get_current_user_from_token

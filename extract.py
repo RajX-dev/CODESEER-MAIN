@@ -1,5 +1,5 @@
 import ast
-import astunparse
+import astunparse  # type: ignore
 
 with open('saas_webhook_handler.py', 'r', encoding='utf-16le') as f:
     content = f.read()

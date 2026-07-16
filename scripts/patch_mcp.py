@@ -1,5 +1,3 @@
-import re
-import os
 
 mcp_path = r"c:\Users\Raj shekhar\Documents\raj\project\main project\n3mo\n3mo\mcp_server.py"
 

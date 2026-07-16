@@ -1,5 +1,4 @@
-import razorpay
-import os
+import razorpay  # type: ignore
 import sys
 
 def main():

@@ -322,7 +322,7 @@ def delete_github_app_installation(
     )
     
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req):
             return True
     except Exception as e:
         logger.error(f"Failed to delete App installation {installation_id}: {e}")
@@ -583,9 +583,8 @@ def handle_pull_request(payload: dict) -> dict:
                         # Post comment explaining repo limit
                         github_token = user_db.get("github_token") or os.getenv("GITHUB_TOKEN")
                         if github_token:
-                            comment_url = f"https://api.github.com/repos/{repo_name}/issues/{pr_number}/comments"
                             comment_body = "⚠️ **N3MO Analysis Aborted**\n\nYour account has reached its maximum repository limit for the current plan. Please upgrade to Pro or Team on your dashboard to analyze this repository."
-                            post_github_comment(comment_url, comment_body, github_token)
+                            post_github_comment(repo_name, int(pr_number), comment_body, installation_id)
                     return {"status": "error", "message": "Repository limit reached"}
 
     # 1. Checkout repository to get current files

@@ -1,4 +1,3 @@
-import os
 
 files = ['impact_graph.html', 'n3mo/graph_visualizer.py', 'public/index.html', 'server.json', 'setup.py']
 for file in files:
