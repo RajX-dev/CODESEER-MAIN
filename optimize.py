@@ -1,6 +1,4 @@
-import os
-import re
-import glob
+import os, re, glob
 
 # 1. Update style.css
 css_addition = """

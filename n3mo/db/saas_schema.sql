@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url TEXT,
     github_token TEXT, -- Encrypted/encrypted-at-rest or raw token for repo access
     webhook_secret TEXT, -- Personal webhook secret for GitHub PR checks
-    is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -68,17 +67,6 @@ CREATE TABLE IF NOT EXISTS license_keys (
     plan_type TEXT NOT NULL CHECK (plan_type IN ('enterprise')),
     max_loc INT DEFAULT -1, -- -1 means unlimited
     status TEXT NOT NULL CHECK (status IN ('active', 'revoked', 'expired')),
-    expires_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- 5b. Discount Codes
-CREATE TABLE IF NOT EXISTS discount_codes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    code VARCHAR(50) UNIQUE NOT NULL,
-    discount_percentage INT NOT NULL CHECK (discount_percentage >= 0 AND discount_percentage <= 100),
-    max_uses INT DEFAULT -1, -- -1 means unlimited
-    uses INT DEFAULT 0,
     expires_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
 );
