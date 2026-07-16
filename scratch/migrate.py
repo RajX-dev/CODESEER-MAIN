@@ -18,6 +18,9 @@ def migrate():
             with open("n3mo/db/saas_schema.sql", "r") as f:
                 cur.execute(f.read())
             
+            # ALTER TABLE to handle existing users table
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;")
+
             # Make the first user an admin for testing if one exists
             cur.execute("UPDATE users SET is_admin = TRUE WHERE username = 'RajX-dev'")
             
