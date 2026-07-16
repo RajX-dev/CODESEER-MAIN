@@ -23,7 +23,7 @@
 
 **📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](#-license)
 
-[What is N3MO](#-what-is-n3mo) • [Tutorial](#-tutorial) • [Benchmarks](#-benchmarks) • [Architecture](#-architecture) • [Installation](#-installation) • [MCP](#-model-context-protocol-mcp) • [Usage](#-usage) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Benchmarks](#-benchmarks) • [Architecture](#-architecture) • [Installation](#-installation) • [MCP](#-model-context-protocol-mcp) • [Usage](#-usage) • [Roadmap](#-roadmap)
 
 </div>
 
@@ -94,12 +94,6 @@ Result:    3 direct callers → 5 ripple effects
 | 💥 | What is the **blast radius** of changing this function? | Interactive orbit map with depth slider |
 | 🕸️ | How do these components actually connect? | Call graph + parent-child hierarchy |
 | 🤖 | Can my AI agent understand this codebase structurally? | Native MCP server for Cursor / Claude |
-
----
-
-## 🎥 Tutorial
-
-<video src="https://raw.githubusercontent.com/RajX-dev/N3MO/main/docs/tutorial.mp4" controls width="100%"></video>
 
 ---
 

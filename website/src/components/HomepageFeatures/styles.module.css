@@ -1,0 +1,28 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 4rem 0;
+  width: 100%;
+}
+
+[data-theme='dark'] .features {
+  background: #0d0f15;
+  border-top: 1px solid #1e2330;
+}
+
+.featureImg {
+  height: 220px;
+  width: auto;
+  max-width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #1e2330;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featureImg:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+}

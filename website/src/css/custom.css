@@ -1,0 +1,359 @@
+/**
+ * N3MO Docs Theme — matches n3mo.shop SaaS branding
+ * Background: #07080c (deep black), Accent: #f59e0b (amber)
+ * Fonts: Bricolage Grotesque / Outfit / JetBrains Mono
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&display=swap');
+
+/* ── Light mode ── */
+:root {
+  --ifm-color-primary: #d97706;
+  --ifm-color-primary-dark: #b45309;
+  --ifm-color-primary-darker: #92400e;
+  --ifm-color-primary-darkest: #78350f;
+  --ifm-color-primary-light: #f59e0b;
+  --ifm-color-primary-lighter: #fbbf24;
+  --ifm-color-primary-lightest: #fcd34d;
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', monospace;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* ── Dark mode — force n3mo.shop deep black ── */
+[data-theme='dark'] {
+  --ifm-color-primary: #f59e0b;
+  --ifm-color-primary-dark: #d97706;
+  --ifm-color-primary-darker: #b45309;
+  --ifm-color-primary-darkest: #92400e;
+  --ifm-color-primary-light: #fbbf24;
+  --ifm-color-primary-lighter: #fcd34d;
+  --ifm-color-primary-lightest: #fde68a;
+  --ifm-background-color: #07080c !important;
+  --ifm-background-surface-color: #0d0f15 !important;
+  --ifm-navbar-background-color: rgba(7, 8, 12, 0.85);
+  --ifm-footer-background-color: #07080c;
+  --ifm-toc-border-color: #1e2330;
+  --ifm-color-emphasis-300: #1e2330;
+  --ifm-color-emphasis-200: #141721;
+  --ifm-color-emphasis-100: #0d0f15;
+  --ifm-hover-overlay: rgba(245, 158, 11, 0.05);
+  --docusaurus-highlighted-code-line-bg: rgba(245, 158, 11, 0.1);
+}
+
+/* Force deep black on every surface in dark mode */
+html[data-theme='dark'] {
+  background: #07080c;
+}
+
+html[data-theme='dark'] body {
+  background: #07080c;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .main-wrapper {
+  background: #07080c;
+}
+
+[data-theme='dark'] main {
+  background: #07080c;
+}
+
+[data-theme='dark'] article {
+  background: #07080c;
+}
+
+[data-theme='dark'] .container {
+  background: transparent;
+}
+
+[data-theme='dark'] .col {
+  background: transparent;
+}
+
+[data-theme='dark'] .docMainContainer_node_modules-\@docusaurus-theme-classic-lib-theme-DocPage-Layout-Main-styles-module,
+[data-theme='dark'] [class*="docMainContainer"] {
+  background: #07080c;
+}
+
+/* ── Hero Banner ── */
+.hero--primary {
+  background: #07080c !important;
+  color: #f1f5f9;
+  padding: 5rem 0;
+  border-bottom: 1px solid #1e2330;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero--primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero--primary .hero__title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  color: #f1f5f9 !important;
+  -webkit-text-fill-color: #f1f5f9;
+}
+
+.hero--primary .hero__subtitle {
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: #94a3b8 !important;
+}
+
+.hero--primary .button--secondary {
+  background: #f59e0b !important;
+  color: #07080c !important;
+  border: none !important;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.02em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-size: 1.05rem;
+}
+
+.hero--primary .button--secondary:hover {
+  background: #fbbf24 !important;
+  box-shadow: 0 6px 30px rgba(245, 158, 11, 0.45);
+  transform: translateY(-2px);
+  color: #07080c !important;
+}
+
+/* ── Navbar ── */
+.navbar {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+[data-theme='dark'] .navbar {
+  background: rgba(7, 8, 12, 0.8) !important;
+  border-bottom: 1px solid #1e2330;
+}
+
+.navbar__title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f59e0b !important;
+}
+
+[data-theme='dark'] .navbar__link {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .navbar__link:hover,
+[data-theme='dark'] .navbar__link--active {
+  color: #f1f5f9;
+}
+
+/* ── Footer ── */
+[data-theme='dark'] .footer {
+  background: #07080c !important;
+  border-top: 1px solid #1e2330;
+}
+
+[data-theme='dark'] .footer--dark {
+  background: #07080c !important;
+}
+
+.footer__title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  color: #f59e0b !important;
+}
+
+[data-theme='dark'] .footer__link-item {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .footer__link-item:hover {
+  color: #f59e0b;
+}
+
+/* ── Sidebar ── */
+[data-theme='dark'] .menu {
+  background: #07080c;
+}
+
+[data-theme='dark'] .menu__link {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .menu__link:hover {
+  color: #f1f5f9;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+[data-theme='dark'] .menu__link--active:not(.menu__link--sublist) {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+  color: #f59e0b;
+}
+
+[data-theme='dark'] .menu__list-item-collapsible:hover {
+  background: rgba(245, 158, 11, 0.05);
+}
+
+/* ── Doc headings ── */
+[data-theme='dark'] .markdown h1,
+[data-theme='dark'] .markdown h2,
+[data-theme='dark'] .markdown h3,
+[data-theme='dark'] .markdown h4 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .markdown h2 {
+  border-bottom: 1px solid #1e2330;
+  padding-bottom: 0.5rem;
+}
+
+/* ── Links ── */
+[data-theme='dark'] .markdown a {
+  color: #f59e0b;
+}
+
+[data-theme='dark'] .markdown a:hover {
+  color: #fbbf24;
+}
+
+/* ── Code ── */
+[data-theme='dark'] pre {
+  background: #0d0f15 !important;
+  border: 1px solid #1e2330 !important;
+  border-radius: 8px;
+}
+
+[data-theme='dark'] code {
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.9em;
+}
+
+[data-theme='dark'] pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+  color: inherit;
+}
+
+/* ── Tables ── */
+[data-theme='dark'] table {
+  border-color: #1e2330;
+}
+
+[data-theme='dark'] table thead tr {
+  background: #141721 !important;
+  border-bottom: 2px solid #f59e0b;
+}
+
+[data-theme='dark'] table thead th {
+  color: #f59e0b;
+  font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+[data-theme='dark'] table tbody tr {
+  background: #07080c;
+  border-bottom: 1px solid #1e2330;
+}
+
+[data-theme='dark'] table tbody tr:nth-child(2n) {
+  background: #0d0f15;
+}
+
+/* ── TOC (right sidebar) ── */
+[data-theme='dark'] .table-of-contents__link {
+  color: #64748b;
+}
+
+[data-theme='dark'] .table-of-contents__link:hover,
+[data-theme='dark'] .table-of-contents__link--active {
+  color: #f59e0b;
+}
+
+/* ── Pagination ── */
+[data-theme='dark'] .pagination-nav__link {
+  background: #0d0f15;
+  border-color: #1e2330;
+}
+
+[data-theme='dark'] .pagination-nav__link:hover {
+  border-color: #f59e0b;
+}
+
+[data-theme='dark'] .pagination-nav__sublabel {
+  color: #64748b;
+}
+
+/* ── Breadcrumbs ── */
+[data-theme='dark'] .breadcrumbs__link {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .breadcrumbs__link:hover {
+  color: #f59e0b;
+}
+
+/* ── Admonitions ── */
+[data-theme='dark'] .alert {
+  background: #0d0f15;
+  border-color: #1e2330;
+}
+
+[data-theme='dark'] .alert--info {
+  background: rgba(59, 130, 246, 0.06);
+  border-left-color: #3b82f6;
+}
+
+[data-theme='dark'] .alert--success {
+  background: rgba(16, 185, 129, 0.06);
+  border-left-color: #10b981;
+}
+
+[data-theme='dark'] .alert--warning {
+  background: rgba(245, 158, 11, 0.06);
+  border-left-color: #f59e0b;
+}
+
+[data-theme='dark'] .alert--danger {
+  background: rgba(244, 63, 94, 0.06);
+  border-left-color: #f43f5e;
+}
+
+/* ── Scrollbar ── */
+[data-theme='dark'] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #07080c;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #1e2330;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #2f374c;
+}
