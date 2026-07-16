@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console | N3MO Code Intelligence</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            background-color: var(--glass-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .admin-sidebar h2 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-nav {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .admin-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .admin-nav li a:hover, .admin-nav li a.active {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--primary);
+        }
+
+        .admin-content {
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--glass-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table th, .data-table td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.02);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .status-none { background: rgba(107, 114, 128, 0.1); color: #9ca3af; }
+
+        .plan-select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: var(--font-body);
+        }
+
+        .action-form {
+            background: var(--glass-bg);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: var(--font-body);
+            min-width: 200px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <h2><i class="fa-solid fa-shield-halved"></i> Admin Console</h2>
+        <ul class="admin-nav">
+            <li><a href="#" class="active" onclick="switchTab('users-tab', this)"><i class="fa-solid fa-users"></i> Users & Plans</a></li>
+            <li><a href="#" onclick="switchTab('discounts-tab', this)"><i class="fa-solid fa-tags"></i> Discount Codes</a></li>
+            <li><a href="/dashboard.html"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a></li>
+        </ul>
+    </aside>
+
+    <main class="admin-content">
+        <header class="admin-header">
+            <div>
+                <h1 id="tab-title">Users & Plans</h1>
+                <p class="text-muted" id="tab-desc">Manage all SaaS subscriptions and users.</p>
+            </div>
+            <div class="user-profile">
+                <span id="admin-username">Admin</span>
+            </div>
+        </header>
+
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content active">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>GitHub ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Plan Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Discounts Tab -->
+        <div id="discounts-tab" class="tab-content">
+            <div class="action-form">
+                <div class="form-group">
+                    <label>Discount Code</label>
+                    <input type="text" id="new-code" class="form-control" placeholder="e.g. SUMMER50">
+                </div>
+                <div class="form-group">
+                    <label>Discount Percentage (%)</label>
+                    <input type="number" id="new-percentage" class="form-control" min="0" max="100" value="100">
+                </div>
+                <div class="form-group">
+                    <label>Max Uses (-1 for unlimited)</label>
+                    <input type="number" id="new-max-uses" class="form-control" value="-1">
+                </div>
+                <button class="btn btn-primary" onclick="createDiscount()">Generate Code</button>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Discount</th>
+                        <th>Used / Max</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="discounts-table-body">
+                    <tr><td colspan="5" style="text-align:center;">Loading discounts...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

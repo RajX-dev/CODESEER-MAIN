@@ -7,7 +7,6 @@
 
 import os
 import logging
-import urllib.request
 import json
 
 import uvicorn
@@ -20,6 +19,7 @@ from n3mo.cli.cli import get_code_context
 from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
+from n3mo.api.admin import router as admin_router
 from n3mo.api.auth import get_current_user_from_token
 from fastapi import Depends
 from n3mo.saas_db import get_subscription, get_user_by_id, get_user_by_github_id, update_subscription
@@ -42,6 +42,7 @@ app = FastAPI(
 app.include_router(webhook_router, prefix="/github")
 app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "secret")
@@ -119,21 +120,34 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
             amount = int(amount_usd_raw * 100)
             currency = "USD"
         
-        # Apply 100% discount manually if needed
-        if discount and discount.upper() == "RAJ":
-            from n3mo.saas_db import update_subscription, get_user_by_github_id
-            from datetime import datetime, timedelta, timezone
-            user_db = get_user_by_github_id(int(github_id))
-            if user_db:
-                expires_at = datetime.now(timezone.utc) + timedelta(days=365 if billing_cycle == 'bulk' else 30)
-                update_subscription(str(user_db["id"]), "user", plan_type, "active", expires_at=expires_at)
+        # Apply dynamic discount logic
+        if discount:
+            from n3mo.saas_db import validate_and_use_discount_code
+            discount_data = validate_and_use_discount_code(discount)
             
-            return {
-                "checkout_url": "", 
-                "order_id": "",
-                "key_id": key_id,
-                "free_upgrade": True
-            }
+            if discount_data:
+                discount_percentage = discount_data["discount_percentage"]
+                
+                if discount_percentage == 100:
+                    from n3mo.saas_db import update_subscription, get_user_by_github_id
+                    from datetime import datetime, timedelta, timezone
+                    user_db = get_user_by_github_id(int(github_id))
+                    if user_db:
+                        expires_at = datetime.now(timezone.utc) + timedelta(days=365 if billing_cycle == 'bulk' else 30)
+                        update_subscription(str(user_db["id"]), "user", plan_type, "active", expires_at=expires_at)
+                    
+                    return {
+                        "checkout_url": "", 
+                        "order_id": "",
+                        "key_id": key_id,
+                        "free_upgrade": True
+                    }
+                else:
+                    # Apply percentage discount
+                    amount = int(amount * (1 - discount_percentage / 100))
+            else:
+                # Invalid or expired discount code
+                pass
             
         # Create Order
         order_payload = {

@@ -69,7 +69,7 @@ def upsert_user(github_id: int, username: str, email: str | None = None, avatar_
                               email = COALESCE(EXCLUDED.email, users.email),
                               avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
                               github_token = COALESCE(EXCLUDED.github_token, users.github_token)
-                RETURNING id, github_id, username, email, avatar_url, created_at, webhook_secret
+                RETURNING id, github_id, username, email, avatar_url, created_at, webhook_secret, is_admin
                 """,
                 (github_id, username, email, avatar_url, encrypted_token, webhook_secret)
             )
@@ -83,7 +83,8 @@ def upsert_user(github_id: int, username: str, email: str | None = None, avatar_
                     "email": row[3],
                     "avatar_url": row[4],
                     "created_at": row[5],
-                    "webhook_secret": row[6]
+                    "webhook_secret": row[6],
+                    "is_admin": row[7]
                 }
             return {}
     except Exception as e:
@@ -318,7 +319,7 @@ def get_user_by_id(user_id: str) -> dict:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, github_id, username, email, avatar_url, webhook_secret
+                SELECT id, github_id, username, email, avatar_url, webhook_secret, is_admin
                 FROM users 
                 WHERE id = %s
                 """,
@@ -347,7 +348,7 @@ def get_user_by_github_id(github_id: int) -> dict:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, github_id, username, email, avatar_url, webhook_secret
+                SELECT id, github_id, username, email, avatar_url, webhook_secret, is_admin
                 FROM users 
                 WHERE github_id = %s
                 """,
@@ -361,7 +362,8 @@ def get_user_by_github_id(github_id: int) -> dict:
                     "username": row[2],
                     "email": row[3],
                     "avatar_url": row[4],
-                    "webhook_secret": row[5]
+                    "webhook_secret": row[5],
+                    "is_admin": row[6]
                 }
             return {}
     except Exception as e:
@@ -376,7 +378,7 @@ def get_user_by_username(username: str) -> dict:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, github_id, username, email, avatar_url, webhook_secret
+                SELECT id, github_id, username, email, avatar_url, webhook_secret, is_admin
                 FROM users 
                 WHERE username = %s
                 """,
@@ -390,11 +392,120 @@ def get_user_by_username(username: str) -> dict:
                     "username": row[2],
                     "email": row[3],
                     "avatar_url": row[4],
-                    "webhook_secret": row[5]
+                    "webhook_secret": row[5],
+                    "is_admin": row[6]
                 }
             return {}
     except Exception as e:
         logger.error(f"Failed to fetch user by username: {e}")
         return {}
+    finally:
+        release_connection(conn)
+
+def get_all_users_with_subscriptions() -> list[dict]:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT u.id, u.github_id, u.username, u.email, u.is_admin, 
+                       s.plan_type, s.status, s.expires_at
+                FROM users u
+                LEFT JOIN subscriptions s ON u.id = s.user_owner_id
+                ORDER BY u.created_at DESC
+            """)
+            rows = cur.fetchall()
+            return [
+                {
+                    "id": str(r[0]), "github_id": r[1], "username": r[2], 
+                    "email": r[3], "is_admin": r[4], 
+                    "plan_type": r[5] or "none", "status": r[6] or "none", 
+                    "expires_at": r[7].isoformat() if r[7] else None
+                } for r in rows
+            ]
+    except Exception as e:
+        logger.error(f"Failed to fetch users: {e}")
+        return []
+    finally:
+        release_connection(conn)
+
+def get_discount_codes() -> list[dict]:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT code, discount_percentage, max_uses, uses, expires_at, created_at FROM discount_codes ORDER BY created_at DESC")
+            rows = cur.fetchall()
+            return [
+                {
+                    "code": r[0], "discount_percentage": r[1], "max_uses": r[2], 
+                    "uses": r[3], "expires_at": r[4].isoformat() if r[4] else None,
+                    "created_at": r[5].isoformat() if r[5] else None
+                } for r in rows
+            ]
+    except Exception as e:
+        logger.error(f"Failed to get discount codes: {e}")
+        return []
+    finally:
+        release_connection(conn)
+
+def create_discount_code(code: str, discount_percentage: int, max_uses: int = -1, expires_at: datetime.datetime | None = None) -> bool:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO discount_codes (code, discount_percentage, max_uses, expires_at) VALUES (%s, %s, %s, %s)",
+                (code.upper(), discount_percentage, max_uses, expires_at)
+            )
+            conn.commit()
+            return True
+    except Exception as e:
+        logger.error(f"Failed to create discount code: {e}")
+        conn.rollback()
+        return False
+    finally:
+        release_connection(conn)
+
+def delete_discount_code(code: str) -> bool:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM discount_codes WHERE code = %s", (code.upper(),))
+            conn.commit()
+            return True
+    except Exception as e:
+        logger.error(f"Failed to delete discount code: {e}")
+        conn.rollback()
+        return False
+    finally:
+        release_connection(conn)
+
+def validate_and_use_discount_code(code: str) -> dict | None:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT code, discount_percentage, max_uses, uses, expires_at FROM discount_codes WHERE code = %s", 
+                (code.upper(),)
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            
+            discount_percentage = row[1]
+            max_uses = row[2]
+            uses = row[3]
+            expires_at = row[4]
+            
+            if expires_at and datetime.datetime.now(datetime.timezone.utc) > expires_at.replace(tzinfo=datetime.timezone.utc):
+                return None
+            if max_uses != -1 and uses >= max_uses:
+                return None
+                
+            cur.execute("UPDATE discount_codes SET uses = uses + 1 WHERE code = %s", (code.upper(),))
+            conn.commit()
+            return {"code": row[0], "discount_percentage": discount_percentage}
+    except Exception as e:
+        logger.error(f"Failed to validate discount code: {e}")
+        conn.rollback()
+        return None
     finally:
         release_connection(conn)
