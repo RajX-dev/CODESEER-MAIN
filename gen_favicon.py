@@ -38,8 +38,6 @@ create_favicon(192, "public/icon-192x192.png")
 create_favicon(180, "public/apple-touch-icon.png")
 
 # Make ICO with multiple sizes
-img_16 = Image.open("public/icon-192x192.png").resize((16, 16), Image.Resampling.LANCZOS)
-img_32 = Image.open("public/icon-192x192.png").resize((32, 32), Image.Resampling.LANCZOS)
 img_48 = Image.open("public/icon-192x192.png").resize((48, 48), Image.Resampling.LANCZOS)
 
 img_48.save("public/favicon.ico", format="ICO", sizes=[(48, 48), (32, 32), (16, 16)])

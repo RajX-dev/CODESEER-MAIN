@@ -1,4 +1,4 @@
-﻿# Copyright (C) 2026 Raj shekhar
+# Copyright (C) 2026 Raj shekhar
 #
 # This file is part of N3MO.
 # N3MO is licensed under the PolyForm Noncommercial License 1.0.0.
@@ -13,13 +13,13 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger("n3mo.license_validator")
 
-# Default values for Free Tier
-DEFAULT_FREE_LIMITS = {
+# Default values for Invalid/Expired status
+INVALID_LIMITS = {
     "valid": False,
-    "plan_type": "free",
-    "max_loc": 150000,
+    "plan_type": "none",
+    "max_loc": 0,
     "owner": "Guest",
-    "reason": "No license key provided"
+    "reason": "No valid license key provided"
 }
 
 def get_license_hash(license_key_str: str) -> str:
@@ -36,7 +36,7 @@ def verify_license_key(license_key_str: str) -> dict:
     - HS256 (fallback for development/SaaS) using N3MO_LICENSE_SECRET
     """
     if not license_key_str:
-        return DEFAULT_FREE_LIMITS
+        return INVALID_LIMITS
 
     master_public_key = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqOeDz6hLA8QsOv47AmvX
@@ -73,8 +73,8 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
             logger.warning(f"N3MO: Unsupported algorithm '{algo}' or N3MO_LICENSE_SECRET is not configured.")
             return {
                 "valid": False,
-                "plan_type": "free",
-                "max_loc": 150000,
+                "plan_type": "none",
+                "max_loc": 0,
                 "owner": "Unknown",
                 "reason": "Server licensing configuration missing or unsupported algorithm"
             }
@@ -86,8 +86,8 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
             if datetime.now(timezone.utc) > exp_date:
                 return {
                     "valid": False,
-                    "plan_type": "free",
-                    "max_loc": 150000,
+                    "plan_type": "none",
+                    "max_loc": 0,
                     "owner": payload.get("owner", "Unknown"),
                     "reason": "License has expired"
                 }
@@ -105,31 +105,31 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
         if not secret_key:
             return {
                 "valid": False,
-                "plan_type": "free",
-                "max_loc": 150000,
+                "plan_type": "none",
+                "max_loc": 0,
                 "owner": "Unknown",
                 "reason": "Server licensing configuration missing"
             }
         return {
             "valid": False,
-            "plan_type": "free",
-            "max_loc": 150000,
+            "plan_type": "none",
+            "max_loc": 0,
             "owner": "Unknown",
             "reason": f"Invalid token format: {str(e)}"
         }
     except jwt.ExpiredSignatureError:
         return {
             "valid": False,
-            "plan_type": "free",
-            "max_loc": 150000,
+            "plan_type": "none",
+            "max_loc": 0,
             "owner": "Unknown",
             "reason": "License signature has expired"
         }
     except jwt.InvalidSignatureError:
         return {
             "valid": False,
-            "plan_type": "free",
-            "max_loc": 150000,
+            "plan_type": "none",
+            "max_loc": 0,
             "owner": "Unknown",
             "reason": "Invalid license key signature"
         }
@@ -137,8 +137,8 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
         logger.error(f"License decoding failed: {e}")
         return {
             "valid": False,
-            "plan_type": "free",
-            "max_loc": 150000,
+            "plan_type": "none",
+            "max_loc": 0,
             "owner": "Unknown",
             "reason": f"Decoding error: {str(e)}"
         }

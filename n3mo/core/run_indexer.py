@@ -14,7 +14,7 @@ import sys
 from concurrent.futures import as_completed
 
 # --- DATABASE IMPORTS ---
-from n3mo.database import (
+from n3mo.core.database import (
     ensure_project,
     replace_file_index,
     get_file_hashes,
@@ -23,14 +23,14 @@ from n3mo.database import (
 )
 
 # --- CRAWLER IMPORT ---
-from n3mo.crawler import crawl_directory
+from n3mo.core.crawler import crawl_directory
 
 # --- EXTRACTOR IMPORT ---
-from n3mo.symbol_extractor import extract_symbols
+from n3mo.core.symbol_extractor import extract_symbols
 
 # --- RESOLVER IMPORT ---
-from n3mo.resolve_imports import resolve_import_links
-from n3mo.resolve_calls import resolve_call_links
+from n3mo.core.resolve_imports import resolve_import_links
+from n3mo.core.resolve_calls import resolve_call_links
 
 # Create module-level logger
 logger = logging.getLogger("n3mo")
@@ -253,7 +253,7 @@ def start_docker_services():
 
 def wait_for_postgres_and_schema(timeout=30):
     import time
-    from n3mo.database import get_connection, release_connection
+    from n3mo.core.database import get_connection, release_connection
     
     logger.info("⏳ Waiting for PostgreSQL database and schema to be ready...")
     start_time = time.time()
@@ -306,7 +306,7 @@ def wait_for_postgres_and_schema(timeout=30):
     return False
 
 def clear_all_data(exclude_url=None):
-    from n3mo.database import get_connection, release_connection
+    from n3mo.core.database import get_connection, release_connection
     logger.info("🧹 Cleaning database of other projects to ensure no residues...")
     conn = get_connection()
     try:
@@ -388,7 +388,7 @@ def run_indexer_for_path(target_dir):
         else:
             # In CI, just check if the database is reachable
             try:
-                from n3mo.database import get_connection, release_connection
+                from n3mo.core.database import get_connection, release_connection
                 conn = get_connection()
                 release_connection(conn)
             except Exception as e:

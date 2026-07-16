@@ -94,6 +94,12 @@ Result:    3 direct callers → 5 ripple effects
 
 ---
 
+## 🎥 Tutorial
+
+<video src="https://raw.githubusercontent.com/RajX-dev/N3MO/main/docs/tutorial.mp4" controls width="100%"></video>
+
+---
+
 ## 📊 Benchmarks
 
 All benchmarks measured on **Intel i5-13450HX, 24 GB RAM, NVMe SSD**.

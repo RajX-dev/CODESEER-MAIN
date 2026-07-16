@@ -139,12 +139,12 @@ if Server is not None:
         """
 
         def get_db_conn():
-            from n3mo.database import get_connection
+            from n3mo.core.database import get_connection
             try:
                 return get_connection()
             except Exception as e:
                 try:
-                    from n3mo.run_indexer import start_docker_services, wait_for_postgres_and_schema
+                    from n3mo.core.run_indexer import start_docker_services, wait_for_postgres_and_schema
                     start_docker_services()
                     if wait_for_postgres_and_schema(timeout=15):
                         return get_connection()
@@ -168,7 +168,7 @@ if Server is not None:
                 return [types.TextContent(type="text", text="Error: project_path is required.")]
             
             try:
-                from n3mo.run_indexer import run_indexer_for_path
+                from n3mo.core.run_indexer import run_indexer_for_path
                 success, message = run_indexer_for_path(project_path)
                 return [types.TextContent(type="text", text=message)]
             except Exception as e:
@@ -179,7 +179,7 @@ if Server is not None:
             depth = arguments.get("depth", 3)
             project_path = arguments.get("project_path") or os.getenv("TARGET_CODE_DIR") or os.getcwd()
 
-            from n3mo.database import release_connection
+            from n3mo.core.database import release_connection
             conn = None
             try:
                 conn = get_db_conn()
@@ -286,7 +286,7 @@ if Server is not None:
         elif name == "n3mo_search_symbol":
             symbol_name = arguments.get("symbol_name")
             project_path = arguments.get("project_path") or os.getenv("TARGET_CODE_DIR") or os.getcwd()
-            from n3mo.database import release_connection
+            from n3mo.core.database import release_connection
             conn = None
             try:
                 conn = get_db_conn()
@@ -321,7 +321,7 @@ if Server is not None:
         elif name == "n3mo_get_dependencies":
             symbol_name = arguments.get("symbol_name")
             project_path = arguments.get("project_path") or os.getenv("TARGET_CODE_DIR") or os.getcwd()
-            from n3mo.database import release_connection
+            from n3mo.core.database import release_connection
             conn = None
             try:
                 conn = get_db_conn()
@@ -371,7 +371,7 @@ if Server is not None:
         elif name == "n3mo_get_file_symbols":
             file_path = arguments.get("file_path")
             project_path = arguments.get("project_path") or os.getenv("TARGET_CODE_DIR") or os.getcwd()
-            from n3mo.database import release_connection
+            from n3mo.core.database import release_connection
             conn = None
             try:
                 conn = get_db_conn()

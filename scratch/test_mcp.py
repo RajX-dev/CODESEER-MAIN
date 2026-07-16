@@ -5,7 +5,7 @@ import sys
 # Add current directory to path
 sys.path.insert(0, os.path.abspath("."))
 
-from n3mo.mcp_server import handle_list_tools, handle_call_tool
+from n3mo.mcp.mcp_server import handle_list_tools, handle_call_tool
 
 async def main():
     tools = await handle_list_tools()

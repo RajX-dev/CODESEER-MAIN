@@ -40,9 +40,9 @@ import urllib.error
 import json
 from fastapi import HTTPException
 
-from n3mo.crawler import crawl_directory
-from n3mo.database import get_connection, release_connection
-from n3mo.run_indexer import run_indexer_for_path
+from n3mo.core.crawler import crawl_directory
+from n3mo.core.database import get_connection, release_connection
+from n3mo.core.run_indexer import run_indexer_for_path
 
 logger = logging.getLogger("n3mo.core_engine")
 

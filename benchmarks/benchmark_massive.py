@@ -18,8 +18,8 @@ if sys.stdout.encoding != 'utf-8':
 # Add parent directory to path so we can import n3mo
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from n3mo.run_indexer import main as run_indexer
-from n3mo.database import get_connection, release_connection
+from n3mo.core.run_indexer import main as run_indexer
+from n3mo.core.database import get_connection, release_connection
 
 def wipe_db_for_clean_slate(repo_url):
     conn = get_connection()

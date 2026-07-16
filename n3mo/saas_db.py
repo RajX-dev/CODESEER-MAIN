@@ -8,7 +8,7 @@
 import logging
 import secrets
 import datetime
-from n3mo.database import get_connection, release_connection
+from n3mo.core.database import get_connection, release_connection
 from cryptography.fernet import Fernet
 import os
 from pathlib import Path
@@ -143,7 +143,7 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                     (owner_id,)
                 )
             else:
-                return {"plan_type": "free", "status": "active", "expires_at": None}
+                return {"plan_type": "none", "status": "active", "expires_at": None}
                 
             row = cur.fetchone()
             
@@ -193,10 +193,10 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                 }
                 
             # Fallback default plan
-            return {"plan_type": "free", "status": "active", "expires_at": None, "created_at": None}
+            return {"plan_type": "none", "status": "active", "expires_at": None, "created_at": None}
     except Exception as e:
         logger.error(f"Failed to fetch subscription for {owner_type} {owner_id}: {e}")
-        return {"plan_type": "free", "status": "active", "expires_at": None}
+        return {"plan_type": "none", "status": "active", "expires_at": None}
     finally:
         release_connection(conn)
 

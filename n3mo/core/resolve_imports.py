@@ -8,7 +8,7 @@
 import os
 import logging
 from psycopg2.extras import execute_values
-from n3mo.database import get_connection, release_connection
+from n3mo.core.database import get_connection, release_connection
 
 logger = logging.getLogger("n3mo")
 

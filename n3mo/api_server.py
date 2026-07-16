@@ -14,9 +14,9 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from n3mo.run_indexer import run_indexer_for_path
-from n3mo.database import get_connection, release_connection
-from n3mo.cli import get_code_context
+from n3mo.core.run_indexer import run_indexer_for_path
+from n3mo.core.database import get_connection, release_connection
+from n3mo.cli.cli import get_code_context
 from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
@@ -130,7 +130,7 @@ def create_subscription(github_id: str, country: str = "US", discount: str = "",
             
             return {
                 "checkout_url": "", 
-                "order_id": "FREE_UPGRADE",
+                "order_id": "",
                 "key_id": key_id,
                 "free_upgrade": True
             }

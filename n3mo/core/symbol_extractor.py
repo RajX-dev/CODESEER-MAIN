@@ -557,8 +557,36 @@ def _visit_imports(node, imports_list, file_path):
                  alias = alias_node.text.decode("utf8")
                  _add_import(imports_list, file_path, module=module_name, name=imported, alias=alias)
 
+    # Django-specific heuristic: Strings in settings lists
+    elif node.type in ("assignment", "augmented_assignment"):
+        left_node = node.child_by_field_name("left")
+        if left_node and left_node.type == "identifier":
+            var_name = left_node.text.decode("utf8")
+            if var_name in {"INSTALLED_APPS", "MIDDLEWARE", "MIDDLEWARE_CLASSES", "TEMPLATES"}:
+                right_node = node.child_by_field_name("right")
+                if right_node:
+                    _extract_strings_as_imports(right_node, imports_list, file_path)
+
+    # Django-specific heuristic: Strings in relation definitions
+    elif node.type == "call":
+        func_node = node.child_by_field_name("function")
+        if func_node:
+            func_name = func_node.text.decode("utf8").split(".")[-1]
+            if func_name in {"ForeignKey", "OneToOneField", "ManyToManyField", "get_user_model"}:
+                args_node = node.child_by_field_name("arguments")
+                if args_node:
+                    _extract_strings_as_imports(args_node, imports_list, file_path)
+
     for child in node.children:
         _visit_imports(child, imports_list, file_path)
+
+def _extract_strings_as_imports(node, imports_list, file_path):
+    if node.type == "string":
+        val = node.text.decode("utf8").strip("'\"")
+        if val:
+            _add_import(imports_list, file_path, module=val)
+    for child in node.children:
+        _extract_strings_as_imports(child, imports_list, file_path)
 
 def _add_import(imports_list, file_path, module, name=None, alias=None):
     imports_list.append({

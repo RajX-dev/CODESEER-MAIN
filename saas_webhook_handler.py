@@ -15,9 +15,9 @@ import urllib.error
 import json
 from fastapi import APIRouter, FastAPI, Request, Header, HTTPException, BackgroundTasks
 
-from n3mo.run_indexer import run_indexer_for_path
-from n3mo.database import get_connection, release_connection
-from n3mo.crawler import crawl_directory
+from n3mo.core.run_indexer import run_indexer_for_path
+from n3mo.core.database import get_connection, release_connection
+from n3mo.core.crawler import crawl_directory
 from n3mo.saas_db import upsert_user, upsert_organization, get_subscription
 from n3mo.license_validator import verify_license_key
 
@@ -426,7 +426,7 @@ async def github_webhook(
             import datetime as _dt
             sub = get_subscription(str(user_db.get("id")), "user")
             
-            is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "free"
+            is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "none"
             if not is_expired and sub.get("expires_at") is not None:
                 exp = sub["expires_at"]
                 now = _dt.datetime.now(_dt.timezone.utc)
@@ -506,7 +506,7 @@ async def github_webhook(
     return {"message": f"Event '{x_github_event}' ignored"}
 
 def enforce_repo_limits(user_id: str, repo_full_name: str, is_private: bool = True) -> bool:
-    from n3mo.database import get_connection, release_connection
+    from n3mo.core.database import get_connection, release_connection
     from n3mo.saas_db import get_subscription
     
     conn = get_connection()
@@ -522,7 +522,7 @@ def enforce_repo_limits(user_id: str, repo_full_name: str, is_private: bool = Tr
             repo_count = cur.fetchone()[0]
             
             sub = get_subscription(user_id, "user")
-            plan_type = sub.get("plan_type", "free")
+            plan_type = sub.get("plan_type", "none")
             status = sub.get("status", "active")
             
             limit = 3  # Starter/Free limit
@@ -593,7 +593,7 @@ def handle_pull_request(payload: dict) -> dict:
 
     # 2. Check limits based on self-hosted license or SaaS subscription
     license_key = os.getenv("N3MO_LICENSE_KEY")
-    license_info = verify_license_key(license_key) if license_key else {"valid": False, "plan_type": "free", "max_loc": 150000}
+    license_info = verify_license_key(license_key) if license_key else {"valid": False, "plan_type": "none", "max_loc": 150000}
     
     is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
     
@@ -624,7 +624,7 @@ def handle_pull_request(payload: dict) -> dict:
             if db_owner_id:
                 sub = get_subscription(db_owner_id, owner_cat)
                 if sub.get("status") == "active":
-                    plan_type_str = str(sub.get("plan_type") or "free")
+                    plan_type_str = str(sub.get("plan_type") or "none")
                     plan_name = f"SaaS {plan_type_str.capitalize()}"
                     if sub.get("plan_type") == "enterprise":
                         max_loc = -1 # Unlimited

@@ -1,4 +1,4 @@
-﻿# Copyright (C) 2026 Raj shekhar
+# Copyright (C) 2026 Raj shekhar
 #
 # This file is part of N3MO.
 # N3MO is licensed under the PolyForm Noncommercial License 1.0.0.
@@ -23,14 +23,14 @@ def test_license_validator_fallback_free():
     # No key provided
     res = verify_license_key("")
     assert res["valid"] is False
-    assert res["plan_type"] == "free"
-    assert res["max_loc"] == 150000
+    assert res["plan_type"] == "none"
+    assert res["max_loc"] == 0
 
     # No configuration set in environment
     with patch.dict(os.environ, {}, clear=True):
         res = verify_license_key("some_jwt_token")
         assert res["valid"] is False
-        assert res["plan_type"] == "free"
+        assert res["plan_type"] == "none"
         assert "licensing configuration missing" in res["reason"]
 
 def test_license_validator_hs256():
