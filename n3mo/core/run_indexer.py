@@ -446,11 +446,11 @@ def run_indexer_for_path(target_dir):
         indexed_count = 0
 
         if files_to_index:
-            logger.info(f"🧠 Extracting symbols in parallel using ThreadPool ({min(len(files_to_index), os.cpu_count() or 2)} workers)...")
+            logger.info(f"🧠 Extracting symbols in parallel using ProcessPool ({min(len(files_to_index), os.cpu_count() or 2)} workers)...")
             
-            from concurrent.futures import ThreadPoolExecutor
+            from concurrent.futures import ProcessPoolExecutor
             max_workers = min(len(files_to_index), os.cpu_count() or 2)
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            with ProcessPoolExecutor(max_workers=max_workers) as executor:
                 # Submit only the files that need parsing
                 future_to_file = {
                     executor.submit(parse_single_file, fpath): (fpath, rpath, chash)
