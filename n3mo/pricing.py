@@ -102,8 +102,6 @@ PRICING_TIERS: dict[str, dict] = {
     "enterprise": {
         "id": "enterprise",
         "name": "Enterprise Plan",
-        "price_usd": 0,
-        "price_in_cents": 0,
         "repos_limit": 10,
         "loc_per_repo": 1_000_000,
         "max_total_loc": 10_000_000,
@@ -136,7 +134,6 @@ RAZORPAY_CONFIG: dict[str, object] = {
         "pro": "N3MO Pro Plan - 1 Month",
         "team_basic": "N3MO Team Basic Plan - 1 Month",
         "team_pro": "N3MO Team Pro Plan - 1 Month",
-        "enterprise": "N3MO Enterprise Plan - 1 Month",
     },
 }
 
