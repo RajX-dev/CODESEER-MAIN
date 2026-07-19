@@ -130,20 +130,43 @@ def upsert_organization(github_id: int, name: str, installation_id: int | None =
 
 def get_subscription(owner_id: str, owner_type: str) -> dict:
     conn = get_connection()
+    _default = {
+        "plan_type": "none", "status": "active", "expires_at": None,
+        "created_at": None, "repos_limit": 0, "lines_of_code_limit": 0,
+        "loc_per_repo_limit": 0, "razorpay_payment_id": None,
+        "razorpay_order_id": None, "upgrade_bonus_days": 0,
+        "pricing_version": None,
+    }
     try:
         with conn.cursor() as cur:
             if owner_type == "user":
                 cur.execute(
-                    "SELECT subscriptions.id, plan_type, status, expires_at, username, subscriptions.created_at FROM subscriptions JOIN users ON subscriptions.user_owner_id = users.id WHERE user_owner_id = %s",
+                    """
+                    SELECT subscriptions.id, plan_type, status, expires_at,
+                           username, subscriptions.created_at,
+                           repos_limit, lines_of_code_limit, loc_per_repo_limit,
+                           razorpay_payment_id, razorpay_order_id,
+                           upgrade_bonus_days, pricing_version
+                    FROM subscriptions
+                    JOIN users ON subscriptions.user_owner_id = users.id
+                    WHERE user_owner_id = %s
+                    """,
                     (owner_id,)
                 )
             elif owner_type == "organization":
                 cur.execute(
-                    "SELECT id, plan_type, status, expires_at, '' as username, created_at FROM subscriptions WHERE org_owner_id = %s",
+                    """
+                    SELECT id, plan_type, status, expires_at,
+                           '' as username, created_at,
+                           repos_limit, lines_of_code_limit, loc_per_repo_limit,
+                           razorpay_payment_id, razorpay_order_id,
+                           upgrade_bonus_days, pricing_version
+                    FROM subscriptions WHERE org_owner_id = %s
+                    """,
                     (owner_id,)
                 )
             else:
-                return {"plan_type": "none", "status": "active", "expires_at": None}
+                return _default
                 
             row = cur.fetchone()
             
@@ -189,48 +212,98 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                     "plan_type": row[1],
                     "status": db_status,
                     "expires_at": expires_at,
-                    "created_at": row[5]
+                    "created_at": row[5],
+                    "repos_limit": row[6],
+                    "lines_of_code_limit": row[7],
+                    "loc_per_repo_limit": row[8],
+                    "razorpay_payment_id": row[9],
+                    "razorpay_order_id": row[10],
+                    "upgrade_bonus_days": row[11] or 0,
+                    "pricing_version": row[12],
                 }
                 
             # Fallback default plan
-            return {"plan_type": "none", "status": "active", "expires_at": None, "created_at": None}
+            return _default
     except Exception as e:
         logger.error(f"Failed to fetch subscription for {owner_type} {owner_id}: {e}")
         return {"plan_type": "none", "status": "active", "expires_at": None}
     finally:
         release_connection(conn)
 
-def update_subscription(owner_id: str, owner_type: str, plan_type: str, status: str, expires_at=None) -> dict:
+def update_subscription(
+    owner_id: str,
+    owner_type: str,
+    plan_type: str,
+    status: str,
+    expires_at=None,
+    repos_limit: int | None = None,
+    lines_of_code_limit: int | None = None,
+    loc_per_repo_limit: int | None = None,
+    razorpay_payment_id: str | None = None,
+    razorpay_order_id: str | None = None,
+    upgrade_bonus_days: int = 0,
+    pricing_version: str = "2",
+) -> dict:
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             if owner_type == "user":
                 cur.execute(
                     """
-                    INSERT INTO subscriptions (owner_type, user_owner_id, plan_type, status, expires_at)
-                    VALUES ('user', %s, %s, %s, %s)
+                    INSERT INTO subscriptions (
+                        owner_type, user_owner_id, plan_type, status, expires_at,
+                        repos_limit, lines_of_code_limit, loc_per_repo_limit,
+                        razorpay_payment_id, razorpay_order_id,
+                        upgrade_bonus_days, pricing_version
+                    )
+                    VALUES ('user', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (user_owner_id) 
                     DO UPDATE SET plan_type = EXCLUDED.plan_type, 
                                   status = EXCLUDED.status, 
-                                  expires_at = EXCLUDED.expires_at, 
+                                  expires_at = EXCLUDED.expires_at,
+                                  repos_limit = EXCLUDED.repos_limit,
+                                  lines_of_code_limit = EXCLUDED.lines_of_code_limit,
+                                  loc_per_repo_limit = EXCLUDED.loc_per_repo_limit,
+                                  razorpay_payment_id = EXCLUDED.razorpay_payment_id,
+                                  razorpay_order_id = EXCLUDED.razorpay_order_id,
+                                  upgrade_bonus_days = EXCLUDED.upgrade_bonus_days,
+                                  pricing_version = EXCLUDED.pricing_version,
                                   updated_at = NOW()
                     RETURNING id, plan_type, status, expires_at
                     """,
-                    (owner_id, plan_type, status, expires_at)
+                    (owner_id, plan_type, status, expires_at,
+                     repos_limit, lines_of_code_limit, loc_per_repo_limit,
+                     razorpay_payment_id, razorpay_order_id,
+                     upgrade_bonus_days, pricing_version)
                 )
             elif owner_type == "organization":
                 cur.execute(
                     """
-                    INSERT INTO subscriptions (owner_type, org_owner_id, plan_type, status, expires_at)
-                    VALUES ('organization', %s, %s, %s, %s)
+                    INSERT INTO subscriptions (
+                        owner_type, org_owner_id, plan_type, status, expires_at,
+                        repos_limit, lines_of_code_limit, loc_per_repo_limit,
+                        razorpay_payment_id, razorpay_order_id,
+                        upgrade_bonus_days, pricing_version
+                    )
+                    VALUES ('organization', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (org_owner_id) 
                     DO UPDATE SET plan_type = EXCLUDED.plan_type, 
                                   status = EXCLUDED.status, 
-                                  expires_at = EXCLUDED.expires_at, 
+                                  expires_at = EXCLUDED.expires_at,
+                                  repos_limit = EXCLUDED.repos_limit,
+                                  lines_of_code_limit = EXCLUDED.lines_of_code_limit,
+                                  loc_per_repo_limit = EXCLUDED.loc_per_repo_limit,
+                                  razorpay_payment_id = EXCLUDED.razorpay_payment_id,
+                                  razorpay_order_id = EXCLUDED.razorpay_order_id,
+                                  upgrade_bonus_days = EXCLUDED.upgrade_bonus_days,
+                                  pricing_version = EXCLUDED.pricing_version,
                                   updated_at = NOW()
                     RETURNING id, plan_type, status, expires_at
                     """,
-                    (owner_id, plan_type, status, expires_at)
+                    (owner_id, plan_type, status, expires_at,
+                     repos_limit, lines_of_code_limit, loc_per_repo_limit,
+                     razorpay_payment_id, razorpay_order_id,
+                     upgrade_bonus_days, pricing_version)
                 )
             else:
                 raise ValueError("Invalid owner_type. Must be 'user' or 'organization'.")
@@ -395,6 +468,154 @@ def get_user_by_username(username: str) -> dict:
             return {}
     except Exception as e:
         logger.error(f"Failed to fetch user by username: {e}")
+        return {}
+    finally:
+        release_connection(conn)
+
+def get_user_repo_loc_stats(user_id: str) -> dict:
+    """Return LOC stats for all repos tracked under *user_id*."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT repo_full_name, last_known_loc
+                FROM saas_repo_tracking
+                WHERE user_owner_id = %s
+                ORDER BY created_at
+                """,
+                (user_id,)
+            )
+            rows = cur.fetchall()
+            per_repo = [{"repo_full_name": r[0], "loc": r[1] or 0} for r in rows]
+            total_loc = sum(r["loc"] for r in per_repo)
+            return {
+                "total_repos": len(per_repo),
+                "total_loc": total_loc,
+                "per_repo": per_repo,
+            }
+    except Exception as e:
+        logger.error(f"Failed to fetch repo LOC stats for user {user_id}: {e}")
+        return {"total_repos": 0, "total_loc": 0, "per_repo": []}
+    finally:
+        release_connection(conn)
+
+def update_repo_loc(user_id: str, repo_full_name: str, loc_count: int) -> None:
+    """Upsert the *last_known_loc* for a tracked repository."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE saas_repo_tracking
+                SET last_known_loc = %s
+                WHERE user_owner_id = %s AND repo_full_name = %s
+                """,
+                (loc_count, user_id, repo_full_name)
+            )
+            conn.commit()
+    except Exception as e:
+        logger.error(f"Failed to update repo LOC for {repo_full_name}: {e}")
+        conn.rollback()
+    finally:
+        release_connection(conn)
+
+def save_payment_order(
+    user_id: str,
+    order_id: str,
+    tier_id: str,
+    amount_paise: int,
+    currency: str = "INR",
+    status: str = "created",
+) -> dict:
+    """Insert a new Razorpay payment order for audit tracking."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO payment_orders
+                    (user_owner_id, razorpay_order_id, tier_id, amount_paise, currency, status)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING id, razorpay_order_id, status
+                """,
+                (user_id, order_id, tier_id, amount_paise, currency, status)
+            )
+            row = cur.fetchone()
+            conn.commit()
+            if row:
+                return {"id": row[0], "razorpay_order_id": row[1], "status": row[2]}
+            return {}
+    except Exception as e:
+        logger.error(f"Failed to save payment order {order_id}: {e}")
+        conn.rollback()
+        raise
+    finally:
+        release_connection(conn)
+
+def update_payment_order_status(
+    order_id: str,
+    status: str,
+    payment_id: str | None = None,
+) -> None:
+    """Update a payment order's status and optionally set the payment ID."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            if payment_id:
+                cur.execute(
+                    """
+                    UPDATE payment_orders
+                    SET status = %s, razorpay_payment_id = %s, updated_at = NOW()
+                    WHERE razorpay_order_id = %s
+                    """,
+                    (status, payment_id, order_id)
+                )
+            else:
+                cur.execute(
+                    """
+                    UPDATE payment_orders
+                    SET status = %s, updated_at = NOW()
+                    WHERE razorpay_order_id = %s
+                    """,
+                    (status, order_id)
+                )
+            conn.commit()
+    except Exception as e:
+        logger.error(f"Failed to update payment order {order_id}: {e}")
+        conn.rollback()
+    finally:
+        release_connection(conn)
+
+def get_payment_order(order_id: str) -> dict:
+    """Fetch a payment order by its Razorpay order ID."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, user_owner_id, razorpay_order_id, razorpay_payment_id,
+                       tier_id, amount_paise, currency, status
+                FROM payment_orders
+                WHERE razorpay_order_id = %s
+                """,
+                (order_id,)
+            )
+            row = cur.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "user_owner_id": row[1],
+                    "razorpay_order_id": row[2],
+                    "razorpay_payment_id": row[3],
+                    "tier_id": row[4],
+                    "amount_paise": row[5],
+                    "currency": row[6],
+                    "status": row[7],
+                }
+            return {}
+    except Exception as e:
+        logger.error(f"Failed to fetch payment order {order_id}: {e}")
         return {}
     finally:
         release_connection(conn)

@@ -7,11 +7,11 @@
 
 import os
 import logging
-import urllib.request
 import json
-
+from fastapi import FastAPI, HTTPException, Request, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
-from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from n3mo.core.run_indexer import run_indexer_for_path
@@ -21,9 +21,15 @@ from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
 from n3mo.api.auth import get_current_user_from_token
-from fastapi import Depends
-from n3mo.saas_db import get_subscription, get_user_by_id, get_user_by_github_id, update_subscription
+from n3mo.saas_db import (
+    get_subscription, get_user_by_id, get_user_by_github_id, update_subscription,
+    get_user_repo_loc_stats, save_payment_order, update_payment_order_status,
+    get_payment_order,
+)
+from n3mo.pricing import PRICING_TIERS, RAZORPAY_CONFIG, get_tier, calculate_upgrade_bonus_days, validate_eligibility
 import razorpay  # type: ignore
+import hmac
+import hashlib
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
@@ -67,133 +73,239 @@ def trigger_indexing(req: IndexRequest):
 
 
 
-def get_usd_to_inr_rate() -> float:
-    """Fetch live USD to INR conversion rate, fallback to 84.0 if API fails."""
-    try:
-        import urllib.request
-        req = urllib.request.Request("https://open.er-api.com/v6/latest/USD", headers={"User-Agent": "N3MO-SaaS/1.0"})
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            data = json.loads(resp.read().decode())
-            return float(data["rates"]["INR"])
-    except Exception as e:
-        logging.warning(f"Failed to fetch live USD-INR rate, falling back to 95.33: {e}")
-        return 95.33
+# ---------------------------------------------------------------------------
+# Billing endpoints
+# ---------------------------------------------------------------------------
 
-# Live Razorpay Plan IDs (USD + INR Bulk)
-PLAN_MAPPINGS = {
-    "starter_monthly_usd": "plan_TCWjmSxZIjA6YW",
-    "starter_yearly_usd": "plan_TCWjmiMDyhhoYa",
-    "pro_monthly_usd": "plan_TCWjmy2f2uHREd",
-    "pro_yearly_usd": "plan_TCWjnG1UvC58JH",
-    "team_monthly_usd": "plan_TCWjnflH7Oh6Us",
-    "team_quarterly_usd": "plan_TCWjo1JFYPODeX",
-    "starter_yearly_inr": "plan_TCWjoFChjPJ2VN",
-    "pro_yearly_inr": "plan_TCWjoTZpMjhzrr",
-    "team_quarterly_inr": "plan_TCWjooApEUVnkn",
-}
+class CreateOrderRequest(BaseModel):
+    github_id: str
+    tier_id: str
+    discount: str = ""
 
-@app.post("/api/create-subscription")
-def create_subscription(github_id: str, country: str = "US", discount: str = "", plan_type: str = "pro", billing_cycle: str = "monthly"):
-    """
-    Generate a Razorpay checkout subscription for the specified plan and billing cycle.
-    billing_cycle can be 'monthly' or 'bulk' (which maps to yearly for starter/pro, quarterly for team)
-    """
-    if not github_id:
+@app.post("/api/billing/create-order")
+def create_order(req: CreateOrderRequest):
+    """Create a Razorpay one-time order for the requested tier."""
+    if not req.github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
-        
-    try:
-        key_id = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123").strip()
-        key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
-        client = razorpay.Client(auth=(key_id, key_secret))
-        
-        prices_usd_monthly = {"starter": 10, "pro": 49, "team": 199}
-        prices_usd_bulk = {"starter": 102, "pro": 558, "team": 537}
-        
-        amount_usd_raw = prices_usd_bulk.get(plan_type, 558) if billing_cycle == "bulk" else prices_usd_monthly.get(plan_type, 49)
 
-        if country.upper() == "IN":
-            live_rate = get_usd_to_inr_rate()
-            amount = int(amount_usd_raw * live_rate * 100)
-            currency = "INR"
-        else:
-            amount = int(amount_usd_raw * 100)
-            currency = "USD"
-        
-        # Apply 100% discount manually if needed
-        if discount and discount.upper() == "RAJ":
-            from n3mo.saas_db import update_subscription, get_user_by_github_id
-            from datetime import datetime, timedelta, timezone
-            user_db = get_user_by_github_id(int(github_id))
-            if user_db:
-                expires_at = datetime.now(timezone.utc) + timedelta(days=365 if billing_cycle == 'bulk' else 30)
-                update_subscription(str(user_db["id"]), "user", plan_type, "active", expires_at=expires_at)
-            
-            return {
-                "checkout_url": "", 
-                "order_id": "",
-                "key_id": key_id,
-                "free_upgrade": True
-            }
-            
-        # Create Order
+    tier = get_tier(req.tier_id)
+    if not tier:
+        raise HTTPException(status_code=400, detail=f"Unknown tier: '{req.tier_id}'")
+
+    user_db = get_user_by_github_id(int(req.github_id))
+    if not user_db:
+        raise HTTPException(status_code=404, detail="User not found. Please sign in first.")
+
+    user_id = str(user_db["id"])
+    key_id = RAZORPAY_KEY_ID
+
+    # --- Admin discount bypass ---
+    if req.discount and req.discount.upper() == "RAJ":
+        expires_at = datetime.now(timezone.utc) + timedelta(days=tier["billing_cycle_days"])
+        update_subscription(
+            user_id, "user", req.tier_id, "active",
+            expires_at=expires_at,
+            repos_limit=tier["repos_limit"],
+            lines_of_code_limit=tier["max_total_loc"],
+            loc_per_repo_limit=tier["loc_per_repo"],
+        )
+        return {"order_id": "", "key_id": key_id, "free_upgrade": True}
+
+    # --- LOC eligibility check ---
+    loc_stats = get_user_repo_loc_stats(user_id)
+    per_repo_locs = [r["loc"] for r in loc_stats["per_repo"]]
+    eligible, err_msg = validate_eligibility(
+        req.tier_id, loc_stats["total_repos"], per_repo_locs
+    )
+    if not eligible:
+        raise HTTPException(status_code=400, detail=err_msg)
+
+    # --- Calculate upgrade bonus days ---
+    current_sub = get_subscription(user_id, "user")
+    bonus_days = 0
+    if current_sub.get("status") == "active" and current_sub.get("expires_at"):
+        bonus_days = calculate_upgrade_bonus_days(current_sub["expires_at"])
+
+    # --- Create Razorpay Order ---
+    try:
+        key_secret = RAZORPAY_KEY_SECRET
+        client = razorpay.Client(auth=(key_id, key_secret))
+
         order_payload = {
-            "amount": amount,
-            "currency": currency,
-            "receipt": f"receipt_{github_id}_{plan_type}",
+            "amount": tier["price_in_paise"],
+            "currency": RAZORPAY_CONFIG["currency"],
+            "receipt": f"rcpt_{req.github_id}_{req.tier_id}",
             "notes": {
-                "github_id": github_id,
-                "plan_type": plan_type,
-                "billing_cycle": billing_cycle
-            }
+                "github_id": req.github_id,
+                "tier_id": req.tier_id,
+                "bonus_days": str(bonus_days),
+            },
         }
-        
         order = client.order.create(order_payload)
-        
+
+        # Persist order for audit
+        save_payment_order(
+            user_id=user_id,
+            order_id=order["id"],
+            tier_id=req.tier_id,
+            amount_paise=tier["price_in_paise"],
+            currency=str(RAZORPAY_CONFIG["currency"]),
+        )
+
         return {
-            "checkout_url": "", 
             "order_id": order["id"],
-            "key_id": key_id
+            "key_id": key_id,
+            "amount_paise": tier["price_in_paise"],
+            "currency": RAZORPAY_CONFIG["currency"],
+            "tier_id": req.tier_id,
+            "bonus_days": bonus_days,
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        logging.error(f"Error creating Razorpay subscription: {e}")
+        logging.error(f"Error creating Razorpay order: {e}")
         raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_payment_id: str
     razorpay_order_id: str
     razorpay_signature: str
     github_id: str
-    plan_type: str = "pro"
+    tier_id: str = "pro"
 
-@app.post("/api/verify-payment")
+@app.post("/api/billing/verify-payment")
 def verify_payment(req: VerifyPaymentRequest):
+    """Verify Razorpay signature, activate subscription."""
+    tier = get_tier(req.tier_id)
+    if not tier:
+        raise HTTPException(status_code=400, detail=f"Unknown tier: '{req.tier_id}'")
+
     try:
-        key_id = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123").strip()
-        key_secret = os.getenv("RAZORPAY_KEY_SECRET", "secret").strip()
-        client = razorpay.Client(auth=(key_id, key_secret))
-        params_dict = {
-            'razorpay_order_id': req.razorpay_order_id,
-            'razorpay_payment_id': req.razorpay_payment_id,
-            'razorpay_signature': req.razorpay_signature
-        }
-        
-        # Verify signature
-        client.utility.verify_payment_signature(params_dict)
-        
-        # If successful, upgrade the user
-        user_db = get_user_by_github_id(int(req.github_id))
-        if user_db:
-            expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-            update_subscription(str(user_db["id"]), "user", req.plan_type, "active", expires_at=expires_at)
-            return {"status": "success", "message": f"Payment verified, upgraded to {req.plan_type.upper()}."}
-        else:
-            raise HTTPException(status_code=404, detail="User not found")
-            
+        client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+        client.utility.verify_payment_signature({
+            "razorpay_order_id": req.razorpay_order_id,
+            "razorpay_payment_id": req.razorpay_payment_id,
+            "razorpay_signature": req.razorpay_signature,
+        })
     except razorpay.errors.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Payment verification failed")
-    except Exception as e:
-        logging.error(f"Error verifying payment: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+
+    # Look up stored order to verify amount
+    stored_order = get_payment_order(req.razorpay_order_id)
+    if not stored_order:
+        raise HTTPException(status_code=404, detail="Payment order not found")
+    if stored_order.get("status") == "paid":
+        return {"status": "success", "message": "Payment already processed."}
+    if stored_order["amount_paise"] != tier["price_in_paise"]:
+        raise HTTPException(status_code=400, detail="Amount mismatch")
+
+    user_db = get_user_by_github_id(int(req.github_id))
+    if not user_db:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_id = str(user_db["id"])
+
+    # Calculate new expiry (30 days + bonus from mid-cycle upgrade)
+    current_sub = get_subscription(user_id, "user")
+    bonus_days = 0
+    if current_sub.get("status") == "active" and current_sub.get("expires_at"):
+        bonus_days = calculate_upgrade_bonus_days(current_sub["expires_at"])
+
+    new_expires = datetime.now(timezone.utc) + timedelta(
+        days=tier["billing_cycle_days"] + bonus_days
+    )
+
+    update_subscription(
+        user_id, "user", req.tier_id, "active",
+        expires_at=new_expires,
+        repos_limit=tier["repos_limit"],
+        lines_of_code_limit=tier["max_total_loc"],
+        loc_per_repo_limit=tier["loc_per_repo"],
+        razorpay_payment_id=req.razorpay_payment_id,
+        razorpay_order_id=req.razorpay_order_id,
+        upgrade_bonus_days=bonus_days,
+    )
+
+    update_payment_order_status(
+        req.razorpay_order_id, "paid", payment_id=req.razorpay_payment_id
+    )
+
+    return {
+        "status": "success",
+        "message": f"Payment verified, upgraded to {tier['name']}.",
+        "expires_at": new_expires.isoformat(),
+        "bonus_days": bonus_days,
+    }
+
+
+@app.post("/api/webhook/razorpay")
+async def razorpay_webhook(request: Request):
+    """Handle Razorpay payment webhooks (payment.authorized, payment.failed)."""
+    webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
+    if not webhook_secret:
+        logging.warning("RAZORPAY_WEBHOOK_SECRET not configured, skipping webhook")
+        return {"status": "ignored"}
+
+    body = await request.body()
+    signature = request.headers.get("x-razorpay-signature", "")
+
+    expected = hmac.new(
+        webhook_secret.encode(), body, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected, signature):
+        logging.warning("Razorpay webhook: invalid signature")
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
+
+    try:
+        payload = json.loads(body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    event = payload.get("event", "")
+    payment_entity = payload.get("payload", {}).get("payment", {}).get("entity", {})
+    order_id = payment_entity.get("order_id", "")
+    payment_id = payment_entity.get("id", "")
+
+    if event in ("payment.authorized", "order.paid"):
+        stored = get_payment_order(order_id)
+        if stored and stored.get("status") != "paid":
+            tier = get_tier(stored["tier_id"])
+            if tier:
+                user_id = str(stored["user_owner_id"])
+                current_sub = get_subscription(user_id, "user")
+                bonus_days = 0
+                if current_sub.get("status") == "active" and current_sub.get("expires_at"):
+                    bonus_days = calculate_upgrade_bonus_days(current_sub["expires_at"])
+
+                new_expires = datetime.now(timezone.utc) + timedelta(
+                    days=tier["billing_cycle_days"] + bonus_days
+                )
+                update_subscription(
+                    user_id, "user", stored["tier_id"], "active",
+                    expires_at=new_expires,
+                    repos_limit=tier["repos_limit"],
+                    lines_of_code_limit=tier["max_total_loc"],
+                    loc_per_repo_limit=tier["loc_per_repo"],
+                    razorpay_payment_id=payment_id,
+                    razorpay_order_id=order_id,
+                    upgrade_bonus_days=bonus_days,
+                )
+                update_payment_order_status(order_id, "paid", payment_id=payment_id)
+                logging.info(f"Webhook: activated {stored['tier_id']} for user {user_id}")
+
+    elif event == "payment.failed":
+        if order_id:
+            update_payment_order_status(order_id, "failed", payment_id=payment_id)
+            logging.warning(f"Webhook: payment failed for order {order_id}")
+
+    return {"status": "ok"}
+
+
+@app.get("/api/billing/pricing")
+def get_pricing():
+    """Public endpoint returning all tier definitions for frontend rendering."""
+    return {"tiers": PRICING_TIERS}
 
 @app.get("/api/user/dashboard-data")
 def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)):
@@ -206,7 +318,26 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
     subscription = get_subscription(user_id, "user")
     
     if current_user["username"].lower() == "rajx-dev":
-        subscription = {"plan_type": "enterprise", "status": "active", "expires_at": None, "created_at": None}
+        tier = get_tier("enterprise")
+        if tier:
+            subscription = {
+                "plan_type": "enterprise", "status": "active", "expires_at": None, "created_at": None,
+                "repos_limit": tier["repos_limit"], "lines_of_code_limit": tier["max_total_loc"], "loc_per_repo_limit": tier["loc_per_repo"],
+                "pricing_version": "2"
+            }
+        else:
+            subscription = {"plan_type": "enterprise", "status": "active", "expires_at": None, "created_at": None, "repos_limit": 0, "lines_of_code_limit": 0, "loc_per_repo_limit": 0, "pricing_version": "2"}
+    
+    loc_stats = get_user_repo_loc_stats(user_id)
+    loc_limit = subscription.get("lines_of_code_limit") or 0
+    loc_usage_percentage = (loc_stats["total_loc"] / loc_limit * 100) if loc_limit > 0 else 0
+    
+    days_until_expiry = 0
+    expiry_warning = False
+    
+    if subscription.get("status") == "active" and subscription.get("expires_at"):
+        days_until_expiry = calculate_upgrade_bonus_days(subscription["expires_at"])
+        expiry_warning = days_until_expiry <= 7
     
     return {
         "status": "success",
@@ -216,7 +347,14 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
             "avatar_url": user_db.get("avatar_url")
         },
         "subscription": subscription,
-        "webhook_secret": user_db.get("webhook_secret")
+        "webhook_secret": user_db.get("webhook_secret"),
+        "loc_stats": loc_stats,
+        "loc_limit": loc_limit,
+        "repos_limit": subscription.get("repos_limit") or 0,
+        "loc_per_repo_limit": subscription.get("loc_per_repo_limit") or 0,
+        "days_until_expiry": days_until_expiry,
+        "expiry_warning": expiry_warning,
+        "loc_usage_percentage": min(loc_usage_percentage, 100),
     }
 
 @app.get("/api/admin/upgrade")
@@ -429,13 +567,13 @@ def get_impact(
     finally:
         release_connection(conn)
 
-def start_server(host="127.0.0.1", port=8000):
-    if not os.getenv("VERCEL"):
-        if os.path.exists("public"):
-            app.mount("/", StaticFiles(directory="public", html=True), name="static")
-        elif os.path.exists("frontend"):
-            app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+if not os.getenv("VERCEL"):
+    if os.path.exists("public"):
+        app.mount("/", StaticFiles(directory="public", html=True), name="static")
+    elif os.path.exists("frontend"):
+        app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
 
+def start_server(host="127.0.0.1", port=8000):
     uvicorn.run(app, host=host, port=port)
 
 if __name__ == "__main__":

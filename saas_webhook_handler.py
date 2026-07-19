@@ -522,19 +522,15 @@ def enforce_repo_limits(user_id: str, repo_full_name: str, is_private: bool = Tr
             repo_count = cur.fetchone()[0]
             
             sub = get_subscription(user_id, "user")
-            plan_type = sub.get("plan_type", "none")
             status = sub.get("status", "active")
             
-            limit = 3  # Starter/Free limit
+            # Unlimited for public
             if not is_private:
                 limit = 999999
             else:
-                if plan_type == "pro" and status == "active":
-                    limit = 5
-                elif plan_type == "team" and status == "active":
-                    limit = 8
-                elif plan_type == "enterprise" and status == "active":
-                    limit = 999999
+                limit = sub.get("repos_limit", 0)
+                if status != "active":
+                    limit = 0 # Default when expired
                 
             if repo_count >= limit:
                 return False
@@ -599,6 +595,8 @@ def handle_pull_request(payload: dict) -> dict:
     
     max_loc = 150000
     plan_name = "Starter Plan"
+    db_owner_id = None
+    owner_cat = "user"
     
     if license_info["valid"]:
         max_loc_val = license_info["max_loc"]
@@ -610,7 +608,6 @@ def handle_pull_request(payload: dict) -> dict:
         repo_owner_id = payload.get("repository", {}).get("owner", {}).get("id")
         repo_owner_type = payload.get("repository", {}).get("owner", {}).get("type") # "User" or "Organization"
         
-        db_owner_id = None
         if repo_owner_id:
             if repo_owner_type == "User":
                 user_rec = upsert_user(github_id=repo_owner_id, username=repo_owner_name)
@@ -626,12 +623,11 @@ def handle_pull_request(payload: dict) -> dict:
                 if sub.get("status") == "active":
                     plan_type_str = str(sub.get("plan_type") or "none")
                     plan_name = f"SaaS {plan_type_str.capitalize()}"
-                    if sub.get("plan_type") == "enterprise":
-                        max_loc = -1 # Unlimited
-                    elif sub.get("plan_type") == "team":
-                        max_loc = 1000000 # 1M LOC for Team
-                    elif sub.get("plan_type") == "pro":
-                        max_loc = 100000 # 100k LOC for Pro
+                    
+                    loc_limit = sub.get("loc_per_repo_limit")
+                    max_loc = loc_limit if loc_limit is not None else 0
+                    if max_loc == -1: # Uncapped
+                        max_loc = 99999999
     else:
         # Self-hosted without a valid license key -> Free and Unlimited
         max_loc = -1
@@ -643,6 +639,11 @@ def handle_pull_request(payload: dict) -> dict:
         plan_name = plan_name + " (Open Source)"
     
     total_lines = calculate_repo_loc(repo_dir)
+    
+    # Update SaaS repo LOC count for tracking Total LOC
+    if is_saas and db_owner_id:
+        from n3mo.saas_db import update_repo_loc
+        update_repo_loc(str(db_owner_id), repo_name, total_lines)
     # Check limit if max_loc is positive (not -1 for unlimited)
     if max_loc > 0 and total_lines > max_loc:
         logger.warning(f"LOC limit exceeded for {repo_name}: {total_lines} LOC (Limit: {max_loc} for {plan_name})")

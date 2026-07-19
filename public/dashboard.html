@@ -313,53 +313,70 @@
                         
                         <div class="pricing-grid" style="margin-bottom: 0; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
                             
+                            <!-- STARTER -->
                             <div class="price-card">
                                 <div class="price-header">
                                     <h4>Starter Plan</h4>
-                                    <div class="price-amount">$10<span>/month</span></div>
-                                    <p>For individuals & hobbyists.</p>
+                                    <div class="price-amount">₹1,900<span>/one-time</span></div>
+                                    <p>For solo devs and small projects</p>
                                 </div>
                                 <ul class="price-features">
-                                    <li><i class="fa-solid fa-check"></i> <span>Up to <strong>3 repos</strong> limit</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span>Up to <strong>1 repo</strong></span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>30,000</strong> max total LOC</span></li>
                                     <li><i class="fa-solid fa-check"></i> Real-time PR Impact Analysis</li>
-                                    <li><i class="fa-solid fa-check"></i> Interactive Dependency Graph</li>
                                     <li><i class="fa-solid fa-check"></i> Built-in MCP Server for AI Agents</li>
                                 </ul>
                                 <button class="btn btn-outline btn-full upgrade-btn" data-plan="starter">Select Starter</button>
                             </div>
 
-                            
+                            <!-- PRO -->
                             <div class="price-card">
                                 <div class="price-header">
                                     <h4>Pro Plan</h4>
-                                    <div class="price-amount">$49<span>/month</span></div>
+                                    <div class="price-amount">₹6,900<span>/one-time</span></div>
                                     <p>For small engineering teams.</p>
                                 </div>
                                 <ul class="price-features">
-                                    <li><i class="fa-solid fa-check"></i> <span>Up to <strong>5 repos</strong> limit</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span>Up to <strong>3 repos</strong></span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>100,000</strong> max total LOC</span></li>
                                     <li><i class="fa-solid fa-check"></i> Everything in Starter Plan</li>
-                                    <li><i class="fa-solid fa-check"></i> High-priority index queues</li>
                                     <li><i class="fa-solid fa-check"></i> Email & community support</li>
                                 </ul>
                                 <button class="btn btn-outline btn-full upgrade-btn" data-plan="pro">Select Pro</button>
                             </div>
 
-                            
+                            <!-- TEAM -->
                             <div class="price-card featured">
                                 <div class="featured-badge" style="background: var(--accent-purple); color: white;"><i class="fa-solid fa-star"></i> Recommended</div>
                                 <div class="price-header">
                                     <h4 style="color: var(--accent-purple);">Team Plan</h4>
-                                    <div class="price-amount">$199<span>/month</span></div>
+                                    <div class="price-amount">₹19,900<span>/one-time</span></div>
                                     <p>For growing product companies.</p>
                                 </div>
                                 <ul class="price-features">
-                                    <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> <span>Up to <strong>8 repos</strong> limit</span></li>
-                                    <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> Monorepo support & Priority indexing</li>
+                                    <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> <span>Up to <strong>5 repos</strong></span></li>
+                                    <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> <span><strong>200,000</strong> max total LOC</span></li>
                                     <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> Team workspaces & Org dashboard</li>
                                     <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> Slack notifications & RBAC</li>
                                     <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> Priority SLA support</li>
                                 </ul>
                                 <button class="btn btn-primary btn-full upgrade-btn" data-plan="team" style="background: var(--accent-purple); border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);">Select Team</button>
+                            </div>
+                            
+                            <!-- ENTERPRISE -->
+                            <div class="price-card">
+                                <div class="price-header">
+                                    <h4>Enterprise</h4>
+                                    <div class="price-amount">₹39,900<span>/one-time</span></div>
+                                    <p>For large orgs (20+ devs)</p>
+                                </div>
+                                <ul class="price-features">
+                                    <li><i class="fa-solid fa-check"></i> <span>Up to <strong>10 repos</strong></span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>500,000</strong> max total LOC</span></li>
+                                    <li><i class="fa-solid fa-check"></i> Self-hosted deployment & Offline JWT</li>
+                                    <li><i class="fa-solid fa-check"></i> SSO/SAML & Audit logs</li>
+                                </ul>
+                                <button class="btn btn-outline btn-full upgrade-btn" data-plan="enterprise">Select Enterprise</button>
                             </div>
                         </div>
                     </div>
@@ -373,7 +390,7 @@
                                 Pro Subscription Active
                             </h2>
                             <p id="paid-plan-desc" style="color: var(--text-secondary); font-size: 14px;">
-                                Thank you for supporting N3MO! You can now analyze up to <strong>10 repositories</strong>.
+                                Thank you for supporting N3MO! You can now analyze up to <strong>3 repositories</strong>.
                             </p>
                             <div style="margin-top: 24px;" id="pro-upgrade-section">
                                 <button class="btn btn-primary upgrade-btn" data-plan="team"
@@ -393,7 +410,7 @@
                                 Team Subscription Active
                             </h2>
                             <p style="color: var(--text-secondary); font-size: 14px;">
-                                You are on the Team plan with <strong>unlimited repositories</strong> and full monorepo support!
+                                You are on the Team plan with up to <strong>5 repositories</strong> and full monorepo support!
                             </p>
                         </div>
                     </div>

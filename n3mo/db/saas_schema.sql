@@ -47,9 +47,16 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     owner_type TEXT NOT NULL CHECK (owner_type IN ('user', 'organization')),
     user_owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
     org_owner_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-    plan_type TEXT NOT NULL CHECK (plan_type IN ('free', 'pro', 'team', 'enterprise')),
-    status TEXT NOT NULL CHECK (status IN ('active', 'cancelled', 'trialing', 'past_due')),
+    plan_type TEXT NOT NULL CHECK (plan_type IN ('none', 'starter', 'pro', 'team', 'enterprise')),
+    status TEXT NOT NULL CHECK (status IN ('active', 'cancelled', 'trialing', 'past_due', 'expired')),
     expires_at TIMESTAMP,
+    lines_of_code_limit INT,
+    repos_limit INT,
+    loc_per_repo_limit INT,
+    pricing_version VARCHAR(10) DEFAULT '2',
+    upgrade_bonus_days INT DEFAULT 0,
+    razorpay_payment_id TEXT,
+    razorpay_order_id TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     
@@ -89,9 +96,28 @@ CREATE TABLE IF NOT EXISTS saas_repo_tracking (
     user_owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
     org_owner_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
     repo_full_name TEXT NOT NULL,
+    last_known_loc INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW(),
     CONSTRAINT uq_user_repo UNIQUE (user_owner_id, repo_full_name),
     CONSTRAINT uq_org_repo UNIQUE (org_owner_id, repo_full_name)
 );
 
 CREATE INDEX IF NOT EXISTS idx_repo_tracking_user ON saas_repo_tracking(user_owner_id);
+
+-- 8. Payment Orders Table (Razorpay audit trail)
+CREATE TABLE IF NOT EXISTS payment_orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    razorpay_order_id TEXT UNIQUE NOT NULL,
+    razorpay_payment_id TEXT,
+    tier_id TEXT NOT NULL,
+    amount_paise INT NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'INR',
+    status TEXT NOT NULL DEFAULT 'created' CHECK (status IN ('created', 'paid', 'failed')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_orders_user ON payment_orders(user_owner_id);
+CREATE INDEX IF NOT EXISTS idx_payment_orders_razorpay_order ON payment_orders(razorpay_order_id);
+

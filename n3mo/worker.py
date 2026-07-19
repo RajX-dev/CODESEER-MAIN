@@ -43,16 +43,22 @@ def fetch_pr_details(repo_full_name: str, pr_number: str) -> dict:
         return json.loads(resp.read().decode())
 
 
-def _get_plan_limits(plan_type: str) -> tuple[int, str]:
-    """Return (max_loc, plan_name) for a given plan type."""
+def _get_plan_limits(plan_type: str, sub: dict = None) -> tuple[int, str]:
+    """Return (max_loc, plan_name) for a given plan type based on subscription data."""
+    if sub and sub.get("pricing_version") == "2":
+        loc_limit = sub.get("loc_per_repo_limit")
+        if loc_limit == -1:
+            loc_limit = 99999999
+        return (loc_limit or 0, f"SaaS {plan_type.capitalize()}")
+    
     plan_map = {
         "enterprise": (-1, "SaaS Enterprise"),
         "team": (1000000, "SaaS Team"),
         "pro": (100000, "SaaS Pro"),
         "starter": (30000, "SaaS Starter"),
-        "none": (15000, "SaaS Free"),
+        "none": (0, "SaaS None"),
     }
-    return plan_map.get(plan_type, (15000, "SaaS Free"))
+    return plan_map.get(plan_type, (0, "SaaS None"))
 
 
 def main():
@@ -108,8 +114,8 @@ def main():
             sys.exit(0)
 
         # 4. Subscription & plan check (BEFORE expensive LOC calculation)
-        max_loc = 15000  # Default: free tier
-        plan_name = "SaaS Free"
+        max_loc = 0  # Default
+        plan_name = "SaaS None"
         
         if user_id:
             from n3mo.saas_db import get_subscription
@@ -118,7 +124,7 @@ def main():
             plan_type = str(sub.get("plan_type") or "none")
 
             if sub_status == "active":
-                max_loc, plan_name = _get_plan_limits(plan_type)
+                max_loc, plan_name = _get_plan_limits(plan_type, sub)
             elif sub_status in ("expired", "cancelled", "canceled"):
                 # Open-source repos are free — only block on private repos
                 if is_private:
