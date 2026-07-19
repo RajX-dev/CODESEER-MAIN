@@ -538,14 +538,10 @@ def enforce_repo_limits(user_id: str, repo_full_name: str, is_private: bool = Tr
             status = sub.get("status", "active")
             
             # 4. Enforce the limit logic
-            # Open source projects are exempt from repository connection limits
-            if not is_private:
-                limit = 999999
-            else:
-                limit = sub.get("repos_limit", 0)
-                # If the subscription lapsed, completely block new private repositories
-                if status != "active":
-                    limit = 0 
+            limit = sub.get("repos_limit", 0)
+            # If the subscription lapsed, completely block new repositories
+            if status != "active":
+                limit = 0
                 
             # 5. Reject if they are at or over the capacity of their plan
             if repo_count >= limit:
@@ -657,9 +653,6 @@ def handle_pull_request(payload: dict) -> dict:
         plan_name = "Self-Hosted Community Edition"
     
     is_private = payload.get("repository", {}).get("private", True)
-    if not is_private:
-        max_loc = -1
-        plan_name = plan_name + " (Open Source)"
     
     total_lines = calculate_repo_loc(repo_dir)
     

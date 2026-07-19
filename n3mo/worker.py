@@ -129,29 +129,22 @@ def main():
             elif sub_status in ("expired", "cancelled", "canceled"):
                 # Fallback Expiration Check:
                 # If the subscription lapsed right before the worker picked up the job,
-                # we block AST analysis on private repositories and exit immediately.
-                # Open-source repos are free — only block on private repos
-                if is_private:
-                    logger.warning(f"Subscription {sub_status} for user {user_id} (plan: {plan_type})")
-                    expired_msg = (
-                        f"### ⚠️ N3MO Subscription {sub_status.capitalize()}\n\n"
-                        f"Your **{plan_type.capitalize()}** plan has {sub_status}. "
-                        f"N3MO cannot run PR impact analysis on private repositories without an active subscription.\n\n"
-                        f"To re-enable PR checks:\n"
-                        f"1. **Renew your plan** on the [N3MO dashboard](https://n3mo.shop)\n"
-                        f"2. Or configure a **Self-Hosted N3MO** instance on your own infrastructure\n\n"
-                        f"*If you've already renewed, it may take a few minutes to sync.*"
-                    )
-                    post_github_comment(target_repo, int(pr_number), expired_msg, installation_id)
-                    logger.info("Exited early — subscription not active on private repo.")
-                    sys.exit(0)
-                else:
-                    logger.info(f"Subscription {sub_status} but repo is public — proceeding with open-source access.")
+                # we block AST analysis on repositories and exit immediately.
+                logger.warning(f"Subscription {sub_status} for user {user_id} (plan: {plan_type})")
+                expired_msg = (
+                    f"### ⚠️ N3MO Subscription {sub_status.capitalize()}\n\n"
+                    f"Your **{plan_type.capitalize()}** plan has {sub_status}. "
+                    f"N3MO cannot run PR impact analysis without an active subscription.\n\n"
+                    f"To re-enable PR checks:\n"
+                    f"1. **Renew your plan** on the [N3MO dashboard](https://n3mo.shop)\n"
+                    f"2. Or configure a **Self-Hosted N3MO** instance on your own infrastructure\n\n"
+                    f"*If you've already renewed, it may take a few minutes to sync.*"
+                )
+                post_github_comment(target_repo, int(pr_number), expired_msg, installation_id)
+                logger.info("Exited early — subscription not active.")
+                sys.exit(0)
 
-        # 5. Open-source override: public repos get unlimited LOC
-        if not is_private:
-            max_loc = -1
-            plan_name = plan_name + " (Open Source)"
+        # 5. LOC calculation and enforcement
 
         # 6. Calculate LOC and enforce limits
         # We calculate the real lines of code here. If `total_lines` exceeds the `max_loc`
