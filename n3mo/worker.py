@@ -53,9 +53,10 @@ def _get_plan_limits(plan_type: str, sub: dict = None) -> tuple[int, str]:
     
     plan_map = {
         "enterprise": (-1, "SaaS Enterprise"),
-        "team": (1000000, "SaaS Team"),
-        "pro": (100000, "SaaS Pro"),
-        "starter": (30000, "SaaS Starter"),
+        "team_pro": (500000, "SaaS Team Pro"),
+        "team_basic": (200000, "SaaS Team Basic"),
+        "pro": (100000, "SaaS Pro Plan"),
+        "standard": (30000, "SaaS Standard Plan"),
         "none": (0, "SaaS None"),
     }
     return plan_map.get(plan_type, (0, "SaaS None"))

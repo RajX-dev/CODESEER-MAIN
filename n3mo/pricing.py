@@ -24,9 +24,9 @@ from typing import Optional
 # ---------------------------------------------------------------------------
 
 PRICING_TIERS: dict[str, dict] = {
-    "starter": {
-        "id": "starter",
-        "name": "Starter Plan",
+    "standard": {
+        "id": "standard",
+        "name": "Standard Plan",
         "price_usd": 19,
         "price_in_cents": 1900,
         "repos_limit": 1,
@@ -54,16 +54,16 @@ PRICING_TIERS: dict[str, dict] = {
         "features": [
             "Up to 3 repositories",
             "Up to 100K lines of code per repo",
-            "Everything in Starter",
+            "Everything in Standard",
             "Priority indexing queue",
             "Email notifications",
             "Multi-repo dashboard",
             "Email & community support",
         ],
     },
-    "team": {
-        "id": "team",
-        "name": "Team Plan",
+    "team_basic": {
+        "id": "team_basic",
+        "name": "Team Basic",
         "price_usd": 199,
         "price_in_cents": 19900,
         "repos_limit": 5,
@@ -81,19 +81,37 @@ PRICING_TIERS: dict[str, dict] = {
             "Priority SLA support",
         ],
     },
+    "team_pro": {
+        "id": "team_pro",
+        "name": "Team Pro",
+        "price_usd": 299,
+        "price_in_cents": 29900,
+        "repos_limit": 7,
+        "loc_per_repo": 500_000,
+        "max_total_loc": 3_500_000,
+        "billing_cycle_days": 30,
+        "features": [
+            "Up to 7 repositories",
+            "Up to 500K lines of code per repo",
+            "Everything in Team Basic",
+            "Advanced Org RBAC",
+            "Custom webhooks",
+            "Priority SLA support",
+        ],
+    },
     "enterprise": {
         "id": "enterprise",
         "name": "Enterprise Plan",
         "price_usd": 399,
         "price_in_cents": 39900,
         "repos_limit": 10,
-        "loc_per_repo": 500_000,
-        "max_total_loc": 5_000_000,
+        "loc_per_repo": 1_000_000,
+        "max_total_loc": 10_000_000,
         "billing_cycle_days": 30,
         "features": [
             "Up to 10 repositories",
-            "Up to 500K lines of code per repo",
-            "Everything in Team",
+            "Up to 1M lines of code per repo",
+            "Everything in Team Pro",
             "SSO / SAML authentication",
             "Audit logs",
             "Self-hosted deployment option",
@@ -104,7 +122,7 @@ PRICING_TIERS: dict[str, dict] = {
 }
 
 # Ordered list of tier IDs from lowest to highest for upgrade suggestions.
-TIER_ORDER: list[str] = ["starter", "pro", "team", "enterprise"]
+TIER_ORDER: list[str] = ["standard", "pro", "team_basic", "team_pro", "enterprise"]
 
 # ---------------------------------------------------------------------------
 # Razorpay configuration
@@ -114,9 +132,10 @@ RAZORPAY_CONFIG: dict[str, object] = {
     "currency": "USD",
     "timeout": 900,  # 15 minutes to complete payment
     "tier_descriptions": {
-        "starter": "N3MO Starter Plan - 1 Month",
+        "standard": "N3MO Standard Plan - 1 Month",
         "pro": "N3MO Pro Plan - 1 Month",
-        "team": "N3MO Team Plan - 1 Month",
+        "team_basic": "N3MO Team Basic Plan - 1 Month",
+        "team_pro": "N3MO Team Pro Plan - 1 Month",
         "enterprise": "N3MO Enterprise Plan - 1 Month",
     },
 }

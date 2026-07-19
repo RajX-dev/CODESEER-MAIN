@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     owner_type TEXT NOT NULL CHECK (owner_type IN ('user', 'organization')),
     user_owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
     org_owner_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-    plan_type TEXT NOT NULL CHECK (plan_type IN ('none', 'starter', 'pro', 'team', 'enterprise')),
+    plan_type TEXT NOT NULL CHECK (plan_type IN ('none', 'standard', 'pro', 'team_basic', 'team_pro', 'enterprise')),
     status TEXT NOT NULL CHECK (status IN ('active', 'cancelled', 'trialing', 'past_due', 'expired')),
     expires_at TIMESTAMP,
     lines_of_code_limit INT,
