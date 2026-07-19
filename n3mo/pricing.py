@@ -27,8 +27,8 @@ PRICING_TIERS: dict[str, dict] = {
     "starter": {
         "id": "starter",
         "name": "Starter Plan",
-        "price_inr": 1_900,
-        "price_in_paise": 1_900 * 100,
+        "price_usd": 19,
+        "price_in_cents": 1900,
         "repos_limit": 1,
         "loc_per_repo": 30_000,
         "max_total_loc": 30_000,
@@ -45,8 +45,8 @@ PRICING_TIERS: dict[str, dict] = {
     "pro": {
         "id": "pro",
         "name": "Pro Plan",
-        "price_inr": 6_900,
-        "price_in_paise": 6_900 * 100,
+        "price_usd": 69,
+        "price_in_cents": 6900,
         "repos_limit": 3,
         "loc_per_repo": 100_000,
         "max_total_loc": 300_000,
@@ -64,8 +64,8 @@ PRICING_TIERS: dict[str, dict] = {
     "team": {
         "id": "team",
         "name": "Team Plan",
-        "price_inr": 19_900,
-        "price_in_paise": 19_900 * 100,
+        "price_usd": 199,
+        "price_in_cents": 19900,
         "repos_limit": 5,
         "loc_per_repo": 200_000,
         "max_total_loc": 1_000_000,
@@ -84,8 +84,8 @@ PRICING_TIERS: dict[str, dict] = {
     "enterprise": {
         "id": "enterprise",
         "name": "Enterprise Plan",
-        "price_inr": 39_900,
-        "price_in_paise": 39_900 * 100,
+        "price_usd": 399,
+        "price_in_cents": 39900,
         "repos_limit": 10,
         "loc_per_repo": 500_000,
         "max_total_loc": 5_000_000,
@@ -111,7 +111,7 @@ TIER_ORDER: list[str] = ["starter", "pro", "team", "enterprise"]
 # ---------------------------------------------------------------------------
 
 RAZORPAY_CONFIG: dict[str, object] = {
-    "currency": "INR",
+    "currency": "USD",
     "timeout": 900,  # 15 minutes to complete payment
     "tier_descriptions": {
         "starter": "N3MO Starter Plan - 1 Month",

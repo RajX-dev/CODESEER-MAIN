@@ -132,7 +132,7 @@ def create_order(req: CreateOrderRequest):
         client = razorpay.Client(auth=(key_id, key_secret))
 
         order_payload = {
-            "amount": tier["price_in_paise"],
+            "amount": tier["price_in_cents"],
             "currency": RAZORPAY_CONFIG["currency"],
             "receipt": f"rcpt_{req.github_id}_{req.tier_id}",
             "notes": {
@@ -148,14 +148,14 @@ def create_order(req: CreateOrderRequest):
             user_id=user_id,
             order_id=order["id"],
             tier_id=req.tier_id,
-            amount_paise=tier["price_in_paise"],
+            amount_cents=tier["price_in_cents"],
             currency=str(RAZORPAY_CONFIG["currency"]),
         )
 
         return {
             "order_id": order["id"],
             "key_id": key_id,
-            "amount_paise": tier["price_in_paise"],
+            "amount_cents": tier["price_in_cents"],
             "currency": RAZORPAY_CONFIG["currency"],
             "tier_id": req.tier_id,
             "bonus_days": bonus_days,
@@ -197,7 +197,7 @@ def verify_payment(req: VerifyPaymentRequest):
         raise HTTPException(status_code=404, detail="Payment order not found")
     if stored_order.get("status") == "paid":
         return {"status": "success", "message": "Payment already processed."}
-    if stored_order["amount_paise"] != tier["price_in_paise"]:
+    if stored_order["amount_cents"] != tier["price_in_cents"]:
         raise HTTPException(status_code=400, detail="Amount mismatch")
 
     user_db = get_user_by_github_id(int(req.github_id))
