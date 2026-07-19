@@ -506,36 +506,52 @@ async def github_webhook(
     return {"message": f"Event '{x_github_event}' ignored"}
 
 def enforce_repo_limits(user_id: str, repo_full_name: str, is_private: bool = True) -> bool:
+    """
+    Checks if connecting a new repository would exceed the user's SaaS plan limits.
+    
+    This function counts the number of repositories already registered to the user
+    in the `saas_repo_tracking` table. It compares this count against the
+    `repos_limit` defined in their active subscription tier.
+    
+    - If the repository is public (open source), the limit is bypassed (unlimited).
+    - If the subscription is expired or cancelled, the limit defaults to 0.
+    - If the limit is reached, it returns False to abort the webhook analysis.
+    - Otherwise, it registers the new repository and returns True.
+    """
     from n3mo.core.database import get_connection, release_connection
     from n3mo.saas_db import get_subscription
     
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Check if repo already registered
+            # 1. Check if the repo is already registered and tracked
             cur.execute("SELECT id FROM saas_repo_tracking WHERE user_owner_id = %s AND repo_full_name = %s", (user_id, repo_full_name))
             if cur.fetchone():
                 return True
                 
-            # Count connected repos
+            # 2. Count the total number of connected repositories for this user
             cur.execute("SELECT count(id) FROM saas_repo_tracking WHERE user_owner_id = %s", (user_id,))
             repo_count = cur.fetchone()[0]
             
+            # 3. Fetch the active subscription tier to determine the plan's repository limit
             sub = get_subscription(user_id, "user")
             status = sub.get("status", "active")
             
-            # Unlimited for public
+            # 4. Enforce the limit logic
+            # Open source projects are exempt from repository connection limits
             if not is_private:
                 limit = 999999
             else:
                 limit = sub.get("repos_limit", 0)
+                # If the subscription lapsed, completely block new private repositories
                 if status != "active":
-                    limit = 0 # Default when expired
+                    limit = 0 
                 
+            # 5. Reject if they are at or over the capacity of their plan
             if repo_count >= limit:
                 return False
                 
-            # Register new repo
+            # 6. If they have capacity, register the new repository into the tracking table
             cur.execute(
                 "INSERT INTO saas_repo_tracking (user_owner_id, repo_full_name) VALUES (%s, %s) ON CONFLICT DO NOTHING",
                 (user_id, repo_full_name)
@@ -544,6 +560,7 @@ def enforce_repo_limits(user_id: str, repo_full_name: str, is_private: bool = Tr
             return True
     finally:
         release_connection(conn)
+
 
 def handle_pull_request(payload: dict) -> dict:
     pr_number_raw = payload.get("number")

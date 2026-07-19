@@ -84,8 +84,8 @@ PRICING_TIERS: dict[str, dict] = {
     "team_pro": {
         "id": "team_pro",
         "name": "Team Pro",
-        "price_usd": 299,
-        "price_in_cents": 29900,
+        "price_usd": 399,
+        "price_in_cents": 39900,
         "repos_limit": 7,
         "loc_per_repo": 500_000,
         "max_total_loc": 3_500_000,
@@ -102,8 +102,8 @@ PRICING_TIERS: dict[str, dict] = {
     "enterprise": {
         "id": "enterprise",
         "name": "Enterprise Plan",
-        "price_usd": 399,
-        "price_in_cents": 39900,
+        "price_usd": 0,
+        "price_in_cents": 0,
         "repos_limit": 10,
         "loc_per_repo": 1_000_000,
         "max_total_loc": 10_000_000,

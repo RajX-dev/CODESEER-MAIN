@@ -127,6 +127,9 @@ def main():
             if sub_status == "active":
                 max_loc, plan_name = _get_plan_limits(plan_type, sub)
             elif sub_status in ("expired", "cancelled", "canceled"):
+                # Fallback Expiration Check:
+                # If the subscription lapsed right before the worker picked up the job,
+                # we block AST analysis on private repositories and exit immediately.
                 # Open-source repos are free — only block on private repos
                 if is_private:
                     logger.warning(f"Subscription {sub_status} for user {user_id} (plan: {plan_type})")
@@ -151,6 +154,8 @@ def main():
             plan_name = plan_name + " (Open Source)"
 
         # 6. Calculate LOC and enforce limits
+        # We calculate the real lines of code here. If `total_lines` exceeds the `max_loc`
+        # for their specific SaaS tier, we instruct them to upgrade and abort the heavy processing.
         total_lines = calculate_repo_loc(repo_dir)
         
         if max_loc > 0 and total_lines > max_loc:

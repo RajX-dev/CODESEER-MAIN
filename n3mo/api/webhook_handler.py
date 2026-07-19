@@ -71,11 +71,15 @@ async def github_webhook(
                 secret_to_use = str(secret_from_db)
 
             # Check subscription expiration — check BOTH status field AND expires_at timestamp
+            # This is critical to ensure users with lapsed plans cannot trigger expensive AST parsing
             from n3mo.saas_db import get_subscription
             import datetime as _dt
             sub = get_subscription(str(user_db.get("id")), "user")
             
+            # 1. Check if the database explicitly marked the subscription as expired
             is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "free"
+            
+            # 2. Check the timestamp as a fallback (in case the background cron job hasn't run yet to update the status)
             if not is_expired and sub.get("expires_at") is not None:
                 exp = sub["expires_at"]
                 now = _dt.datetime.now(_dt.timezone.utc)
@@ -85,6 +89,8 @@ async def github_webhook(
                     is_expired = True
             
             if is_expired:
+                # 3. The subscription is expired. Automatically revoke the GitHub App installation token
+                # This stops GitHub from forwarding events for this specific user/organization entirely
                 installation = payload.get("installation")
                 installation_id = installation.get("id") if isinstance(installation, dict) else None
                 if installation_id:
