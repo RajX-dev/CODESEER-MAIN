@@ -164,7 +164,7 @@ def create_order(req: CreateOrderRequest):
         raise
     except Exception as e:
         logging.error(f"Error creating Razorpay order: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 class VerifyPaymentRequest(BaseModel):

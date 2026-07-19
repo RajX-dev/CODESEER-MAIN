@@ -382,7 +382,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     })
                 });
 
-                if (!res.ok) throw new Error("Failed to create subscription");
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.detail || "Failed to create subscription");
+                }
 
                 const data = await res.json();
 
