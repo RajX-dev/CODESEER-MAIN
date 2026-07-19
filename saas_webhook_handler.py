@@ -53,18 +53,18 @@ def checkout_repo(clone_url: str, repo_name: str, sha: str) -> str:
     os.makedirs(os.path.dirname(repo_dir), exist_ok=True)
     if not os.path.exists(repo_dir):
         logger.info(f"Cloning {clone_url} to {repo_dir}...")
-        subprocess.run(["git", "clone", clone_url, repo_dir], check=True)
+        subprocess.run(["git", "clone", "--", clone_url, repo_dir], check=True)
     else:
         logger.info(f"Fetching updates for {repo_name}...")
         subprocess.run(["git", "fetch", "origin"], cwd=repo_dir, check=True)
         
     logger.info(f"Checking out {sha}...")
-    subprocess.run(["git", "checkout", "-f", sha], cwd=repo_dir, check=True)
+    subprocess.run(["git", "checkout", "-f", "--", sha], cwd=repo_dir, check=True)
     return repo_dir
 
 def get_changed_files(repo_dir: str, base_sha: str, head_sha: str) -> list:
     res = subprocess.run(
-        ["git", "diff", "--name-only", base_sha, head_sha],
+        ["git", "diff", "--name-only", "--", base_sha, head_sha],
         cwd=repo_dir,
         capture_output=True,
         text=True,
@@ -606,18 +606,20 @@ def handle_pull_request(payload: dict) -> dict:
 
     # 2. Check limits based on self-hosted license or SaaS subscription
     license_key = os.getenv("N3MO_LICENSE_KEY")
-    license_info = verify_license_key(license_key) if license_key else {"valid": False, "plan_type": "none", "max_loc": 150000}
+    license_info = verify_license_key(license_key) if license_key else {"valid": False, "plan_type": "none", "max_loc": 30000}
     
     is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
     
-    max_loc = 150000
-    plan_name = "Starter Plan"
+    max_loc = 30000
+    plan_name = "Standard Plan"
     db_owner_id = None
     owner_cat = "user"
     
+    from n3mo.pricing import get_tier
+    
     if license_info["valid"]:
         max_loc_val = license_info["max_loc"]
-        max_loc = max_loc_val if isinstance(max_loc_val, int) else 150000
+        max_loc = max_loc_val if isinstance(max_loc_val, int) else 30000
         plan_name = f"Self-Hosted {str(license_info['plan_type']).capitalize()}"
     elif is_saas:
         # Fallback to SaaS database subscription lookup
@@ -638,11 +640,15 @@ def handle_pull_request(payload: dict) -> dict:
             if db_owner_id:
                 sub = get_subscription(db_owner_id, owner_cat)
                 if sub.get("status") == "active":
-                    plan_type_str = str(sub.get("plan_type") or "none")
-                    plan_name = f"SaaS {plan_type_str.capitalize()}"
-                    
-                    loc_limit = sub.get("loc_per_repo_limit")
-                    max_loc = loc_limit if loc_limit is not None else 0
+                    plan_type_str = str(sub.get("plan_type") or "standard")
+                    tier = get_tier(plan_type_str)
+                    if tier:
+                        plan_name = f"SaaS {tier['name']}"
+                        max_loc = tier["loc_per_repo"]
+                    else:
+                        plan_name = f"SaaS {plan_type_str.capitalize()}"
+                        loc_limit = sub.get("loc_per_repo_limit")
+                        max_loc = loc_limit if loc_limit is not None else 30000
                     if max_loc == -1: # Uncapped
                         max_loc = 99999999
     else:

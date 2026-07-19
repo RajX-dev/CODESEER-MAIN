@@ -45,18 +45,18 @@ def checkout_repo(clone_url: str, repo_name: str, sha: str) -> str:
     os.makedirs(os.path.dirname(repo_dir), exist_ok=True)
     if (not os.path.exists(repo_dir)):
         logger.info(f'Cloning {clone_url} to {repo_dir}...')
-        subprocess.run(['git', 'clone', clone_url, repo_dir], check=True)
+        subprocess.run(['git', 'clone', '--', clone_url, repo_dir], check=True)
     else:
         logger.info(f'Fetching updates for {repo_name}...')
         subprocess.run(['git', 'fetch', 'origin'], cwd=repo_dir, check=True)
     logger.info(f'Checking out {sha}...')
-    subprocess.run(['git', 'checkout', '-f', sha], cwd=repo_dir, check=True)
+    subprocess.run(['git', 'checkout', '-f', '--', sha], cwd=repo_dir, check=True)
     return repo_dir
 
 
 
 def get_changed_files(repo_dir: str, base_sha: str, head_sha: str) -> list:
-    res = subprocess.run(['git', 'diff', '--name-only', base_sha, head_sha], cwd=repo_dir, capture_output=True, text=True, check=True)
+    res = subprocess.run(['git', 'diff', '--name-only', '--', base_sha, head_sha], cwd=repo_dir, capture_output=True, text=True, check=True)
     return [line.strip() for line in res.stdout.splitlines() if line.strip()]
 
 
