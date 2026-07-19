@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (webhookSection) {
 
-            webhookSection.style.display = (planType !== 'free' && !isExpired) ? 'block' : 'none';
+            webhookSection.style.display = (planType !== 'free' && planType !== 'none' && !isExpired) ? 'block' : 'none';
 
         }
 
