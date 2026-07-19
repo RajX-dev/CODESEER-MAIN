@@ -148,7 +148,7 @@ def create_order(req: CreateOrderRequest):
             user_id=user_id,
             order_id=order["id"],
             tier_id=req.tier_id,
-            amount_cents=tier["price_in_cents"],
+            amount_paise=tier["price_in_cents"],
             currency=str(RAZORPAY_CONFIG["currency"]),
         )
 
