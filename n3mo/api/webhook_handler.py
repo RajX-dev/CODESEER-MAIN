@@ -77,7 +77,7 @@ async def github_webhook(
             sub = get_subscription(str(user_db.get("id")), "user")
             
             # 1. Check if the database explicitly marked the subscription as expired
-            is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "free"
+            is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "none"
             
             # 2. Check the timestamp as a fallback (in case the background cron job hasn't run yet to update the status)
             if not is_expired and sub.get("expires_at") is not None:
