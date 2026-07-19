@@ -372,7 +372,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const discountCode = discountCodeEl ? discountCodeEl.value.trim() : '';
 
-                const res = await fetch(`/api/create-subscription?github_id=${userData.user.github_id}&country=${country}&discount=${discountCode}&plan_type=${targetPlan}&billing_cycle=monthly`, { method: 'POST' });
+                const res = await fetch('/api/billing/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        github_id: userData.user.github_id.toString(),
+                        tier_id: targetPlan,
+                        discount: discountCode
+                    })
+                });
 
                 if (!res.ok) throw new Error("Failed to create subscription");
 
