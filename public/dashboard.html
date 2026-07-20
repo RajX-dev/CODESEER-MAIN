@@ -6,55 +6,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>N3MO | Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    
+
     <link rel="stylesheet" href="style.css">
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="https://n3mo.shop/dashboard.html">
-    
+
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://n3mo.shop/dashboard.html">
     <meta property="og:title" content="N3MO | Dashboard">
     <meta property="og:description" content="Manage your N3MO API keys, repositories, and subscription plans securely.">
     <meta property="og:image" content="https://n3mo.shop/og-image.png">
-    
+
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://n3mo.shop/dashboard.html">
     <meta property="twitter:title" content="N3MO | Dashboard">
-    <meta property="twitter:description" content="Manage your N3MO API keys, repositories, and subscription plans securely.">
+    <meta property="twitter:description"
+        content="Manage your N3MO API keys, repositories, and subscription plans securely.">
     <meta property="twitter:image" content="https://n3mo.shop/og-image.png">
 
     <style>
         /* Dashboard-specific tweaks reusing tokens */
         .dashboard-container {
-    padding-top: 120px;
-    padding-bottom: 80px;
-    min-height: 100vh;
-    max-width: 1400px;
-    margin: 0 auto;
-}
+            padding-top: 120px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 32px;
-}
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
 
-@media (min-width: 1024px) {
-    .dashboard-grid {
-        grid-template-columns: 280px 1fr;
-        gap: 48px;
-        align-items: start;
-    }
-}
+        @media (min-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 280px 1fr;
+                gap: 48px;
+                align-items: start;
+            }
+        }
 
         .profile-card {
             display: flex;
@@ -206,11 +209,11 @@
 </head>
 
 <body>
-    
-    
+
+
     <div id="grain-overlay"></div>
 
-    
+
     <div id="ambient-field">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -218,7 +221,7 @@
         <div class="orb orb-4"></div>
     </div>
 
-    
+
     <div class="cur-dot"></div>
     <div class="cursor-glow"></div>
 
@@ -227,7 +230,8 @@
             <div class="logo">
                 <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
                     <img src="logo.svg" alt="N3MO Logo" style="height: 42px; width: auto;">
-                    <span class="text-secondary" style="font-weight: 500; font-size: 18px; color: var(--text-muted); margin-top: 4px;">Dashboard</span>
+                    <span class="text-secondary"
+                        style="font-weight: 500; font-size: 18px; color: var(--text-muted); margin-top: 4px;">Dashboard</span>
                 </a>
             </div>
             <nav>
@@ -239,17 +243,17 @@
 
     <main class="container dashboard-container">
 
-        
+
         <div id="loading">
             <div class="spinner"></div>
             <p style="color: var(--text-muted); font-family: var(--font-mono); font-size: 13px;">Loading profile...</p>
         </div>
 
-        
+
         <div id="dashboard-content" style="display: none;">
             <div class="dashboard-grid">
 
-                
+
                 <div class="bento-card profile-card">
                     <h2 style="font-family: var(--font-heading); font-size: 22px;">Profile</h2>
 
@@ -268,51 +272,65 @@
                                 <span id="plan-badge" class="plan-badge">UNLICENSED</span>
                             </div>
                         </div>
-                        <div id="sub-details" style="display: none; font-size: 13px; color: var(--text-secondary); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                        <div id="sub-details"
+                            style="display: none; font-size: 13px; color: var(--text-secondary); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                                <span>Started:</span> <span id="sub-start-date" style="color: var(--text-primary); font-family: var(--font-mono);"></span>
+                                <span>Started:</span> <span id="sub-start-date"
+                                    style="color: var(--text-primary); font-family: var(--font-mono);"></span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span>Time Left:</span> <span id="sub-expires-in" style="color: var(--accent); font-family: var(--font-mono);"></span>
+                                <span>Time Left:</span> <span id="sub-expires-in"
+                                    style="color: var(--accent); font-family: var(--font-mono);"></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                
+
                 <div class="action-area">
 
-                    
-                    <div id="view-free" class="free-view bento-card" style="display: none; margin-bottom: 24px; padding: 32px;">
-                        <div style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 24px;">
+
+                    <div id="view-free" class="free-view bento-card"
+                        style="display: none; margin-bottom: 24px; padding: 32px;">
+                        <div
+                            style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 24px;">
                             <div>
                                 <div class="feature-header">
                                     <h3 style="font-size: 24px; color: var(--accent);">No Active Plan</h3>
                                 </div>
-                                <p style="font-size: 15px; color: var(--text-secondary); max-width: 500px; margin-bottom: 8px;">
-                                    You currently have no active subscription. You must upgrade to a paid plan to use N3MO.
+                                <p
+                                    style="font-size: 15px; color: var(--text-secondary); max-width: 500px; margin-bottom: 8px;">
+                                    You currently have no active subscription. You must upgrade to a paid plan to use
+                                    N3MO.
                                 </p>
                                 <p style="font-size: 13px; color: rgba(255, 255, 255, 0.7); font-style: italic;">
                                     Don't worry, your indexed repos stay safe for 30 days!
                                 </p>
                             </div>
-                            
-                            
-                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 16px; width: 320px;">
-                                <h4 style="font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
+
+
+                            <div
+                                style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 16px; width: 320px;">
+                                <h4
+                                    style="font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-bottom: 12px;">
                                     Have a promotional code?
                                 </h4>
                                 <div style="display: flex; gap: 8px;">
-                                    <input type="text" id="discount-code" placeholder="Enter code here" style="padding: 10px 14px; border-radius: 6px; background-color: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; flex: 1; font-size: 14px;">
-                                    <button id="apply-discount-btn" class="btn btn-outline" style="padding: 10px 16px; font-size: 14px; margin: 0;">Apply</button>
+                                    <input type="text" id="discount-code" placeholder="Enter code here"
+                                        style="padding: 10px 14px; border-radius: 6px; background-color: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; flex: 1; font-size: 14px;">
+                                    <button id="apply-discount-btn" class="btn btn-outline"
+                                        style="padding: 10px 16px; font-size: 14px; margin: 0;">Apply</button>
                                 </div>
-                                <p id="discount-msg" style="display: none; font-size: 13px; color: var(--accent-green); margin-top: 8px; margin-bottom: 0;">Code applied! Select a plan below to continue.</p>
+                                <p id="discount-msg"
+                                    style="display: none; font-size: 13px; color: var(--accent-green); margin-top: 8px; margin-bottom: 0;">
+                                    Code applied! Select a plan below to continue.</p>
                             </div>
                         </div>
 
-                        
-                        <div class="pricing-grid" style="margin-bottom: 0; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
-                            
+
+                        <div class="pricing-grid"
+                            style="margin-bottom: 0; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+
                             <!-- STANDARD -->
                             <div class="price-card">
                                 <div class="price-header">
@@ -322,11 +340,13 @@
                                 </div>
                                 <ul class="price-features">
                                     <li><i class="fa-solid fa-check"></i> <span>Up to <strong>1 repo</strong></span></li>
-                                    <li><i class="fa-solid fa-check"></i> <span><strong>30,000</strong> max total LOC</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>30,000</strong> LOC per repo</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>30,000*</strong> max total LOC</span></li>
                                     <li><i class="fa-solid fa-check"></i> Real-time PR Impact Analysis</li>
                                     <li><i class="fa-solid fa-check"></i> Built-in MCP Server for AI Agents</li>
                                 </ul>
-                                <button class="btn btn-outline btn-full upgrade-btn" data-plan="standard">Select Standard</button>
+                                <button class="btn btn-outline btn-full upgrade-btn" data-plan="standard">Select
+                                    Standard</button>
                             </div>
 
                             <!-- PRO -->
@@ -338,7 +358,8 @@
                                 </div>
                                 <ul class="price-features">
                                     <li><i class="fa-solid fa-check"></i> <span>Up to <strong>3 repos</strong></span></li>
-                                    <li><i class="fa-solid fa-check"></i> <span><strong>100,000</strong> max total LOC</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>100,000</strong> LOC per repo</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>300,000*</strong> max total LOC</span></li>
                                     <li><i class="fa-solid fa-check"></i> Everything in Standard</li>
                                     <li><i class="fa-solid fa-check"></i> Email & community support</li>
                                 </ul>
@@ -347,7 +368,8 @@
 
                             <!-- TEAM BASIC -->
                             <div class="price-card featured">
-                                <div class="featured-badge" style="background: var(--accent-purple); color: white;"><i class="fa-solid fa-star"></i> Recommended</div>
+                                <div class="featured-badge" style="background: var(--accent-purple); color: white;"><i
+                                        class="fa-solid fa-star"></i> Recommended</div>
                                 <div class="price-header">
                                     <h4 style="color: var(--accent-purple);">Team Basic</h4>
                                     <div class="price-amount">$199<span>/one-month</span></div>
@@ -355,14 +377,17 @@
                                 </div>
                                 <ul class="price-features">
                                     <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> <span>Up to <strong>5 repos</strong></span></li>
-                                    <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> <span><strong>200,000</strong> max total LOC</span></li>
+                                    <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> <span><strong>200,000</strong> LOC per repo</span></li>
+                                    <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> <span><strong>1,000,000*</strong> max total LOC</span></li>
                                     <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> Team workspaces & Org dashboard</li>
                                     <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> Slack notifications & RBAC</li>
                                     <li><i class="fa-solid fa-check" style="color: var(--accent-purple);"></i> Priority SLA support</li>
                                 </ul>
-                                <button class="btn btn-primary btn-full upgrade-btn" data-plan="team_basic" style="background: var(--accent-purple); border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);">Select Team Basic</button>
+                                <button class="btn btn-primary btn-full upgrade-btn" data-plan="team_basic"
+                                    style="background: var(--accent-purple); border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);">Select
+                                    Team Basic</button>
                             </div>
-                            
+
                             <!-- TEAM PRO -->
                             <div class="price-card">
                                 <div class="price-header">
@@ -372,11 +397,13 @@
                                 </div>
                                 <ul class="price-features">
                                     <li><i class="fa-solid fa-check"></i> <span>Up to <strong>7 repos</strong></span></li>
-                                    <li><i class="fa-solid fa-check"></i> <span><strong>500,000</strong> max total LOC</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>500,000</strong> LOC per repo</span></li>
+                                    <li><i class="fa-solid fa-check"></i> <span><strong>3,500,000*</strong> max total LOC</span></li>
                                     <li><i class="fa-solid fa-check"></i> Everything in Team Basic</li>
                                     <li><i class="fa-solid fa-check"></i> Custom webhooks</li>
                                 </ul>
-                                <button class="btn btn-outline btn-full upgrade-btn" data-plan="team_pro">Select Team Pro</button>
+                                <button class="btn btn-outline btn-full upgrade-btn" data-plan="team_pro">Select Team
+                                    Pro</button>
                             </div>
 
                             <!-- ENTERPRISE -->
@@ -384,7 +411,7 @@
                                 <div class="price-header">
                                     <h4>Enterprise</h4>
                                     <div class="price-amount">Contact Us</div>
-                                    <p>For large orgs (20+ devs)</p>
+                                    <p>For Organizations</p>
                                 </div>
                                 <ul class="price-features">
                                     <li><i class="fa-solid fa-check"></i> <span>Unlimited repos</span></li>
@@ -392,12 +419,13 @@
                                     <li><i class="fa-solid fa-check"></i> Self-hosted deployment & Offline JWT</li>
                                     <li><i class="fa-solid fa-check"></i> SSO/SAML & Audit logs</li>
                                 </ul>
-                                <button onclick="window.location.href='mailto:raj_shekhar@n3mo.shop'" class="btn btn-outline btn-full">Contact Author</button>
+                                <button onclick="window.location.href='mailto:raj_shekhar@n3mo.shop'"
+                                    class="btn btn-outline btn-full">Contact Author</button>
                             </div>
                         </div>
                     </div>
 
-                    
+
                     <div id="view-pro" class="pro-view" style="display: none;">
                         <div class="bento-card"
                             style="border-color: rgba(16, 185, 129, 0.4); background-image: linear-gradient(to bottom right, rgba(16, 185, 129, 0.05), transparent); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08); margin-bottom: 24px;">
@@ -406,7 +434,8 @@
                                 Pro Subscription Active
                             </h2>
                             <p id="paid-plan-desc" style="color: var(--text-secondary); font-size: 14px;">
-                                Thank you for supporting N3MO! You can now analyze up to <strong>3 repositories</strong>.
+                                Thank you for supporting N3MO! You can now analyze up to <strong>3
+                                    repositories</strong>.
                             </p>
                             <div style="margin-top: 24px;" id="pro-upgrade-section">
                                 <button class="btn btn-primary upgrade-btn" data-plan="team"
@@ -417,7 +446,7 @@
                         </div>
                     </div>
 
-                    
+
                     <div id="view-team" style="display: none;">
                         <div class="bento-card"
                             style="border-color: rgba(139, 92, 246, 0.4); background-image: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), transparent); box-shadow: 0 10px 30px rgba(139, 92, 246, 0.08); margin-bottom: 24px;">
@@ -426,12 +455,13 @@
                                 Team Subscription Active
                             </h2>
                             <p style="color: var(--text-secondary); font-size: 14px;">
-                                You are on the Team plan with up to <strong>5 repositories</strong> and full monorepo support!
+                                You are on the Team plan with up to <strong>5 repositories</strong> and full monorepo
+                                support!
                             </p>
                         </div>
                     </div>
 
-                    
+
                     <div id="webhook-section" style="display: none;">
                         <div class="bento-card" style="margin-bottom: 24px;">
                             <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px;">Your
@@ -453,7 +483,8 @@
                             <h3 style="font-family: var(--font-heading); font-size: 18px;">Setup Instructions</h3>
                             <ol class="instructions-list">
                                 <li>Go to your GitHub Repository -> <strong>Settings</strong> ->
-                                    <strong>Webhooks</strong>.</li>
+                                    <strong>Webhooks</strong>.
+                                </li>
                                 <li>Click <strong>Add webhook</strong>.</li>
                                 <li>Set Payload URL to: <code
                                         id="webhook-payload-url">https://api.n3mo.shop/api/webhook</code></li>
@@ -482,7 +513,8 @@
                 <a href="privacy.html">Privacy Policy</a>
             </div>
             <div class="footer-socials">
-                <a href="https://github.com/RajX-dev/N3MO" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <a href="https://github.com/RajX-dev/N3MO" target="_blank" rel="noopener noreferrer"
+                    aria-label="GitHub">
                     <i class="fa-brands fa-github"></i>
                 </a>
                 <a href="https://twitter.com/n3mo_ai" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
