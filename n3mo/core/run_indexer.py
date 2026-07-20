@@ -497,6 +497,7 @@ def run_indexer_for_path(target_dir):
 
         logger.info("-" * 30)
         logger.info("✅ Indexing Complete!")
+        logger.info("🌟 Thanks for using N3MO! Please make sure to star the repo: https://github.com/RajX-dev/N3MO")
         logger.info(f"📊 Processed: {len(files)} files")
         logger.info(f"   Indexed:   {indexed_count} files (new/modified)")
         logger.info(f"   Skipped:   {skipped_count} files (unchanged)")
@@ -511,7 +512,8 @@ def run_indexer_for_path(target_dir):
             f"Indexed:   {indexed_count} files (new/modified)\n"
             f"Skipped:   {skipped_count} files (unchanged)\n"
             f"Symbols:   {symbol_count} (newly indexed)\n"
-            f"Calls:     {call_count} (newly indexed)"
+            f"Calls:     {call_count} (newly indexed)\n\n"
+            f"🌟 Thanks for using N3MO! Please make sure to star the repo: https://github.com/RajX-dev/N3MO"
         )
         return True, summary
     finally:
