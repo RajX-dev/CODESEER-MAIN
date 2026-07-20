@@ -10,6 +10,8 @@ import logging
 import os
 from typing import List, Any
 
+from psycopg2 import OperationalError
+
 # Setup simple logger
 logger = logging.getLogger("n3mo.mcp")
 
@@ -17,6 +19,33 @@ Server: Any = None
 stdio_server: Any = None
 types: Any = None
 server: Any = None
+
+DATABASE_UNREACHABLE_MESSAGE = (
+    "N3MO database is unreachable. Please ensure you have run "
+    "`docker compose up -d` in the N3MO directory."
+)
+
+
+def _get_db_connection():
+    """Return a database connection, retrying once after starting services."""
+    from n3mo.core.database import get_connection
+
+    try:
+        return get_connection()
+    except OperationalError:
+        try:
+            from n3mo.core.run_indexer import (
+                start_docker_services,
+                wait_for_postgres_and_schema,
+            )
+
+            start_docker_services()
+            if wait_for_postgres_and_schema(timeout=15):
+                return get_connection()
+        except Exception:
+            logger.debug("Unable to start or reach the N3MO database", exc_info=True)
+
+        raise OperationalError(DATABASE_UNREACHABLE_MESSAGE) from None
 
 try:
     from mcp.server import Server as MCPServer # type: ignore
@@ -138,21 +167,6 @@ if Server is not None:
         Execute tool calls requested by the LLM agent.
         """
 
-        def get_db_conn():
-            from n3mo.core.database import get_connection
-            try:
-                return get_connection()
-            except Exception as e:
-                try:
-                    from n3mo.core.run_indexer import start_docker_services, wait_for_postgres_and_schema
-                    start_docker_services()
-                    if wait_for_postgres_and_schema(timeout=15):
-                        return get_connection()
-                    else:
-                        raise e
-                except Exception as ex:
-                    raise Exception(f"Database Connection Failed: {ex}. Please verify that Docker Desktop is running and the PostgreSQL container is started.")
-
         def get_project_id(cur, project_path):
             cur.execute("SELECT id FROM projects WHERE repo_url = %s", (project_path,))
             proj = cur.fetchone()
@@ -182,7 +196,9 @@ if Server is not None:
             from n3mo.core.database import release_connection
             conn = None
             try:
-                conn = get_db_conn()
+                conn = _get_db_connection()
+            except OperationalError:
+                return [types.TextContent(type="text", text=DATABASE_UNREACHABLE_MESSAGE)]
             except Exception as ex:
                 return [types.TextContent(type="text", text=f"Error: {ex}")]
 
@@ -289,7 +305,9 @@ if Server is not None:
             from n3mo.core.database import release_connection
             conn = None
             try:
-                conn = get_db_conn()
+                conn = _get_db_connection()
+            except OperationalError:
+                return [types.TextContent(type="text", text=DATABASE_UNREACHABLE_MESSAGE)]
             except Exception as ex:
                 return [types.TextContent(type="text", text=f"Error: {ex}")]
             try:
@@ -324,7 +342,9 @@ if Server is not None:
             from n3mo.core.database import release_connection
             conn = None
             try:
-                conn = get_db_conn()
+                conn = _get_db_connection()
+            except OperationalError:
+                return [types.TextContent(type="text", text=DATABASE_UNREACHABLE_MESSAGE)]
             except Exception as ex:
                 return [types.TextContent(type="text", text=f"Error: {ex}")]
             try:
@@ -374,7 +394,9 @@ if Server is not None:
             from n3mo.core.database import release_connection
             conn = None
             try:
-                conn = get_db_conn()
+                conn = _get_db_connection()
+            except OperationalError:
+                return [types.TextContent(type="text", text=DATABASE_UNREACHABLE_MESSAGE)]
             except Exception as ex:
                 return [types.TextContent(type="text", text=f"Error: {ex}")]
             try:
