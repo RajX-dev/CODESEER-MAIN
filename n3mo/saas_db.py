@@ -11,28 +11,15 @@ import datetime
 from n3mo.core.database import get_connection, release_connection
 from cryptography.fernet import Fernet
 import os
-from pathlib import Path
+import re
 
 logger = logging.getLogger("n3mo.saas_db")
 
 def _get_encryption_key() -> bytes:
     key_env = os.getenv("N3MO_DB_ENCRYPTION_KEY")
-    if key_env:
-        return key_env.encode()
-        
-    key_path = Path("secrets/db_encryption.key")
-    if key_path.exists():
-        with open(key_path, "rb") as f:
-            return f.read().strip()
-            
-    # Generate a new key and save it if neither exists
-    key = Fernet.generate_key()
-    try:
-        key_path.parent.mkdir(parents=True, exist_ok=True)
-        key_path.write_bytes(key)
-    except OSError:
-        logger.warning("Could not save encryption key to disk (read-only filesystem). Tokens will be encrypted with an ephemeral key.")
-    return key
+    if not key_env:
+        raise RuntimeError("N3MO_DB_ENCRYPTION_KEY must be set in the environment")
+    return key_env.encode()
 
 def _encrypt_token(token: str | None) -> str | None:
     if not token:
@@ -42,7 +29,7 @@ def _encrypt_token(token: str | None) -> str | None:
         return f.encrypt(token.encode()).decode()
     except Exception as e:
         logger.error(f"Encryption failed: {e}")
-        return token
+        raise ValueError("Failed to encrypt token") from e
 
 def _decrypt_token(encrypted_token: str | None) -> str | None:
     if not encrypted_token:
@@ -50,9 +37,9 @@ def _decrypt_token(encrypted_token: str | None) -> str | None:
     try:
         f = Fernet(_get_encryption_key())
         return f.decrypt(encrypted_token.encode()).decode()
-    except Exception:
-        # Fallback for old plain-text tokens
-        return encrypted_token
+    except Exception as e:
+        logger.error(f"Token decryption failed: {e}")
+        raise ValueError("Corrupted or invalid token") from e
 
 def upsert_user(github_id: int, username: str, email: str | None = None, avatar_url: str | None = None, github_token: str | None = None) -> dict:
     conn = get_connection()
@@ -83,7 +70,7 @@ def upsert_user(github_id: int, username: str, email: str | None = None, avatar_
                     "email": row[3],
                     "avatar_url": row[4],
                     "created_at": row[5],
-                    "webhook_secret": row[6]
+                    "webhook_secret": row[6] if row[6] else ""
                 }
             return {}
     except Exception as e:
@@ -94,6 +81,9 @@ def upsert_user(github_id: int, username: str, email: str | None = None, avatar_
         release_connection(conn)
 
 def upsert_organization(github_id: int, name: str, installation_id: int | None = None, owner_user_id: str | None = None) -> dict:
+    if owner_user_id and (not isinstance(owner_user_id, str) or len(owner_user_id) > 36):
+        raise ValueError("Invalid owner_user_id")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -129,9 +119,12 @@ def upsert_organization(github_id: int, name: str, installation_id: int | None =
         release_connection(conn)
 
 def get_subscription(owner_id: str, owner_type: str) -> dict:
+    if not owner_id or not isinstance(owner_id, str) or len(owner_id) > 36:
+        raise ValueError("Invalid owner_id")
+
     conn = get_connection()
     _default = {
-        "plan_type": "none", "status": "active", "expires_at": None,
+        "plan_type": "none", "status": "none", "expires_at": None,
         "created_at": None, "repos_limit": 0, "lines_of_code_limit": 0,
         "loc_per_repo_limit": 0, "razorpay_payment_id": None,
         "razorpay_order_id": None, "upgrade_bonus_days": 0,
@@ -143,13 +136,14 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                 cur.execute(
                     """
                     SELECT subscriptions.id, plan_type, status, expires_at,
-                           username, subscriptions.created_at,
+                           users.github_id, subscriptions.created_at,
                            repos_limit, lines_of_code_limit, loc_per_repo_limit,
                            razorpay_payment_id, razorpay_order_id,
                            upgrade_bonus_days, pricing_version
                     FROM subscriptions
                     JOIN users ON subscriptions.user_owner_id = users.id
                     WHERE user_owner_id = %s
+                    FOR UPDATE
                     """,
                     (owner_id,)
                 )
@@ -157,11 +151,12 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                 cur.execute(
                     """
                     SELECT id, plan_type, status, expires_at,
-                           '' as username, created_at,
+                           NULL as github_id, created_at,
                            repos_limit, lines_of_code_limit, loc_per_repo_limit,
                            razorpay_payment_id, razorpay_order_id,
                            upgrade_bonus_days, pricing_version
                     FROM subscriptions WHERE org_owner_id = %s
+                    FOR UPDATE
                     """,
                     (owner_id,)
                 )
@@ -171,42 +166,37 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
             row = cur.fetchone()
             
             # Admin Override check
-            admin_username = "rajx-dev"
+            admin_github_ids = set(int(x) for x in os.getenv("ADMIN_GITHUB_IDS", "").split(",") if x.strip().isdigit())
             
-            # If we don't have a sub, but it's a user, we should fetch the user to check if they are admin
             if not row and owner_type == "user":
-                cur.execute("SELECT username FROM users WHERE id = %s", (owner_id,))
+                cur.execute("SELECT github_id FROM users WHERE id = %s", (owner_id,))
                 user_row = cur.fetchone()
-                if user_row and user_row[0].lower() == admin_username:
+                if user_row and user_row[0] in admin_github_ids:
                     return {"plan_type": "enterprise", "status": "active", "expires_at": None}
                     
             if row:
-                username = row[4].lower() if row[4] else ""
-                if owner_type == "user" and username == admin_username:
+                github_id = row[4]
+                if owner_type == "user" and github_id in admin_github_ids:
                     return {"plan_type": "enterprise", "status": "active", "expires_at": None}
                 
                 db_status = row[2]
                 expires_at = row[3]
                 
-                # Auto-detect expiry from expires_at — don't trust the DB status field alone
                 now = datetime.datetime.now(datetime.timezone.utc)
                 if expires_at is not None and db_status != "expired":
-                    # Make expires_at timezone-aware if it isn't
                     if expires_at.tzinfo is None:
-                        expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
+                        raise ValueError("expires_at from database is naive, cannot safely compare to timezone-aware UTC now")
+                        
                     if expires_at < now:
                         db_status = "expired"
-                        # Update the DB so subsequent reads are consistent
-                        try:
-                            cur.execute(
-                                "UPDATE subscriptions SET status = 'expired' WHERE id = %s",
-                                (row[0],)
-                            )
-                            conn.commit()
-                            logger.info(f"Auto-expired subscription {row[0]} for {owner_type} {owner_id}")
-                        except Exception as upd_err:
-                            logger.warning(f"Could not update subscription status to expired: {upd_err}")
+                        cur.execute(
+                            "UPDATE subscriptions SET status = 'expired' WHERE id = %s",
+                            (row[0],)
+                        )
+                        logger.info(f"Auto-expired subscription {row[0]} for {owner_type} {owner_id}")
                 
+                conn.commit()
+                    
                 return {
                     "id": row[0],
                     "plan_type": row[1],
@@ -222,11 +212,11 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                     "pricing_version": row[12],
                 }
                 
-            # Fallback default plan
             return _default
     except Exception as e:
         logger.error(f"Failed to fetch subscription for {owner_type} {owner_id}: {e}")
-        return {"plan_type": "none", "status": "active", "expires_at": None}
+        conn.rollback()
+        return _default
     finally:
         release_connection(conn)
 
@@ -244,6 +234,9 @@ def update_subscription(
     upgrade_bonus_days: int = 0,
     pricing_version: str = "2",
 ) -> dict:
+    if not owner_id or not isinstance(owner_id, str) or len(owner_id) > 36:
+        raise ValueError("Invalid owner_id")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -326,6 +319,11 @@ def update_subscription(
         release_connection(conn)
 
 def save_license_key(owner_id: str, owner_type: str, key_hash: str, plan_type: str = "enterprise", max_loc: int = -1, expires_at = None) -> dict:
+    if not owner_id or not isinstance(owner_id, str) or len(owner_id) > 36:
+        raise ValueError("Invalid owner_id")
+    if max_loc < -1 or max_loc > 999999999:
+        raise ValueError("Invalid max_loc")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -405,7 +403,7 @@ def get_user_by_id(user_id: str) -> dict:
                     "username": row[2],
                     "email": row[3],
                     "avatar_url": row[4],
-                    "webhook_secret": row[5]
+                    "webhook_secret": row[5] if row[5] else ""
                 }
             return {}
     except Exception as e:
@@ -434,7 +432,7 @@ def get_user_by_github_id(github_id: int) -> dict:
                     "username": row[2],
                     "email": row[3],
                     "avatar_url": row[4],
-                    "webhook_secret": row[5]
+                    "webhook_secret": row[5] if row[5] else ""
                 }
             return {}
     except Exception as e:
@@ -463,7 +461,7 @@ def get_user_by_username(username: str) -> dict:
                     "username": row[2],
                     "email": row[3],
                     "avatar_url": row[4],
-                    "webhook_secret": row[5]
+                    "webhook_secret": row[5] if row[5] else ""
                 }
             return {}
     except Exception as e:
@@ -474,6 +472,9 @@ def get_user_by_username(username: str) -> dict:
 
 def get_user_repo_loc_stats(user_id: str) -> dict:
     """Return LOC stats for all repos tracked under *user_id*."""
+    if not user_id or not isinstance(user_id, str) or len(user_id) > 36:
+        raise ValueError("Invalid user_id")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -502,6 +503,11 @@ def get_user_repo_loc_stats(user_id: str) -> dict:
 
 def update_repo_loc(user_id: str, repo_full_name: str, loc_count: int) -> None:
     """Upsert the *last_known_loc* for a tracked repository."""
+    if not user_id or not isinstance(user_id, str) or len(user_id) > 36:
+        raise ValueError("Invalid user_id")
+    if loc_count < 0:
+        raise ValueError("LOC count cannot be negative")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -525,10 +531,17 @@ def save_payment_order(
     order_id: str,
     tier_id: str,
     amount_paise: int,
-    currency: str = "INR",
+    currency: str,
     status: str = "created",
 ) -> dict:
     """Insert a new Razorpay payment order for audit tracking."""
+    if not user_id or not isinstance(user_id, str) or len(user_id) > 36:
+        raise ValueError("Invalid user_id")
+    if not order_id or not re.match(r'^order_[a-zA-Z0-9]+$', order_id):
+        raise ValueError("Invalid order_id format")
+    if not currency or not isinstance(currency, str):
+        raise ValueError("Currency must be explicitly provided")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -559,6 +572,11 @@ def update_payment_order_status(
     payment_id: str | None = None,
 ) -> None:
     """Update a payment order's status and optionally set the payment ID."""
+    if not order_id or not re.match(r'^order_[a-zA-Z0-9]+$', order_id):
+        raise ValueError("Invalid order_id format")
+    if payment_id and not re.match(r'^pay_[a-zA-Z0-9]+$', payment_id):
+        raise ValueError("Invalid payment_id format")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -589,6 +607,9 @@ def update_payment_order_status(
 
 def get_payment_order(order_id: str) -> dict:
     """Fetch a payment order by its Razorpay order ID."""
+    if not order_id or not re.match(r'^order_[a-zA-Z0-9]+$', order_id):
+        raise ValueError("Invalid order_id format")
+
     conn = get_connection()
     try:
         with conn.cursor() as cur:

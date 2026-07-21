@@ -11,6 +11,7 @@ import hmac
 import hashlib
 import logging
 import jwt
+import time
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Request, Header, HTTPException
 
@@ -22,6 +23,14 @@ router = APIRouter()
 
 # Configuration
 GITHUB_MARKETPLACE_SECRET = os.getenv("GITHUB_MARKETPLACE_SECRET", "")
+
+# In-memory stores for replay protection and rate limiting (temporary mitigation)
+# In production, these should be replaced with Redis or DB schemas.
+PROCESSED_DELIVERIES = set()
+RATE_LIMIT_STORE = {}
+
+def is_saas_mode() -> bool:
+    return os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
 
 def generate_license_jwt(owner_name: str, plan_type: str, max_loc: int, duration_days: int = 365) -> str:
     """Generate a cryptographically signed JWT license key for self-hosted Enterprise users."""
@@ -44,18 +53,22 @@ def generate_license_jwt(owner_name: str, plan_type: str, max_loc: int, duration
         # Signs using symmetric key
         return jwt.encode(payload, secret_key.strip(), algorithm="HS256")
     else:
-        # Fallback for local sandbox testing
-        return jwt.encode(payload, "super-secret-saas-session-key", algorithm="HS256")
+        # Prevent fallback generation if keys are missing
+        raise RuntimeError("Missing N3MO_LICENSE_PRIVATE_KEY or N3MO_LICENSE_SECRET. Cannot generate secure licenses.")
 
 @router.post("/webhook")
 async def marketplace_webhook(
     request: Request,
-    x_hub_signature_256: str = Header(None)
+    x_hub_signature_256: str = Header(None),
+    x_github_delivery: str = Header(None)
 ):
     """Listens to GitHub Marketplace subscription events (purchases, plan changes, cancellations)."""
     body = await request.body()
     
-    # Verify signature if secret is configured
+    if is_saas_mode() and not GITHUB_MARKETPLACE_SECRET:
+        raise HTTPException(status_code=500, detail="GITHUB_MARKETPLACE_SECRET is not configured.")
+
+    # 1. Verify signature
     if GITHUB_MARKETPLACE_SECRET:
         if not x_hub_signature_256:
             raise HTTPException(status_code=401, detail="Missing X-Hub-Signature-256 header")
@@ -66,6 +79,15 @@ async def marketplace_webhook(
         expected = hmac.new(GITHUB_MARKETPLACE_SECRET.encode(), body, hashlib.sha256).hexdigest()
         if not hmac.compare_digest(expected, parts[1]):
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
+
+    # 2. Replay Protection
+    if x_github_delivery:
+        if x_github_delivery in PROCESSED_DELIVERIES:
+            return {"status": "ignored", "reason": "Webhook delivery already processed"}
+        PROCESSED_DELIVERIES.add(x_github_delivery)
+        # Cap the set size to prevent memory leaks over time
+        if len(PROCESSED_DELIVERIES) > 10000:
+            PROCESSED_DELIVERIES.clear()
 
     try:
         payload = json.loads(body.decode("utf-8"))
@@ -85,77 +107,108 @@ async def marketplace_webhook(
     account_type = account.get("type") # "User" or "Organization"
     plan_name = plan.get("name", "").lower() # e.g. "free", "pro", "enterprise"
 
+    if not github_id or not name:
+        return {"status": "ignored", "reason": "Missing github_id or login"}
+
+    # 3. Rate Limiting (per GitHub ID)
+    now = time.time()
+    rate_record = RATE_LIMIT_STORE.get(github_id, {"count": 0, "reset_time": now + 60})
+    if now > rate_record["reset_time"]:
+        rate_record = {"count": 1, "reset_time": now + 60}
+    else:
+        rate_record["count"] += 1
+
+    RATE_LIMIT_STORE[github_id] = rate_record
+    if rate_record["count"] > 5:
+        raise HTTPException(status_code=429, detail="Too many marketplace requests. Please try again later.")
+
+    # 4. Strict account type validation
+    if account_type not in ("User", "Organization"):
+        return {"status": "ignored", "reason": f"Unknown account type: {account_type}"}
+
     logger.info(f"Marketplace webhook: {action} plan '{plan_name}' for {account_type} '{name}'")
 
-    # 1. Map billing plans
-    if "enterprise" in plan_name:
+    # 5. Strict plan mapping
+    if plan_name == "enterprise":
         plan_type = "enterprise"
-    elif "pro" in plan_name:
+    elif plan_name == "pro":
         plan_type = "pro"
-    else:
+    elif plan_name == "free":
         plan_type = "free"
+    else:
+        return {"status": "ignored", "reason": f"Unknown plan name: {plan_name}"}
 
     status = "active"
     if action == "cancelled":
         status = "cancelled"
 
-    # 2. Provision User or Organization profile
-    owner_id = None
-    if account_type == "User":
-        user = upsert_user(github_id=github_id, username=name)
-        owner_id = user.get("id")
-        owner_category = "user"
-    elif account_type == "Organization":
-        org = upsert_organization(github_id=github_id, name=name)
-        owner_id = org.get("id")
-        owner_category = "organization"
-    else:
-        return {"status": "ignored", "reason": f"Unknown account type: {account_type}"}
+    try:
+        # 6. Provision User or Organization profile
+        owner_id = None
+        if account_type == "User":
+            user = upsert_user(github_id=github_id, username=name)
+            owner_id = user.get("id")
+            owner_category = "user"
+        elif account_type == "Organization":
+            org = upsert_organization(github_id=github_id, name=name)
+            owner_id = org.get("id")
+            owner_category = "organization"
 
-    if not owner_id:
-        raise HTTPException(status_code=500, detail="Failed to resolve account owner ID in database")
+        if not owner_id:
+            raise HTTPException(status_code=500, detail="Failed to resolve account owner ID in database")
 
-    # 3. Synchronize Subscription status
-    # Default plan duration is 1 year (or indefinite if auto-renewing, but let's set 365 days)
-    expires_at = datetime.now(timezone.utc) + timedelta(days=365) if status == "active" else datetime.now(timezone.utc)
-    sub = update_subscription(
-        owner_id=owner_id,
-        owner_type=owner_category,
-        plan_type=plan_type,
-        status=status,
-        expires_at=expires_at
-    )
-
-    # 4. Generate Enterprise Offline License Key if applicable
-    license_info = None
-    if plan_type == "enterprise" and status == "active":
-        # Generate the JWT license key token
-        license_jwt = generate_license_jwt(
-            owner_name=name,
-            plan_type="enterprise",
-            max_loc=-1, # Unlimited LOC for self-hosted enterprise tier
-            duration_days=365
-        )
-        key_hash = get_license_hash(license_jwt)
-        
-        # Save the hashed license record for audit
-        save_license_key(
+        # 7. Synchronize Subscription status
+        # If cancelled, expire immediately (in the past) to invalidate
+        if status == "active":
+            expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+        else:
+            expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+            
+        sub = update_subscription(
             owner_id=owner_id,
             owner_type=owner_category,
-            key_hash=key_hash,
-            plan_type="enterprise",
-            max_loc=-1,
+            plan_type=plan_type,
+            status=status,
             expires_at=expires_at
         )
-        license_info = {
-            "license_key": license_jwt,
-            "message": "Enterprise License Key generated. Copy and supply it to your N3MO_LICENSE_KEY variable."
+
+        # 8. Generate Enterprise Offline License Key if applicable
+        license_info_msg = None
+        if plan_type == "enterprise" and status == "active":
+            # Generate the JWT license key token
+            license_jwt = generate_license_jwt(
+                owner_name=name,
+                plan_type="enterprise",
+                max_loc=-1, # Unlimited LOC for self-hosted enterprise tier
+                duration_days=365
+            )
+            key_hash = get_license_hash(license_jwt)
+            
+            # Log audit fields (would ideally go into DB)
+            logger.info(f"AUDIT: License generated. Delivery ID: {x_github_delivery}, Signed At: {datetime.now(timezone.utc).isoformat()}")
+
+            # Save the hashed license record for audit
+            save_license_key(
+                owner_id=owner_id,
+                owner_type=owner_category,
+                key_hash=key_hash,
+                plan_type="enterprise",
+                max_loc=-1,
+                expires_at=expires_at
+            )
+            license_info_msg = "Enterprise License Key generated. Please check your email or dashboard."
+
+        return {
+            "status": "processed",
+            "action": action,
+            "plan": plan_type,
+            "subscription_status": sub.get("status"),
+            "license_message": license_info_msg
         }
 
-    return {
-        "status": "processed",
-        "action": action,
-        "plan": plan_type,
-        "subscription_status": sub.get("status"),
-        "license": license_info
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Database/Internal error processing marketplace webhook: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error while processing subscription")
+

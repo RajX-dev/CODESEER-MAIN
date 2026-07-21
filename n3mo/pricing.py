@@ -23,6 +23,9 @@ from typing import Optional
 # Tier definitions
 # ---------------------------------------------------------------------------
 
+TRIAL_DAYS = 15
+UNLIMITED = -1
+
 PRICING_TIERS: dict[str, dict] = {
     "standard": {
         "id": "standard",
@@ -102,13 +105,15 @@ PRICING_TIERS: dict[str, dict] = {
     "enterprise": {
         "id": "enterprise",
         "name": "Enterprise Plan",
-        "repos_limit": 10,
-        "loc_per_repo": 1_000_000,
-        "max_total_loc": 10_000_000,
+        "price_usd": None,
+        "price_in_cents": None,
+        "repos_limit": UNLIMITED,
+        "loc_per_repo": UNLIMITED,
+        "max_total_loc": UNLIMITED,
         "billing_cycle_days": 30,
         "features": [
-            "Up to 10 repositories",
-            "Up to 1M lines of code per repo",
+            "Unlimited repos",
+            "Unlimited lines of code",
             "Everything in Team Pro",
             "SSO / SAML authentication",
             "Audit logs",
@@ -155,7 +160,8 @@ def get_tier_for_upgrade(total_loc: int, repo_count: int) -> Optional[str]:
     """
     for tier_id in TIER_ORDER:
         tier = PRICING_TIERS[tier_id]
-        if repo_count <= tier["repos_limit"] and total_loc <= tier["max_total_loc"]:
+        if (tier["repos_limit"] == UNLIMITED or repo_count <= tier["repos_limit"]) and \
+           (tier["max_total_loc"] == UNLIMITED or total_loc <= tier["max_total_loc"]):
             return tier_id
     return None
 
@@ -173,9 +179,10 @@ def calculate_upgrade_bonus_days(current_expires_at: Optional[datetime.datetime]
 
     # Ensure timezone awareness
     if current_expires_at.tzinfo is None:
-        current_expires_at = current_expires_at.replace(tzinfo=datetime.timezone.utc)
+        raise ValueError("datetime must include timezone info")
 
-    remaining = (current_expires_at - now).days
+    exp_utc = current_expires_at.astimezone(datetime.timezone.utc)
+    remaining = (exp_utc - now).days
     return max(remaining, 0)
 
 
@@ -201,12 +208,21 @@ def validate_eligibility(
         ``(True, "")`` when the user qualifies, otherwise
         ``(False, "<human-readable reason>")`` with a suggestion.
     """
+    if repo_count < 0 or not isinstance(per_repo_locs, list):
+        return False, "Invalid input"
+
+    if len(per_repo_locs) != repo_count:
+        return False, "LOC list size mismatch"
+
+    if any(loc < 0 for loc in per_repo_locs):
+        return False, "Negative LOC not allowed"
+
     tier = get_tier(tier_id)
     if tier is None:
         return False, f"Unknown tier: '{tier_id}'."
 
     # Check repo limit
-    if repo_count > tier["repos_limit"]:
+    if tier["repos_limit"] != UNLIMITED and repo_count > tier["repos_limit"]:
         suggested = get_tier_for_upgrade(sum(per_repo_locs), repo_count)
         suggestion = f" Consider the {PRICING_TIERS[suggested]['name']}." if suggested else ""
         return (
@@ -216,20 +232,21 @@ def validate_eligibility(
         )
 
     # Check per-repo LOC limit
-    for loc in per_repo_locs:
-        if loc > tier["loc_per_repo"]:
-            suggested = get_tier_for_upgrade(sum(per_repo_locs), repo_count)
-            suggestion = f" Consider the {PRICING_TIERS[suggested]['name']}." if suggested else ""
-            return (
-                False,
-                f"One of your repositories has {loc:,} lines of code, "
-                f"which exceeds the {tier['name']} limit of "
-                f"{tier['loc_per_repo']:,} per repo.{suggestion}",
-            )
+    if tier["loc_per_repo"] != UNLIMITED:
+        for loc in per_repo_locs:
+            if loc > tier["loc_per_repo"]:
+                suggested = get_tier_for_upgrade(sum(per_repo_locs), repo_count)
+                suggestion = f" Consider the {PRICING_TIERS[suggested]['name']}." if suggested else ""
+                return (
+                    False,
+                    f"One of your repositories has {loc:,} lines of code, "
+                    f"which exceeds the {tier['name']} limit of "
+                    f"{tier['loc_per_repo']:,} per repo.{suggestion}",
+                )
 
     # Check total LOC cap
     total_loc = sum(per_repo_locs)
-    if total_loc > tier["max_total_loc"]:
+    if tier["max_total_loc"] != UNLIMITED and total_loc > tier["max_total_loc"]:
         suggested = get_tier_for_upgrade(total_loc, repo_count)
         suggestion = f" Consider the {PRICING_TIERS[suggested]['name']}." if suggested else ""
         return (

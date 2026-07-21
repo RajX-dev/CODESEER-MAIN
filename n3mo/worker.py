@@ -6,6 +6,8 @@ import urllib.request
 import urllib.error
 import json
 import traceback
+import re
+import uuid
 
 from n3mo.core.core_engine import (
     checkout_repo, 
@@ -39,8 +41,13 @@ def fetch_pr_details(repo_full_name: str, pr_number: str) -> dict:
         }
     )
     
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        raise ValueError(f"GitHub API returned error: {e.code} {e.reason}")
+    except urllib.error.URLError as e:
+        raise ValueError(f"Failed to connect to GitHub API: {e.reason}")
 
 
 def _get_plan_limits(plan_type: str, sub: dict = None) -> tuple[int, str]:
@@ -71,6 +78,26 @@ def main():
     if not target_repo or not pr_number:
         logger.error("Missing TARGET_REPO or PR_NUMBER in environment")
         sys.exit(1)
+        
+    if not re.match(r'^[a-zA-Z0-9\-_]+/[a-zA-Z0-9\-_\.]+$', target_repo):
+        logger.error("Invalid TARGET_REPO format")
+        sys.exit(1)
+        
+    if not re.match(r'^[0-9]+$', pr_number):
+        logger.error("Invalid PR_NUMBER format")
+        sys.exit(1)
+        
+    if user_id:
+        if not re.match(r'^[0-9]+$', user_id):
+            try:
+                uuid.UUID(user_id)
+            except ValueError:
+                logger.error("Invalid USER_ID format")
+                sys.exit(1)
+                
+    if installation_id and not re.match(r'^[0-9]+$', installation_id):
+        logger.error("Invalid INSTALLATION_ID format")
+        sys.exit(1)
     
     logger.info("🚀 N3MO CORE ENGINE WAKING UP")
     logger.info(f"Target Repository: {target_repo}")
@@ -85,10 +112,16 @@ def main():
         base_sha = pr_details.get("base", {}).get("sha")
         head_sha = pr_details.get("head", {}).get("sha")
         clone_url = pr_details.get("base", {}).get("repo", {}).get("clone_url")
-        is_private = pr_details.get("base", {}).get("repo", {}).get("private", True)
         
         if not base_sha or not head_sha or not clone_url:
             raise ValueError("Could not retrieve SHA or clone URL from PR details")
+            
+        if not re.match(r'^[0-9a-f]{40}$', base_sha):
+            raise ValueError(f"Invalid base_sha: {base_sha}")
+        if not re.match(r'^[0-9a-f]{40}$', head_sha):
+            raise ValueError(f"Invalid head_sha: {head_sha}")
+        if not clone_url.startswith(("https://", "git@")):
+            raise ValueError(f"Suspicious URL: {clone_url}")
             
         # 2. Checkout base_sha and fetch PR ref
         logger.info(f"Checking out base commit: {base_sha}")
@@ -97,7 +130,7 @@ def main():
         logger.info(f"Fetching PR #{pr_number} commits...")
         subprocess.run(
             ["git", "fetch", "origin", f"pull/{pr_number}/head:pr-{pr_number}"],
-            cwd=repo_dir, check=True
+            cwd=repo_dir, check=True, timeout=300
         )
         
         # 3. Determine changed files
@@ -113,9 +146,15 @@ def main():
             )
             post_github_comment(target_repo, int(pr_number), safe_msg, installation_id)
             sys.exit(0)
+            
+        if len(changed_files) > 1000:
+            raise ValueError("Too many changed files to analyze (>1000)")
+            
+        if any(".." in f for f in changed_files):
+            raise ValueError("Path traversal detected in changed files list")
 
         # 4. Subscription & plan check (BEFORE expensive LOC calculation)
-        max_loc = 0  # Default
+        max_loc = 0  # Default (deny if unknown)
         plan_name = "SaaS None"
         
         if user_id:
@@ -126,14 +165,12 @@ def main():
 
             if sub_status == "active":
                 max_loc, plan_name = _get_plan_limits(plan_type, sub)
-            elif sub_status in ("expired", "cancelled", "canceled"):
-                # Fallback Expiration Check:
-                # If the subscription lapsed right before the worker picked up the job,
-                # we block AST analysis on repositories and exit immediately.
+            else:
+                max_loc = 0
                 logger.warning(f"Subscription {sub_status} for user {user_id} (plan: {plan_type})")
                 expired_msg = (
                     f"### ⚠️ N3MO Subscription {sub_status.capitalize()}\n\n"
-                    f"Your **{plan_type.capitalize()}** plan has {sub_status}. "
+                    f"Your **{plan_type.capitalize()}** plan is {sub_status}. "
                     f"N3MO cannot run PR impact analysis without an active subscription.\n\n"
                     f"To re-enable PR checks:\n"
                     f"1. **Renew your plan** on the [N3MO dashboard](https://n3mo.shop)\n"
@@ -149,7 +186,16 @@ def main():
         # 6. Calculate LOC and enforce limits
         # We calculate the real lines of code here. If `total_lines` exceeds the `max_loc`
         # for their specific SaaS tier, we instruct them to upgrade and abort the heavy processing.
-        total_lines = calculate_repo_loc(repo_dir)
+        # We run calculate_repo_loc in a subprocess with a timeout if needed, but since it's a synchronous
+        # python function we can't easily timeout unless we use multiprocessing or concurrent.futures.
+        # Let's use concurrent.futures to wrap it with a timeout.
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(calculate_repo_loc, repo_dir)
+            try:
+                total_lines = future.result(timeout=60) # 60 seconds max
+            except concurrent.futures.TimeoutError:
+                raise ValueError("Repository too large to analyze within time limits.")
         
         if max_loc > 0 and total_lines > max_loc:
             logger.warning(f"LOC limit exceeded for {target_repo}: {total_lines} LOC (Limit: {max_loc} for {plan_name})")
@@ -164,6 +210,14 @@ def main():
             post_github_comment(target_repo, int(pr_number), warning_msg, installation_id)
             logger.info("✅ Exited early due to LOC limit.")
             sys.exit(0)
+        
+        # Re-check subscription after LOC calculation to prevent race conditions during long calculations
+        if user_id:
+            from n3mo.saas_db import get_subscription
+            sub = get_subscription(user_id, "user")
+            if sub.get("status") != "active":
+                logger.warning(f"Subscription became inactive during processing for user {user_id}")
+                sys.exit(0)
         
         # 7. Index base commit and get impacts
         logger.info("Indexing base commit...")
@@ -204,8 +258,9 @@ def main():
         logger.error(traceback.format_exc())
         
         # Post error to PR so the user knows it failed
+        error_id = str(uuid.uuid4())[:8]
         try:
-            error_md = f"### ⚠️ N3MO Core Engine Failed\n\nAn error occurred during AST analysis:\n```\n{e}\n```"
+            error_md = f"### ⚠️ N3MO Core Engine Failed\n\nAn internal error occurred during AST analysis (Error ID: `{error_id}`). Please contact support."
             post_github_comment(target_repo, int(pr_number), error_md, installation_id)
         except Exception as post_err:
             logger.error(f"Failed to post error comment to PR: {post_err}")

@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let isExpired = false;
 
-        let isTrial = false;
+        let isTrial = data.subscription?.status === 'trialing';
 
         const subDetails = document.getElementById('sub-details');
 
@@ -116,12 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     isExpired = true;
 
-                    if (startD && (expD - startD) < (30 * 24 * 60 * 60 * 1000)) {
-
-                        isTrial = true;
-
-                    }
-
                 }
 
             } else {
@@ -132,7 +126,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         }
 
-        planBadge.textContent = planType === 'free' ? 'UNLICENSED' : planType.toUpperCase();
+        if (isTrial && !isExpired) {
+            planBadge.textContent = "TRIALING";
+            planBadge.style.backgroundColor = "var(--accent-green)";
+            planBadge.style.borderColor = "var(--accent-green)";
+            planBadge.style.color = "#000";
+        } else {
+            planBadge.textContent = planType === 'free' ? 'UNLICENSED' : planType.toUpperCase();
+        }
 
         const webhookSection = document.getElementById('webhook-section');
 

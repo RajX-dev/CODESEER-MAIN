@@ -12,11 +12,15 @@ import hashlib
 import urllib.request
 import urllib.error
 import json
+import time
+import datetime as _dt
+import jwt
 from fastapi import APIRouter, FastAPI, Request, Header, HTTPException, BackgroundTasks
+
+from n3mo.saas_db import get_user_by_username, get_subscription
 
 
 logger = logging.getLogger("n3mo.api")
-
 router = APIRouter()
 
 # Configuration
@@ -24,9 +28,57 @@ GITHUB_WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "")
 N3MO_LICENSE_KEY = os.getenv("N3MO_LICENSE_KEY", "")
 N3MO_SUBSCRIPTION_ACTIVE = os.getenv("N3MO_SUBSCRIPTION_ACTIVE", "false").lower() in ("true", "1", "yes")
 
+def revoke_github_installation(installation_id: str):
+    """Generate a GitHub App JWT and delete the installation."""
+    app_id = os.getenv("GITHUB_APP_ID")
+    private_key_env = os.getenv("GITHUB_APP_PRIVATE_KEY")
+    private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH") or os.getenv("GITHUB_PRIVATE_KEY_PATH")
+    
+    if not app_id:
+        logger.error("Missing GITHUB_APP_ID for token revocation.")
+        return False
+        
+    private_key = None
+    if private_key_env:
+        private_key = private_key_env
+    elif private_key_path and os.path.exists(private_key_path):
+        with open(private_key_path, "r") as f:
+            private_key = f.read()
+            
+    if not private_key:
+        logger.error("Missing GITHUB_APP_PRIVATE_KEY for token revocation.")
+        return False
+        
+    try:
+        now = int(time.time())
+        payload = {
+            "iat": now - 60,
+            "exp": now + (10 * 60),
+            "iss": app_id
+        }
+        encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+        
+        req = urllib.request.Request(
+            f"https://api.github.com/app/installations/{installation_id}",
+            headers={
+                "Authorization": f"Bearer {encoded_jwt}",
+                "Accept": "application/vnd.github.v3+json",
+                "User-Agent": "N3MO-SaaS"
+            },
+            method="DELETE"
+        )
+        with urllib.request.urlopen(req) as _:
+            logger.info(f"Successfully revoked GitHub App installation {installation_id}.")
+            return True
+    except Exception as e:
+        logger.error(f"Failed to revoke GitHub App installation {installation_id}: {e}")
+        return False
+
+
 @router.get("/health")
 def health_check():
     return {"status": "healthy", "service": "n3mo-webhook-api"}
+
 
 @router.post("/webhook")
 async def github_webhook(
@@ -54,54 +106,34 @@ async def github_webhook(
 
     # Determine which secret to use for HMAC verification
     secret_to_use = GITHUB_WEBHOOK_SECRET
+    user_db = None
     
-    # In SaaS mode, we use the user's personal webhook secret
-    is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
-    if is_saas:
-        repo_owner_name = payload.get("repository", {}).get("owner", {}).get("login")
-        if repo_owner_name:
-            from n3mo.saas_db import get_user_by_username
+    # Safely extract repository owner
+    repository = payload.get("repository")
+    if isinstance(repository, dict):
+        owner = repository.get("owner")
+        if isinstance(owner, dict):
+            repo_owner_name = owner.get("login")
+        else:
+            repo_owner_name = None
+    else:
+        repo_owner_name = None
+
+    if repo_owner_name:
+        try:
             user_db = get_user_by_username(repo_owner_name)
             if not user_db:
                 logger.warning(f"Webhook from unregistered user {repo_owner_name}, rejecting.")
                 return {"status": "error", "message": "User is not registered on N3MO SaaS."}
-
+                
             secret_from_db = user_db.get("webhook_secret")
             if secret_from_db:
                 secret_to_use = str(secret_from_db)
+        except Exception as e:
+            logger.error(f"Database error fetching user {repo_owner_name}: {e}")
+            raise HTTPException(status_code=500, detail="Internal server error connecting to database.")
 
-            # Check subscription expiration — check BOTH status field AND expires_at timestamp
-            # This is critical to ensure users with lapsed plans cannot trigger expensive AST parsing
-            from n3mo.saas_db import get_subscription
-            import datetime as _dt
-            sub = get_subscription(str(user_db.get("id")), "user")
-            
-            # 1. Check if the database explicitly marked the subscription as expired
-            is_expired = sub.get("status") == "expired" or sub.get("plan_type") == "none"
-            
-            # 2. Check the timestamp as a fallback (in case the background cron job hasn't run yet to update the status)
-            if not is_expired and sub.get("expires_at") is not None:
-                exp = sub["expires_at"]
-                now = _dt.datetime.now(_dt.timezone.utc)
-                if exp.tzinfo is None:
-                    exp = exp.replace(tzinfo=_dt.timezone.utc)
-                if exp < now:
-                    is_expired = True
-            
-            if is_expired:
-                # 3. The subscription is expired. Automatically revoke the GitHub App installation token
-                # This stops GitHub from forwarding events for this specific user/organization entirely
-                installation = payload.get("installation")
-                installation_id = installation.get("id") if isinstance(installation, dict) else None
-                if installation_id:
-                    app_id = os.getenv("GITHUB_APP_ID")
-                    private_key_env = os.getenv("GITHUB_APP_PRIVATE_KEY")
-                    private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH") or os.getenv("GITHUB_PRIVATE_KEY_PATH")
-                    # We will just log it for now to avoid import errors if the function is missing
-                    logger.warning(f"Subscription expired for user {user_db.get('id')}. GitHub App token should be revoked.")
-                return {"status": "error", "message": "Subscription expired. GitHub webhook token revoked."}
-
-    # Verify signature if a secret is configured (either global or personal)
+    # 1. VERIFY SIGNATURE FIRST
     if secret_to_use:
         if not x_hub_signature_256:
             raise HTTPException(status_code=401, detail="Missing X-Hub-Signature-256 header")
@@ -112,6 +144,33 @@ async def github_webhook(
         if not hmac.compare_digest(expected, parts[1]):
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
+    # 2. CHECK EXPIRATION & REVOKE TOKEN (Only if signature is valid)
+    if user_db:
+        try:
+            sub = get_subscription(str(user_db.get("id")), "user")
+            is_expired = sub.get("status") in ("expired", "none")
+            
+            # Check the timestamp as a fallback
+            if not is_expired and sub.get("expires_at") is not None:
+                exp = sub["expires_at"]
+                now = _dt.datetime.now(_dt.timezone.utc)
+                if exp.tzinfo is None:
+                    exp = exp.replace(tzinfo=_dt.timezone.utc)
+                if exp < now:
+                    is_expired = True
+                    
+            if is_expired:
+                installation = payload.get("installation")
+                installation_id = installation.get("id") if isinstance(installation, dict) else None
+                if installation_id:
+                    # Authenticated token revocation
+                    revoke_github_installation(str(installation_id))
+                return {"status": "error", "message": "Subscription expired. GitHub webhook token revoked."}
+        except Exception as e:
+            logger.error(f"Database error fetching subscription for {user_db.get('id')}: {e}")
+            raise HTTPException(status_code=500, detail="Internal server error connecting to database.")
+
+    # 3. CORE LOGIC
     if x_github_event == "pull_request":
         action = payload.get("action")
         if action in ["opened", "synchronize"]:
@@ -133,7 +192,7 @@ async def github_webhook(
                 "client_payload": {
                     "repository": target_repo,
                     "pr_number": str(pr_number),
-                    "user_id": str(user_db.get("id")) if 'user_db' in locals() and user_db else "",
+                    "user_id": str(user_db.get("id")) if user_db else "",
                     "installation_id": str(payload.get("installation", {}).get("id", "")) if isinstance(payload.get("installation"), dict) else ""
                 }
             }
@@ -151,7 +210,7 @@ async def github_webhook(
             )
             
             try:
-                with urllib.request.urlopen(req) as resp:
+                with urllib.request.urlopen(req) as _:
                     logger.info(f"Successfully triggered Core Engine for {target_repo} PR #{pr_number}")
                     return {"status": "accepted", "message": "Core Engine triggered successfully"}
             except Exception as e:

@@ -8,14 +8,13 @@
 import os
 import logging
 import json
+import time
 from fastapi import FastAPI, HTTPException, Request, Depends, Query
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from n3mo.core.run_indexer import run_indexer_for_path
-from n3mo.core.database import get_connection, release_connection
+from n3mo.core.database import get_connection
 from n3mo.cli.cli import get_code_context
 from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
@@ -43,14 +42,32 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
-
 app.include_router(webhook_router, prefix="/github")
 app.include_router(marketplace_router, prefix="/github/marketplace", tags=["Marketplace"])
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 
+def is_saas_mode() -> bool:
+    return os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
+
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "secret")
+
+if is_saas_mode() and (RAZORPAY_KEY_ID == "rzp_test_123" or "test_" in RAZORPAY_KEY_ID):
+    raise RuntimeError("RAZORPAY_KEY_ID must be configured for production SaaS mode")
+
+ADMIN_GITHUB_IDS = set(int(x) for x in os.getenv("ADMIN_GITHUB_IDS", "").split(",") if x.strip().isdigit())
+RATE_LIMIT_STORE = {}
+
+def check_rate_limit(key: str, limit: int, window: int):
+    now = time.time()
+    record = RATE_LIMIT_STORE.get(key, {"count": 0, "reset_time": now + window})
+    if now > record["reset_time"]:
+        record = {"count": 1, "reset_time": now + window}
+    else:
+        record["count"] += 1
+    RATE_LIMIT_STORE[key] = record
+    if record["count"] > limit:
+        raise HTTPException(status_code=429, detail="Too many requests. Please try again later.")
 
 class IndexRequest(BaseModel):
     target_dir: str
@@ -72,7 +89,6 @@ def trigger_indexing(req: IndexRequest):
     return {"status": "success", "summary": summary}
 
 
-
 # ---------------------------------------------------------------------------
 # Billing endpoints
 # ---------------------------------------------------------------------------
@@ -88,28 +104,26 @@ def create_order(req: CreateOrderRequest):
     if not req.github_id:
         raise HTTPException(status_code=400, detail="github_id is required")
 
+    check_rate_limit(f"create_order_{req.github_id}", 5, 60)
+
     tier = get_tier(req.tier_id)
     if not tier:
         raise HTTPException(status_code=400, detail=f"Unknown tier: '{req.tier_id}'")
 
-    user_db = get_user_by_github_id(int(req.github_id))
+    try:
+        github_id_int = int(req.github_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid github_id format")
+
+    user_db = get_user_by_github_id(github_id_int)
     if not user_db:
         raise HTTPException(status_code=404, detail="User not found. Please sign in first.")
 
     user_id = str(user_db["id"])
     key_id = RAZORPAY_KEY_ID
 
-    # --- Admin discount bypass ---
-    if req.discount and req.discount.upper() == "RAJ":
-        expires_at = datetime.now(timezone.utc) + timedelta(days=tier["billing_cycle_days"])
-        update_subscription(
-            user_id, "user", req.tier_id, "active",
-            expires_at=expires_at,
-            repos_limit=tier["repos_limit"],
-            lines_of_code_limit=tier["max_total_loc"],
-            loc_per_repo_limit=tier["loc_per_repo"],
-        )
-        return {"order_id": "", "key_id": key_id, "free_upgrade": True}
+    if req.discount:
+        raise HTTPException(status_code=400, detail="Discounts not supported via this endpoint")
 
     # --- LOC eligibility check ---
     loc_stats = get_user_repo_loc_stats(user_id)
@@ -195,12 +209,20 @@ def verify_payment(req: VerifyPaymentRequest):
     stored_order = get_payment_order(req.razorpay_order_id)
     if not stored_order:
         raise HTTPException(status_code=404, detail="Payment order not found")
+    
+    # Ideally use a DB lock here, but for now we rely on strict state checks
     if stored_order.get("status") == "paid":
         return {"status": "success", "message": "Payment already processed."}
+    
     if stored_order["amount_cents"] != tier["price_in_cents"]:
         raise HTTPException(status_code=400, detail="Amount mismatch")
 
-    user_db = get_user_by_github_id(int(req.github_id))
+    try:
+        github_id_int = int(req.github_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid github_id format")
+
+    user_db = get_user_by_github_id(github_id_int)
     if not user_db:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -243,7 +265,9 @@ def verify_payment(req: VerifyPaymentRequest):
 async def razorpay_webhook(request: Request):
     """Handle Razorpay payment webhooks (payment.authorized, payment.failed)."""
     webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
-    if not webhook_secret:
+    if is_saas_mode() and not webhook_secret:
+        raise HTTPException(status_code=500, detail="RAZORPAY_WEBHOOK_SECRET must be set in production")
+    elif not webhook_secret:
         logging.warning("RAZORPAY_WEBHOOK_SECRET not configured, skipping webhook")
         return {"status": "ignored"}
 
@@ -317,17 +341,6 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
         
     subscription = get_subscription(user_id, "user")
     
-    if current_user["username"].lower() == "rajx-dev":
-        tier = get_tier("enterprise")
-        if tier:
-            subscription = {
-                "plan_type": "enterprise", "status": "active", "expires_at": None, "created_at": None,
-                "repos_limit": tier["repos_limit"], "lines_of_code_limit": tier["max_total_loc"], "loc_per_repo_limit": tier["loc_per_repo"],
-                "pricing_version": "2"
-            }
-        else:
-            subscription = {"plan_type": "enterprise", "status": "active", "expires_at": None, "created_at": None, "repos_limit": 0, "lines_of_code_limit": 0, "loc_per_repo_limit": 0, "pricing_version": "2"}
-    
     loc_stats = get_user_repo_loc_stats(user_id)
     loc_limit = subscription.get("lines_of_code_limit") or 0
     loc_usage_percentage = (loc_stats["total_loc"] / loc_limit * 100) if loc_limit > 0 else 0
@@ -339,6 +352,14 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
         days_until_expiry = calculate_upgrade_bonus_days(subscription["expires_at"])
         expiry_warning = days_until_expiry <= 7
     
+    # Scrub sensitive secrets to prevent client-side leaks
+    is_expired_or_none = subscription.get("status") in ("expired", "none")
+    safe_webhook_secret = "EXPIRED" if is_expired_or_none else user_db.get("webhook_secret")
+    
+    # Strip payment IDs so they never reach the developer console
+    subscription.pop("razorpay_payment_id", None)
+    subscription.pop("razorpay_order_id", None)
+    
     return {
         "status": "success",
         "user": {
@@ -347,7 +368,7 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
             "avatar_url": user_db.get("avatar_url")
         },
         "subscription": subscription,
-        "webhook_secret": user_db.get("webhook_secret"),
+        "webhook_secret": safe_webhook_secret,
         "loc_stats": loc_stats,
         "loc_limit": loc_limit,
         "repos_limit": subscription.get("repos_limit") or 0,
@@ -358,214 +379,225 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
     }
 
 @app.get("/api/admin/upgrade")
-def admin_upgrade():
-    """Secret endpoint to forcefully upgrade RajX-dev to enterprise."""
-    conn = get_connection()
+def admin_upgrade(current_user: dict = Depends(get_current_user_from_token), target_username: str = Query(...)):
+    """Admin endpoint to forcefully upgrade a user to enterprise."""
+    if current_user.get("github_id") not in ADMIN_GITHUB_IDS:
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+        
     try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id FROM users WHERE username ILIKE 'RajX-dev'")
-            row = cur.fetchone()
-            if not row:
-                return {"status": "error", "message": "User RajX-dev not found"}
-            
-            user_id = row[0]
-            cur.execute(
-                """
-                INSERT INTO subscriptions (owner_type, user_owner_id, plan_type, status)
-                VALUES ('user', %s, 'enterprise', 'active')
-                ON CONFLICT (user_owner_id) 
-                DO UPDATE SET plan_type = 'enterprise', status = 'active'
-                """,
-                (user_id,)
-            )
-            conn.commit()
-            return {"status": "success", "message": "RajX-dev successfully upgraded to ENTERPRISE!"}
-    finally:
-        release_connection(conn)
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM users WHERE username ILIKE %s", (target_username,))
+                row = cur.fetchone()
+                if not row:
+                    return {"status": "error", "message": f"User {target_username} not found"}
+                
+                user_id = row[0]
+                cur.execute(
+                    """
+                    INSERT INTO subscriptions (owner_type, user_owner_id, plan_type, status)
+                    VALUES ('user', %s, 'enterprise', 'active')
+                    ON CONFLICT (user_owner_id) 
+                    DO UPDATE SET plan_type = 'enterprise', status = 'active'
+                    """,
+                    (user_id,)
+                )
+                conn.commit()
+                return {"status": "success", "message": f"{target_username} successfully upgraded to ENTERPRISE!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/config")
 def get_config():
-    is_saas = os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
-    return {"saas_mode": is_saas}
+    return {"saas_mode": is_saas_mode()}
 
 @app.get("/api/admin/expire")
-def admin_expire(github_id: int):
-    """Secret endpoint to forcefully expire a user's subscription for testing."""
-    conn = get_connection()
+def admin_expire(github_id: int, current_user: dict = Depends(get_current_user_from_token)):
+    """Admin endpoint to forcefully expire a user's subscription for testing."""
+    if current_user.get("github_id") not in ADMIN_GITHUB_IDS:
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+        
     try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id FROM users WHERE github_id = %s", (github_id,))
-            row = cur.fetchone()
-            if not row:
-                return {"status": "error", "message": "User not found"}
-            
-            user_id = row[0]
-            cur.execute(
-                """
-                UPDATE subscriptions 
-                SET expires_at = NOW() - INTERVAL '1 day'
-                WHERE user_owner_id = %s
-                """,
-                (user_id,)
-            )
-            conn.commit()
-            return {"status": "success", "message": f"User {github_id} successfully expired!"}
-    finally:
-        release_connection(conn)
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM users WHERE github_id = %s", (github_id,))
+                row = cur.fetchone()
+                if not row:
+                    return {"status": "error", "message": "User not found"}
+                
+                user_id = row[0]
+                cur.execute(
+                    """
+                    UPDATE subscriptions 
+                    SET expires_at = NOW() - INTERVAL '1 day', status = 'expired'
+                    WHERE user_owner_id = %s
+                    """,
+                    (user_id,)
+                )
+                conn.commit()
+                return {"status": "success", "message": f"User {github_id} successfully expired!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/impact/{symbol}")
 def get_impact(
     symbol: str,
     depth: int = Query(3, ge=1, le=5),
     file_filter: str = Query(None, alias="file"),
-    project_path: str = Query(None)
+    project_path: str = Query(None),
+    current_user: dict = Depends(get_current_user_from_token)
 ):
+    check_rate_limit(f"impact_{current_user['user_id']}", 20, 60)
+    
     target_dir = project_path or os.getenv("TARGET_CODE_DIR", os.getcwd())
     target_dir = os.path.abspath(target_dir)
     
-    conn = get_connection()
+    allowed_base = os.path.abspath(os.getenv("TARGET_CODE_DIR", os.getcwd()))
+    if not target_dir.startswith(allowed_base):
+        raise HTTPException(status_code=403, detail="Path traversal detected. Access denied.")
+    
     try:
-        with conn.cursor() as cur:
-            # Get project_id
-            cur.execute("SELECT id FROM projects WHERE repo_url = %s", (target_dir,))
-            proj = cur.fetchone()
-            if not proj:
-                # Fallback: check by folder name
-                proj_name = os.path.basename(target_dir)
-                cur.execute("SELECT id FROM projects WHERE name = %s", (proj_name,))
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                # Get project_id
+                cur.execute("SELECT id FROM projects WHERE repo_url = %s", (target_dir,))
                 proj = cur.fetchone()
                 if not proj:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=f"Project not found for path '{target_dir}'. Please index it first."
+                    # Fallback: check by folder name
+                    proj_name = os.path.basename(target_dir)
+                    cur.execute("SELECT id FROM projects WHERE name = %s", (proj_name,))
+                    proj = cur.fetchone()
+                    if not proj:
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"Project not found for path '{target_dir}'. Please index it first."
+                        )
+                project_id = proj[0]
+                
+                # Find target symbol
+                if file_filter:
+                    escaped_filter = file_filter.replace("%", "\\%").replace("_", "\\_")
+                    cur.execute(
+                        """
+                        SELECT s.id, s.name, s.file_path, s.start_line 
+                        FROM symbols s 
+                        LEFT JOIN (SELECT resolved_symbol_id, COUNT(*) as call_count FROM calls GROUP BY resolved_symbol_id) c 
+                          ON s.id = c.resolved_symbol_id 
+                        WHERE s.name = %s AND s.project_id = %s AND s.file_path LIKE %s 
+                        ORDER BY COALESCE(c.call_count, 0) DESC, s.start_line ASC 
+                        LIMIT 1
+                        """,
+                        (symbol, project_id, f"%{escaped_filter}%")
                     )
-            project_id = proj[0]
-            
-            # Find target symbol
-            if file_filter:
-                cur.execute(
-                    """
-                    SELECT s.id, s.name, s.file_path, s.start_line 
-                    FROM symbols s 
-                    LEFT JOIN (SELECT resolved_symbol_id, COUNT(*) as call_count FROM calls GROUP BY resolved_symbol_id) c 
-                      ON s.id = c.resolved_symbol_id 
-                    WHERE s.name = %s AND s.project_id = %s AND s.file_path LIKE %s 
-                    ORDER BY COALESCE(c.call_count, 0) DESC, s.start_line ASC 
-                    LIMIT 1
-                    """,
-                    (symbol, project_id, f"%{file_filter}%")
+                else:
+                    cur.execute(
+                        """
+                        SELECT s.id, s.name, s.file_path, s.start_line 
+                        FROM symbols s 
+                        LEFT JOIN (SELECT resolved_symbol_id, COUNT(*) as call_count FROM calls GROUP BY resolved_symbol_id) c 
+                          ON s.id = c.resolved_symbol_id 
+                        WHERE s.name = %s AND s.project_id = %s 
+                        ORDER BY COALESCE(c.call_count, 0) DESC, s.start_line ASC 
+                        LIMIT 1
+                        """,
+                        (symbol, project_id)
+                    )
+                target = cur.fetchone()
+                if not target:
+                    raise HTTPException(status_code=404, detail=f"Symbol '{symbol}' not found in the index.")
+                
+                target_id, real_name, target_file, target_start_line = target
+                
+                # Recursive CTE query with Cycle Guard
+                query = """
+                WITH RECURSIVE impact_chain AS (
+                    SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id,
+                           ARRAY[c.source_symbol_id] AS path,
+                           FALSE AS cycle
+                    FROM calls c
+                    JOIN symbols s ON c.source_symbol_id = s.id
+                    JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
+                    WHERE c.resolved_symbol_id = %s
+                    UNION ALL
+                    SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id,
+                           ic.path || c.source_symbol_id,
+                           c.source_symbol_id = ANY(ic.path)
+                    FROM impact_chain ic
+                    JOIN calls c ON c.resolved_symbol_id = ic.source_id
+                    JOIN symbols s ON c.source_symbol_id = s.id
+                    WHERE ic.depth < %s + 1 AND NOT ic.cycle
                 )
-            else:
-                cur.execute(
-                    """
-                    SELECT s.id, s.name, s.file_path, s.start_line 
-                    FROM symbols s 
-                    LEFT JOIN (SELECT resolved_symbol_id, COUNT(*) as call_count FROM calls GROUP BY resolved_symbol_id) c 
-                      ON s.id = c.resolved_symbol_id 
-                    WHERE s.name = %s AND s.project_id = %s 
-                    ORDER BY COALESCE(c.call_count, 0) DESC, s.start_line ASC 
-                    LIMIT 1
-                    """,
-                    (symbol, project_id)
-                )
-            target = cur.fetchone()
-            if not target:
-                raise HTTPException(status_code=404, detail=f"Symbol '{symbol}' not found in the index.")
-            
-            target_id, real_name, target_file, target_start_line = target
-            
-            # Recursive CTE query with Cycle Guard
-            query = """
-            WITH RECURSIVE impact_chain AS (
-                SELECT s.name AS source, s.file_path, c.line_number, 1 AS depth, target_sym.name AS target, c.source_symbol_id AS source_id,
-                       ARRAY[c.source_symbol_id] AS path,
-                       FALSE AS cycle
-                FROM calls c
-                JOIN symbols s ON c.source_symbol_id = s.id
-                JOIN symbols target_sym ON c.resolved_symbol_id = target_sym.id
-                WHERE c.resolved_symbol_id = %s
-                UNION ALL
-                SELECT s.name, s.file_path, c.line_number, ic.depth + 1, ic.source, c.source_symbol_id,
-                       ic.path || c.source_symbol_id,
-                       c.source_symbol_id = ANY(ic.path)
-                FROM impact_chain ic
-                JOIN calls c ON c.resolved_symbol_id = ic.source_id
-                JOIN symbols s ON c.source_symbol_id = s.id
-                WHERE ic.depth < %s + 1 AND NOT ic.cycle
-            )
-            SELECT DISTINCT source, file_path, line_number, depth, target
-            FROM impact_chain WHERE NOT cycle ORDER BY depth ASC, file_path;
-            """
-            cur.execute(query, (target_id, depth))
-            results = cur.fetchall()
-            
-            # Format visualizer nodes and edges response
-            target_full_path = f"{target_dir}/{target_file}".replace("\\", "/") if target_file else ""
-            target_start_line = target_start_line or 1
-            target_code_ctx = get_code_context(target_full_path, target_start_line)
-            
-            nodes = [{
-                "id": real_name,
-                "label": real_name,
-                "group": 0,
-                "path": target_full_path,
-                "line": target_start_line,
-                "code_context": target_code_ctx
-            }]
-            edges = []
-            
-            seen_nodes = {real_name}
-            for source, path, line, d, target_node in results:
-                full_path = f"{target_dir}/{path}".replace("\\", "/") if path else ""
-                code_ctx = get_code_context(full_path, line)
+                SELECT DISTINCT source, file_path, line_number, depth, target
+                FROM impact_chain WHERE NOT cycle ORDER BY depth ASC, file_path;
+                """
+                cur.execute(query, (target_id, depth))
+                results = cur.fetchall()
                 
-                if source not in seen_nodes:
-                    nodes.append({
-                        "id": source,
-                        "label": source,
-                        "group": d,
-                        "path": full_path,
-                        "line": line,
-                        "code_context": code_ctx
+                # Format visualizer nodes and edges response
+                target_full_path = f"{target_dir}/{target_file}".replace("\\", "/") if target_file else ""
+                target_start_line = target_start_line or 1
+                target_code_ctx = get_code_context(target_full_path, target_start_line)
+                
+                nodes = [{
+                    "id": real_name,
+                    "label": real_name,
+                    "group": 0,
+                    "path": target_full_path,
+                    "line": target_start_line,
+                    "code_context": target_code_ctx
+                }]
+                edges = []
+                
+                seen_nodes = {real_name}
+                for source, path, line, d, target_node in results:
+                    full_path = f"{target_dir}/{path}".replace("\\", "/") if path else ""
+                    code_ctx = get_code_context(full_path, line)
+                    
+                    if source not in seen_nodes:
+                        nodes.append({
+                            "id": source,
+                            "label": source,
+                            "group": d,
+                            "path": full_path,
+                            "line": line,
+                            "code_context": code_ctx
+                        })
+                        seen_nodes.add(source)
+                    
+                    if target_node not in seen_nodes:
+                        nodes.append({
+                            "id": target_node,
+                            "label": target_node,
+                            "group": max(0, d - 1),
+                            "path": full_path,
+                            "line": line,
+                            "code_context": code_ctx
+                        })
+                        seen_nodes.add(target_node)
+                    
+                    edges.append({
+                        "from": source,
+                        "to": target_node
                     })
-                    seen_nodes.add(source)
                 
-                if target_node not in seen_nodes:
-                    nodes.append({
-                        "id": target_node,
-                        "label": target_node,
-                        "group": max(0, d - 1),
-                        "path": full_path,
-                        "line": line,
-                        "code_context": code_ctx
-                    })
-                    seen_nodes.add(target_node)
-                
-                edges.append({
-                    "from": source,
-                    "to": target_node
-                })
-            
-            return {
-                "target": {
-                    "name": real_name,
-                    "file_path": target_file,
-                    "line": target_start_line
-                },
-                "nodes": nodes,
-                "edges": edges,
-                "summary": {
-                    "total_impacted": len(seen_nodes) - 1,
-                    "max_depth_explored": depth
+                return {
+                    "target": {
+                        "name": real_name,
+                        "file_path": target_file,
+                        "line": target_start_line
+                    },
+                    "nodes": nodes,
+                    "edges": edges,
+                    "summary": {
+                        "total_impacted": len(seen_nodes) - 1,
+                        "max_depth_explored": depth
+                    }
                 }
-            }
-            
+                
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        release_connection(conn)
 
 if not os.getenv("VERCEL"):
     if os.path.exists("public"):

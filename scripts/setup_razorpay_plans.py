@@ -1,5 +1,4 @@
 import razorpay
-import os
 import sys
 
 def main():
@@ -40,7 +39,7 @@ def main():
             
             payload = {
                 "period": plan["period"],
-                "interval": plan["interval"],
+                    "interval": plan["interval"],
                 "item": {
                     "name": f"N3MO {plan['name']}",
                     "amount": amount_inr,

@@ -11,12 +11,14 @@ import urllib.parse
 import json
 import logging
 import jwt
+import secrets
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, Query, Response, Depends, Cookie
 from fastapi.responses import RedirectResponse
 import warnings
 
-from n3mo.saas_db import upsert_user
+from n3mo.saas_db import upsert_user, get_subscription, update_subscription
+from n3mo.pricing import TRIAL_DAYS, get_tier
 
 # Suppress PyJWT InsecureKeyLengthWarning for short testing secrets
 warnings.filterwarnings("ignore", message="The HMAC key is .* bytes long", module="jwt")
@@ -31,38 +33,81 @@ def get_oauth_config():
         "client_secret": os.getenv("GITHUB_CLIENT_SECRET", ""),
         "redirect_uri": os.getenv("GITHUB_REDIRECT_URI", "http://localhost:8000/auth/callback"),
         "frontend_url": os.getenv("FRONTEND_DASHBOARD_URL", "/dashboard.html"),
-        "session_secret": os.getenv("JWT_SESSION_SECRET", "super-secret-saas-session-key")
+        "session_secret": os.getenv("JWT_SESSION_SECRET", "")
     }
 
-def create_session_token(user_id: str, username: str) -> str:
-    """Create a signed JWT session token for the user."""
+def is_saas_mode() -> bool:
+    return os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
+
+def validate_frontend_url(url: str) -> str:
+    """Ensure frontend_url is safe to redirect to (prevents Open Redirect)."""
+    if url.startswith("/") or url.startswith("http://localhost"):
+        return url
+    if is_saas_mode() and url.startswith("https://n3mo.shop"):
+        return url
+    # Fallback safe relative path
+    return "/dashboard.html"
+
+def provision_user_trial(user_id: str):
+    """Provisions a 15-day free trial if the user has no existing subscription."""
+    try:
+        current_sub = get_subscription(user_id, "user")
+        if current_sub.get("status") == "none":
+            pro_tier = get_tier("pro")
+            expires_at = datetime.now(timezone.utc) + timedelta(days=TRIAL_DAYS)
+            update_subscription(
+                user_id, "user", "pro", "trialing",
+                expires_at=expires_at,
+                repos_limit=pro_tier["repos_limit"],
+                lines_of_code_limit=pro_tier["max_total_loc"],
+                loc_per_repo_limit=pro_tier["loc_per_repo"]
+            )
+    except Exception as e:
+        logger.error(f"Database Error provisioning trial for {user_id}: {e}")
+        # Don't throw 500, let them log in, but they won't have a trial.
+        # Admin can resolve or they can contact support.
+
+def create_session_token(user_id: str, github_id: int) -> str:
+    """Create a signed JWT session token for the user using immutable fields."""
     config = get_oauth_config()
+    secret = config["session_secret"] or "super-secret-saas-session-key"
+    if is_saas_mode() and not config["session_secret"]:
+        raise ValueError("JWT_SESSION_SECRET must be explicitly set in SaaS mode.")
+        
     payload = {
         "user_id": user_id,
-        "username": username,
+        "github_id": github_id,
         "exp": datetime.now(timezone.utc) + timedelta(days=7)
     }
-    return jwt.encode(payload, config["session_secret"], algorithm="HS256")
+    return jwt.encode(payload, secret, algorithm="HS256")
 
 def get_current_user_from_token(session: str = Cookie(None)) -> dict:
     """Verify session cookie and return user identity."""
     if not session:
         raise HTTPException(status_code=401, detail="Not authenticated: Session cookie missing")
     config = get_oauth_config()
+    secret = config["session_secret"] or "super-secret-saas-session-key"
+    
     try:
-        payload = jwt.decode(session, config["session_secret"], algorithms=["HS256"])
+        payload = jwt.decode(session, secret, algorithms=["HS256"])
         return {
             "user_id": payload.get("user_id"),
-            "username": payload.get("username")
+            "github_id": payload.get("github_id")
         }
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Not authenticated: Session expired or invalid")
 
 @router.get("/login")
-def login_redirect():
+def login_redirect(response: Response):
     """Redirects the client to GitHub's OAuth authorization page, or mocks login if missing config."""
     config = get_oauth_config()
+    safe_redirect_url = validate_frontend_url(config["frontend_url"])
+    is_secure_cookie = is_saas_mode() or config["redirect_uri"].startswith("https://")
+    
     if not config["client_id"] or config["client_id"] == "mock":
+        if is_saas_mode():
+            raise HTTPException(status_code=500, detail="GitHub OAuth not configured. Cannot bypass in production.")
+            
         logger.warning("Mock login bypass active! Creating dummy session.")
         user = upsert_user(
             github_id=12345678,
@@ -71,34 +116,61 @@ def login_redirect():
             avatar_url="https://avatars.githubusercontent.com/u/12345678?v=4",
             github_token="mock_token"
         )
-        session_token = create_session_token(user["id"], user["username"])
-        response = RedirectResponse(url=config["frontend_url"])
-        response.set_cookie(
+        
+        provision_user_trial(user["id"])
+            
+        session_token = create_session_token(user["id"], user["github_id"])
+        resp = RedirectResponse(url=safe_redirect_url)
+        resp.set_cookie(
             key="session",
             value=session_token,
             httponly=True,
             max_age=7 * 24 * 60 * 60, # 7 Days
             samesite="lax",
-            secure=True
+            secure=is_secure_cookie
         )
-        return response
+        return resp
+    
+    # Generate CSRF state token
+    oauth_state = secrets.token_urlsafe(32)
     
     params = {
         "client_id": config["client_id"],
         "redirect_uri": config["redirect_uri"],
+        "state": oauth_state,
         "scope": "user:email read:org",
         "prompt": "consent"
     }
     url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
-    return RedirectResponse(url)
+    
+    resp = RedirectResponse(url)
+    resp.set_cookie(
+        key="oauth_state",
+        value=oauth_state,
+        httponly=True,
+        max_age=600, # 10 minutes
+        samesite="lax",
+        secure=is_secure_cookie
+    )
+    return resp
 
 @router.get("/callback")
-def oauth_callback(response: Response, code: str = Query(None)):
+def oauth_callback(
+    response: Response, 
+    code: str = Query(None), 
+    state: str = Query(None), 
+    oauth_state: str = Cookie(None)
+):
     """Handles GitHub's OAuth redirect, requests token, fetches profile, and creates session."""
     if not code:
         raise HTTPException(status_code=400, detail="OAuth authorization code missing")
+        
+    if not state or state != oauth_state:
+        raise HTTPException(status_code=400, detail="CSRF warning: OAuth state mismatch")
 
     config = get_oauth_config()
+    safe_redirect_url = validate_frontend_url(config["frontend_url"])
+    is_secure_cookie = is_saas_mode() or config["redirect_uri"].startswith("https://")
 
     # 1. Exchange auth code for GitHub access token
     token_url = "https://github.com/login/oauth/access_token"
@@ -168,36 +240,44 @@ def oauth_callback(response: Response, code: str = Query(None)):
     if not user:
         raise HTTPException(status_code=500, detail="Failed to register user account in system database")
 
-    # 4. Generate system JWT token and set as HttpOnly cookie
-    session_token = create_session_token(user["id"], user["username"])
-    response = RedirectResponse(url=config["frontend_url"])
-    response.set_cookie(
+    # 4. Provision 15-day trial if no subscription exists
+    provision_user_trial(user["id"])
+
+    # 5. Generate system JWT token and set as HttpOnly cookie
+    session_token = create_session_token(user["id"], user["github_id"])
+    resp = RedirectResponse(url=safe_redirect_url)
+    resp.set_cookie(
         key="session",
         value=session_token,
         httponly=True,
         max_age=7 * 24 * 60 * 60, # 7 Days
         samesite="lax",
-        secure=True
+        secure=is_secure_cookie
     )
-    return response
+    # Clear the OAuth state cookie
+    resp.delete_cookie("oauth_state", secure=is_secure_cookie, httponly=True, samesite="lax")
+    return resp
 
 @router.get("/me")
 def get_user_profile(current_user: dict = Depends(get_current_user_from_token)):
     """Fetch profile data of the logged-in user."""
+    # We fetch the latest username from DB since github_id is immutable but username can change.
+    # For a real implementation, we would query the user table here.
     return {
         "status": "success",
         "user_id": current_user["user_id"],
-        "username": current_user["username"]
+        "github_id": current_user["github_id"]
     }
 
 @router.post("/logout")
 def logout(response: Response):
     """Logs out user by clearing the session cookie."""
+    is_secure_cookie = is_saas_mode()
     response = Response(content=json.dumps({"status": "success", "message": "Logged out successfully"}), media_type="application/json")
     response.delete_cookie(
         key="session",
         path="/",
-        secure=True,
+        secure=is_secure_cookie,
         httponly=True,
         samesite="lax"
     )
