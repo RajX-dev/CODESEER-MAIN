@@ -175,65 +175,73 @@ class VerifyPaymentRequest(BaseModel):
 @app.post("/api/billing/verify-payment")
 def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends(get_current_user_from_token)):
     """Verify Razorpay signature, activate subscription."""
-    tier = get_tier(req.tier_id)
-    if not tier:
-        raise HTTPException(status_code=400, detail=f"Unknown tier: '{req.tier_id}'")
-
     try:
-        client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
-        client.utility.verify_payment_signature({
-            "razorpay_order_id": req.razorpay_order_id,
-            "razorpay_payment_id": req.razorpay_payment_id,
-            "razorpay_signature": req.razorpay_signature,
-        })
-    except razorpay.errors.SignatureVerificationError:
-        raise HTTPException(status_code=400, detail="Payment verification failed")
+        tier = get_tier(req.tier_id)
+        if not tier:
+            raise HTTPException(status_code=400, detail=f"Unknown tier: '{req.tier_id}'")
 
-    # Look up stored order to verify amount
-    stored_order = get_payment_order(req.razorpay_order_id)
-    if not stored_order:
-        raise HTTPException(status_code=404, detail="Payment order not found")
-    
-    # Ideally use a DB lock here, but for now we rely on strict state checks
-    if stored_order.get("status") == "paid":
-        return {"status": "success", "message": "Payment already processed."}
-    
-    if stored_order.get("amount_paise") != tier["price_in_cents"]:
-        raise HTTPException(status_code=400, detail="Amount mismatch")
+        try:
+            client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+            client.utility.verify_payment_signature({
+                "razorpay_order_id": req.razorpay_order_id,
+                "razorpay_payment_id": req.razorpay_payment_id,
+                "razorpay_signature": req.razorpay_signature,
+            })
+        except razorpay.errors.SignatureVerificationError:
+            raise HTTPException(status_code=400, detail="Payment verification failed")
 
-    user_id = str(current_user["user_id"])
+        # Look up stored order to verify amount
+        stored_order = get_payment_order(req.razorpay_order_id)
+        if not stored_order:
+            raise HTTPException(status_code=404, detail="Payment order not found")
+        
+        # Ideally use a DB lock here, but for now we rely on strict state checks
+        if stored_order.get("status") == "paid":
+            return {"status": "success", "message": "Payment already processed."}
+        
+        if stored_order.get("amount_paise") != tier["price_in_cents"]:
+            raise HTTPException(status_code=400, detail="Amount mismatch")
 
-    # Calculate new expiry (30 days + bonus from mid-cycle upgrade)
-    current_sub = get_subscription(user_id, "user")
-    bonus_days = 0
-    if current_sub.get("status") == "active" and current_sub.get("expires_at"):
-        bonus_days = calculate_upgrade_bonus_days(current_sub["expires_at"])
+        user_id = str(current_user["user_id"])
 
-    new_expires = datetime.now(timezone.utc) + timedelta(
-        days=tier["billing_cycle_days"] + bonus_days
-    )
+        # Calculate new expiry (30 days + bonus from mid-cycle upgrade)
+        current_sub = get_subscription(user_id, "user")
+        bonus_days = 0
+        if current_sub.get("status") == "active" and current_sub.get("expires_at"):
+            bonus_days = calculate_upgrade_bonus_days(current_sub["expires_at"])
 
-    update_subscription(
-        user_id, "user", req.tier_id, "active",
-        expires_at=new_expires,
-        repos_limit=tier["repos_limit"],
-        lines_of_code_limit=tier["max_total_loc"],
-        loc_per_repo_limit=tier["loc_per_repo"],
-        razorpay_payment_id=req.razorpay_payment_id,
-        razorpay_order_id=req.razorpay_order_id,
-        upgrade_bonus_days=bonus_days,
-    )
+        new_expires = datetime.now(timezone.utc) + timedelta(
+            days=tier["billing_cycle_days"] + bonus_days
+        )
 
-    update_payment_order_status(
-        req.razorpay_order_id, "paid", payment_id=req.razorpay_payment_id
-    )
+        update_subscription(
+            user_id, "user", req.tier_id, "active",
+            expires_at=new_expires,
+            repos_limit=tier["repos_limit"],
+            lines_of_code_limit=tier["max_total_loc"],
+            loc_per_repo_limit=tier["loc_per_repo"],
+            razorpay_payment_id=req.razorpay_payment_id,
+            razorpay_order_id=req.razorpay_order_id,
+            upgrade_bonus_days=bonus_days,
+        )
 
-    return {
-        "status": "success",
-        "message": f"Payment verified, upgraded to {tier['name']}.",
-        "expires_at": new_expires.isoformat(),
-        "bonus_days": bonus_days,
-    }
+        update_payment_order_status(
+            req.razorpay_order_id, "paid", payment_id=req.razorpay_payment_id
+        )
+
+        return {
+            "status": "success",
+            "message": f"Payment verified, upgraded to {tier['name']}.",
+            "expires_at": new_expires.isoformat(),
+            "bonus_days": bonus_days,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        err_msg = traceback.format_exc()
+        logging.error(f"Error in verify_payment: {err_msg}")
+        raise HTTPException(status_code=500, detail=err_msg)
 
 
 @app.post("/api/webhook/razorpay")
