@@ -338,7 +338,7 @@ def get_dashboard_data(current_user: dict = Depends(get_current_user_from_token)
     return {
         "status": "success",
         "user": {
-            "username": current_user["username"],
+            "username": user_db.get("username"),
             "github_id": user_db.get("github_id"),
             "avatar_url": user_db.get("avatar_url")
         },
