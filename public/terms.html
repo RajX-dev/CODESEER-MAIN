@@ -69,20 +69,39 @@
 
     <section class="legal-page">
         <div class="container legal-content">
-            <h1>Terms and Conditions</h1>
-            
-            <p>By accessing or using N3MO, you agree to be bound by these Terms and Conditions.</p>
-            <h2>1. Provision of Service</h2>
-            <p>N3MO provides code intelligence and PR impact analysis tools. The service is provided "as is" without warranties of any kind.</p>
-            <h2>2. User Responsibilities</h2>
-            <p>You agree to use the service legally and securely. You are responsible for safeguarding your GitHub tokens, license keys, and account access.</p>
-            <h2>3. Payments and Billing</h2>
-            <p>Payments are processed securely via our payment gateway partners. You agree to provide accurate billing information. Subscriptions auto-renew unless cancelled prior to the renewal date.</p>
-            <h2>4. Dispute Resolution</h2>
-            <p>Any disputes arising from these terms or the use of N3MO shall be governed by the laws of India, and subject to the exclusive jurisdiction of the courts in [Your City/State].</p>
-            <h2>5. Limitation of Liability</h2>
-            <p>In no event shall N3MO or Raj Shekhar be liable for any indirect, incidental, or consequential damages arising from the use or inability to use the service.</p>
-        
+            <h1>Commercial Terms of Service</h1>
+            <p>Last updated: July 2026</p>
+
+            <h2>1. Service Overview</h2>
+            <p>N3MO SaaS provides automated structural code intelligence and impact analysis for your repositories via GitHub Webhooks. By purchasing a commercial license, you gain access to team environments, CI/CD pipeline integrations, and priority indexing queues.</p>
+
+            <h2>2. Data Ownership & Security</h2>
+            <p>We believe in absolute security and transparency regarding your proprietary code:</p>
+            <ul>
+                <li><strong>You retain 100% ownership</strong> of your source code at all times.</li>
+                <li><strong>Ephemeral Analysis:</strong> When using our Standard, Pro, or Team tiers, your code is analyzed on ephemeral, secure GitHub Action runners. The runner is instantly destroyed the second the Pull Request comment is posted.</li>
+                <li><strong>No Raw Source Code is Stored:</strong> N3MO only stores AST graph relationships and symbol names (e.g., function definitions and caller relationships) in our PostgreSQL database to enable fast transitive traversal. Your actual source code text is never saved to our servers.</li>
+                <li><strong>Zero-Trust Architecture:</strong> For Enterprise clients with strict compliance requirements, you can run the N3MO CLI completely natively inside your own private CI/CD pipelines. This ensures your code literally never leaves your Virtual Private Cloud (VPC).</li>
+            </ul>
+
+            <h2>3. Cancellation Policy</h2>
+            <p>We don't believe in vendor lock-in. If you choose to cancel your commercial subscription:</p>
+            <ul>
+                <li>Your GitHub Webhook integration will be disabled at the end of your billing cycle.</li>
+                <li>Your historical AST indexing data remains safely stored for a 30-day grace period in case you choose to resubscribe.</li>
+                <li><strong>Local Fallback:</strong> You can continue using the open-source N3MO CLI locally on your own machine, completely free, forever.</li>
+            </ul>
+
+            <h2>4. Support & Service Level Agreements (SLA)</h2>
+            <p>The level of support provided depends on your active tier:</p>
+            <ul>
+                <li><strong>Standard:</strong> Access to community support via Discord and GitHub Issues.</li>
+                <li><strong>Pro & Team:</strong> Priority email support with guaranteed response times.</li>
+                <li><strong>Enterprise:</strong> Dedicated Support Engineer and custom SLA contracts.</li>
+            </ul>
+
+            <h2>5. Service Continuity</h2>
+            <p>In the unlikely event that N3MO SaaS shuts down, you are fully protected. Because the N3MO core engine is distributed under a source-available PolyForm Noncommercial license, you will always be able to run the tool locally on your own hardware, completely independent of our servers.</p>
         </div>
     </section>
 
