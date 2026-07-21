@@ -938,6 +938,7 @@ h1 {
     font-weight: 800;
     margin-bottom: 12px;
     color: #fff;
+    white-space: nowrap;
 }
 
 .price-amount span {

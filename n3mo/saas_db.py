@@ -185,7 +185,7 @@ def get_subscription(owner_id: str, owner_type: str) -> dict:
                 now = datetime.datetime.now(datetime.timezone.utc)
                 if expires_at is not None and db_status != "expired":
                     if expires_at.tzinfo is None:
-                        raise ValueError("expires_at from database is naive, cannot safely compare to timezone-aware UTC now")
+                        expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
                         
                     if expires_at < now:
                         db_status = "expired"
