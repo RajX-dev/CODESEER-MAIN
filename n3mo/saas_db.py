@@ -640,3 +640,91 @@ def get_payment_order(order_id: str) -> dict:
         return {}
     finally:
         release_connection(conn)
+
+def provision_trial_if_none(user_id: str, plan_type: str, expires_at, repos_limit: int, lines_of_code_limit: int, loc_per_repo_limit: int) -> bool:
+    """Atomically provision a trial only if no subscription exists for this user."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO subscriptions (
+                    owner_type, user_owner_id, plan_type, status, expires_at,
+                    repos_limit, lines_of_code_limit, loc_per_repo_limit
+                )
+                VALUES ('user', %s, %s, 'trialing', %s, %s, %s, %s)
+                ON CONFLICT (user_owner_id) DO NOTHING
+                RETURNING id
+                """,
+                (user_id, plan_type, expires_at, repos_limit, lines_of_code_limit, loc_per_repo_limit)
+            )
+            row = cur.fetchone()
+            conn.commit()
+            return bool(row)
+    except Exception as e:
+        logger.error(f"Failed atomic trial provision for {user_id}: {e}")
+        conn.rollback()
+        return False
+    finally:
+        release_connection(conn)
+
+def check_rate_limit_db(key: str, limit: int, window_seconds: int) -> bool:
+    """Check rate limit backed by the database. Returns True if allowed, False if exceeded."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # Upsert into rate_limits table
+            cur.execute(
+                """
+                INSERT INTO rate_limits (key, request_count, reset_at)
+                VALUES (%s, 1, NOW() + interval '%s seconds')
+                ON CONFLICT (key) DO UPDATE SET 
+                    request_count = CASE 
+                        WHEN rate_limits.reset_at < NOW() THEN 1 
+                        ELSE rate_limits.request_count + 1 
+                    END,
+                    reset_at = CASE 
+                        WHEN rate_limits.reset_at < NOW() THEN NOW() + interval '%s seconds' 
+                        ELSE rate_limits.reset_at 
+                    END
+                RETURNING request_count, reset_at
+                """,
+                (key, window_seconds, window_seconds)
+            )
+            row = cur.fetchone()
+            conn.commit()
+            if row:
+                count, reset_at = row
+                if count > limit:
+                    return False
+            return True
+    except Exception as e:
+        logger.error(f"Failed to check rate limit for {key}: {e}")
+        conn.rollback()
+        return False
+    finally:
+        release_connection(conn)
+
+def check_webhook_replay_db(delivery_id: str) -> bool:
+    """Returns True if delivery is new, False if it was already processed."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO webhook_deliveries (delivery_id)
+                VALUES (%s)
+                ON CONFLICT (delivery_id) DO NOTHING
+                RETURNING delivery_id
+                """,
+                (delivery_id,)
+            )
+            row = cur.fetchone()
+            conn.commit()
+            return bool(row)
+    except Exception as e:
+        logger.error(f"Failed to check webhook replay for {delivery_id}: {e}")
+        conn.rollback()
+        return False
+    finally:
+        release_connection(conn)

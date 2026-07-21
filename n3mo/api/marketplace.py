@@ -15,7 +15,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Request, Header, HTTPException
 
-from n3mo.saas_db import upsert_user, upsert_organization, update_subscription, save_license_key
+from n3mo.saas_db import upsert_user, upsert_organization, update_subscription, save_license_key, check_rate_limit_db, check_webhook_replay_db
 from n3mo.license_validator import get_license_hash
 
 logger = logging.getLogger("n3mo.api.marketplace")
@@ -23,11 +23,6 @@ router = APIRouter()
 
 # Configuration
 GITHUB_MARKETPLACE_SECRET = os.getenv("GITHUB_MARKETPLACE_SECRET", "")
-
-# In-memory stores for replay protection and rate limiting (temporary mitigation)
-# In production, these should be replaced with Redis or DB schemas.
-PROCESSED_DELIVERIES = set()
-RATE_LIMIT_STORE = {}
 
 def is_saas_mode() -> bool:
     return os.getenv("N3MO_SAAS_MODE", "false").lower() in ("true", "1", "yes")
@@ -82,12 +77,8 @@ async def marketplace_webhook(
 
     # 2. Replay Protection
     if x_github_delivery:
-        if x_github_delivery in PROCESSED_DELIVERIES:
+        if not check_webhook_replay_db(x_github_delivery):
             return {"status": "ignored", "reason": "Webhook delivery already processed"}
-        PROCESSED_DELIVERIES.add(x_github_delivery)
-        # Cap the set size to prevent memory leaks over time
-        if len(PROCESSED_DELIVERIES) > 10000:
-            PROCESSED_DELIVERIES.clear()
 
     try:
         payload = json.loads(body.decode("utf-8"))
@@ -111,15 +102,7 @@ async def marketplace_webhook(
         return {"status": "ignored", "reason": "Missing github_id or login"}
 
     # 3. Rate Limiting (per GitHub ID)
-    now = time.time()
-    rate_record = RATE_LIMIT_STORE.get(github_id, {"count": 0, "reset_time": now + 60})
-    if now > rate_record["reset_time"]:
-        rate_record = {"count": 1, "reset_time": now + 60}
-    else:
-        rate_record["count"] += 1
-
-    RATE_LIMIT_STORE[github_id] = rate_record
-    if rate_record["count"] > 5:
+    if not check_rate_limit_db(f"marketplace_{github_id}", 5, 60):
         raise HTTPException(status_code=429, detail="Too many marketplace requests. Please try again later.")
 
     # 4. Strict account type validation

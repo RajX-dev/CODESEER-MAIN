@@ -17,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Query, Response, Depends, Cookie
 from fastapi.responses import RedirectResponse
 import warnings
 
-from n3mo.saas_db import upsert_user, get_subscription, update_subscription
+from n3mo.saas_db import upsert_user, get_subscription, update_subscription, provision_trial_if_none
 from n3mo.pricing import TRIAL_DAYS, get_tier
 
 # Suppress PyJWT InsecureKeyLengthWarning for short testing secrets
@@ -48,31 +48,40 @@ def validate_frontend_url(url: str) -> str:
     # Fallback safe relative path
     return "/dashboard.html"
 
-def provision_user_trial(user_id: str):
+def provision_user_trial(user_id: str, profile: dict = None):
     """Provisions a 15-day free trial if the user has no existing subscription."""
+    if profile:
+        created_at_str = profile.get("created_at")
+        if created_at_str:
+            try:
+                created_at = datetime.strptime(created_at_str.replace("Z", "+0000"), "%Y-%m-%dT%H:%M:%S%z")
+                if datetime.now(timezone.utc) - created_at < timedelta(days=7):
+                    logger.warning(f"Trial denied for {user_id}: GitHub account too new ({created_at_str})")
+                    return
+            except Exception as e:
+                logger.error(f"Error parsing GitHub profile created_at: {e}")
+                return
+
     try:
-        current_sub = get_subscription(user_id, "user")
-        if current_sub.get("status") == "none":
-            pro_tier = get_tier("pro")
-            expires_at = datetime.now(timezone.utc) + timedelta(days=TRIAL_DAYS)
-            update_subscription(
-                user_id, "user", "pro", "trialing",
-                expires_at=expires_at,
-                repos_limit=pro_tier["repos_limit"],
-                lines_of_code_limit=pro_tier["max_total_loc"],
-                loc_per_repo_limit=pro_tier["loc_per_repo"]
-            )
+        pro_tier = get_tier("pro")
+        expires_at = datetime.now(timezone.utc) + timedelta(days=TRIAL_DAYS)
+        provision_trial_if_none(
+            user_id=user_id,
+            plan_type="pro",
+            expires_at=expires_at,
+            repos_limit=pro_tier["repos_limit"],
+            lines_of_code_limit=pro_tier["max_total_loc"],
+            loc_per_repo_limit=pro_tier["loc_per_repo"]
+        )
     except Exception as e:
         logger.error(f"Database Error provisioning trial for {user_id}: {e}")
-        # Don't throw 500, let them log in, but they won't have a trial.
-        # Admin can resolve or they can contact support.
 
 def create_session_token(user_id: str, github_id: int) -> str:
     """Create a signed JWT session token for the user using immutable fields."""
     config = get_oauth_config()
-    secret = config["session_secret"] or "super-secret-saas-session-key"
-    if is_saas_mode() and not config["session_secret"]:
-        raise ValueError("JWT_SESSION_SECRET must be explicitly set in SaaS mode.")
+    secret = config["session_secret"]
+    if not secret:
+        raise ValueError("JWT_SESSION_SECRET must be explicitly set.")
         
     payload = {
         "user_id": user_id,
@@ -86,7 +95,9 @@ def get_current_user_from_token(session: str = Cookie(None)) -> dict:
     if not session:
         raise HTTPException(status_code=401, detail="Not authenticated: Session cookie missing")
     config = get_oauth_config()
-    secret = config["session_secret"] or "super-secret-saas-session-key"
+    secret = config["session_secret"]
+    if not secret:
+        raise HTTPException(status_code=500, detail="Server configuration error: JWT_SESSION_SECRET missing.")
     
     try:
         payload = jwt.decode(session, secret, algorithms=["HS256"])
@@ -105,7 +116,8 @@ def login_redirect(response: Response):
     is_secure_cookie = is_saas_mode() or config["redirect_uri"].startswith("https://")
     
     if not config["client_id"] or config["client_id"] == "mock":
-        if is_saas_mode():
+        allow_bypass = os.getenv("N3MO_ALLOW_DEV_BYPASS", "false").lower() in ("true", "1", "yes")
+        if is_saas_mode() and not allow_bypass:
             raise HTTPException(status_code=500, detail="GitHub OAuth not configured. Cannot bypass in production.")
             
         logger.warning("Mock login bypass active! Creating dummy session.")
@@ -241,7 +253,7 @@ def oauth_callback(
         raise HTTPException(status_code=500, detail="Failed to register user account in system database")
 
     # 4. Provision 15-day trial if no subscription exists
-    provision_user_trial(user["id"])
+    provision_user_trial(user["id"], profile)
 
     # 5. Generate system JWT token and set as HttpOnly cookie
     session_token = create_session_token(user["id"], user["github_id"])

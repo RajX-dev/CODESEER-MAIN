@@ -25,8 +25,6 @@ router = APIRouter()
 
 # Configuration
 GITHUB_WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "")
-N3MO_LICENSE_KEY = os.getenv("N3MO_LICENSE_KEY", "")
-N3MO_SUBSCRIPTION_ACTIVE = os.getenv("N3MO_SUBSCRIPTION_ACTIVE", "false").lower() in ("true", "1", "yes")
 
 def revoke_github_installation(installation_id: str):
     """Generate a GitHub App JWT and delete the installation."""
@@ -134,15 +132,18 @@ async def github_webhook(
             raise HTTPException(status_code=500, detail="Internal server error connecting to database.")
 
     # 1. VERIFY SIGNATURE FIRST
-    if secret_to_use:
-        if not x_hub_signature_256:
-            raise HTTPException(status_code=401, detail="Missing X-Hub-Signature-256 header")
-        parts = x_hub_signature_256.split("=")
-        if len(parts) != 2 or parts[0] != "sha256":
-            raise HTTPException(status_code=400, detail="Invalid signature format")
-        expected = hmac.new(secret_to_use.encode(), payload_bytes, hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(expected, parts[1]):
-            raise HTTPException(status_code=401, detail="Invalid webhook signature")
+    if not secret_to_use:
+        logger.error("Missing webhook secret. Failing closed.")
+        raise HTTPException(status_code=500, detail="Server missing webhook secret configuration.")
+
+    if not x_hub_signature_256:
+        raise HTTPException(status_code=401, detail="Missing X-Hub-Signature-256 header")
+    parts = x_hub_signature_256.split("=")
+    if len(parts) != 2 or parts[0] != "sha256":
+        raise HTTPException(status_code=400, detail="Invalid signature format")
+    expected = hmac.new(secret_to_use.encode(), payload_bytes, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(expected, parts[1]):
+        raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
     # 2. CHECK EXPIRATION & REVOKE TOKEN (Only if signature is valid)
     if user_db:

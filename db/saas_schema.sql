@@ -105,3 +105,16 @@ CREATE TABLE IF NOT EXISTS payment_orders (
 
 CREATE INDEX IF NOT EXISTS idx_payment_orders_user ON payment_orders(user_owner_id);
 CREATE INDEX IF NOT EXISTS idx_payment_orders_razorpay_order ON payment_orders(razorpay_order_id);
+
+-- 8. Rate Limits Table
+CREATE TABLE IF NOT EXISTS rate_limits (
+    key TEXT PRIMARY KEY,
+    request_count INT NOT NULL DEFAULT 1,
+    reset_at TIMESTAMP NOT NULL
+);
+
+-- 9. Webhook Deliveries Table (Replay Protection)
+CREATE TABLE IF NOT EXISTS webhook_deliveries (
+    delivery_id TEXT PRIMARY KEY,
+    received_at TIMESTAMP DEFAULT NOW()
+);

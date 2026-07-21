@@ -163,14 +163,14 @@ def main():
             sub_status = sub.get("status", "unknown")
             plan_type = str(sub.get("plan_type") or "none")
 
-            if sub_status == "active":
+            if sub_status in ("active", "trialing"):
                 max_loc, plan_name = _get_plan_limits(plan_type, sub)
             else:
                 max_loc = 0
                 logger.warning(f"Subscription {sub_status} for user {user_id} (plan: {plan_type})")
                 expired_msg = (
-                    f"### ⚠️ N3MO Subscription {sub_status.capitalize()}\n\n"
-                    f"Your **{plan_type.capitalize()}** plan is {sub_status}. "
+                    f"### ⚠️ N3MO Subscription Expired\n\n"
+                    f"Your **{plan_type.capitalize()}** plan has expired. "
                     f"N3MO cannot run PR impact analysis without an active subscription.\n\n"
                     f"To re-enable PR checks:\n"
                     f"1. **Renew your plan** on the [N3MO dashboard](https://n3mo.shop)\n"

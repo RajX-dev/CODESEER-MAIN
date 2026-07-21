@@ -20,10 +20,11 @@ from n3mo.api.webhook_handler import router as webhook_router
 from n3mo.api.auth import router as auth_router
 from n3mo.api.marketplace import router as marketplace_router
 from n3mo.api.auth import get_current_user_from_token
+from n3mo.api.entitlement import require_active_subscription
 from n3mo.saas_db import (
     get_subscription, get_user_by_id, get_user_by_github_id, update_subscription,
     get_user_repo_loc_stats, save_payment_order, update_payment_order_status,
-    get_payment_order,
+    get_payment_order, check_rate_limit_db
 )
 from n3mo.pricing import PRICING_TIERS, RAZORPAY_CONFIG, get_tier, calculate_upgrade_bonus_days, validate_eligibility
 import razorpay  # type: ignore
@@ -52,21 +53,17 @@ def is_saas_mode() -> bool:
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_123")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "secret")
 
-if is_saas_mode() and (RAZORPAY_KEY_ID == "rzp_test_123" or "test_" in RAZORPAY_KEY_ID):
-    raise RuntimeError("RAZORPAY_KEY_ID must be configured for production SaaS mode")
+if is_saas_mode():
+    if RAZORPAY_KEY_ID == "rzp_test_123" or "test_" in RAZORPAY_KEY_ID:
+        raise RuntimeError("RAZORPAY_KEY_ID must be configured for production SaaS mode")
+    required_vars = ["JWT_SESSION_SECRET", "GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "GITHUB_WEBHOOK_SECRET", "N3MO_DB_ENCRYPTION_KEY"]
+    missing = [v for v in required_vars if not os.getenv(v)]
+    if missing:
+        raise RuntimeError(f"Missing required environment variables for SaaS mode: {', '.join(missing)}")
 
 ADMIN_GITHUB_IDS = set(int(x) for x in os.getenv("ADMIN_GITHUB_IDS", "").split(",") if x.strip().isdigit())
-RATE_LIMIT_STORE = {}
-
 def check_rate_limit(key: str, limit: int, window: int):
-    now = time.time()
-    record = RATE_LIMIT_STORE.get(key, {"count": 0, "reset_time": now + window})
-    if now > record["reset_time"]:
-        record = {"count": 1, "reset_time": now + window}
-    else:
-        record["count"] += 1
-    RATE_LIMIT_STORE[key] = record
-    if record["count"] > limit:
+    if not check_rate_limit_db(key, limit, window):
         raise HTTPException(status_code=429, detail="Too many requests. Please try again later.")
 
 class IndexRequest(BaseModel):
@@ -77,7 +74,7 @@ def health():
     return {"status": "healthy", "service": "n3mo-api"}
 
 @app.post("/index")
-def trigger_indexing(req: IndexRequest):
+def trigger_indexing(req: IndexRequest, current_user: dict = Depends(get_current_user_from_token)):
     target_dir = os.path.abspath(req.target_dir)
     if not os.path.exists(target_dir):
         raise HTTPException(status_code=400, detail=f"Directory '{target_dir}' does not exist.")
@@ -94,32 +91,20 @@ def trigger_indexing(req: IndexRequest):
 # ---------------------------------------------------------------------------
 
 class CreateOrderRequest(BaseModel):
-    github_id: str
     tier_id: str
     discount: str = ""
 
 @app.post("/api/billing/create-order")
-def create_order(req: CreateOrderRequest):
+def create_order(req: CreateOrderRequest, current_user: dict = Depends(get_current_user_from_token)):
     """Create a Razorpay one-time order for the requested tier."""
-    if not req.github_id:
-        raise HTTPException(status_code=400, detail="github_id is required")
-
-    check_rate_limit(f"create_order_{req.github_id}", 5, 60)
+    github_id_str = str(current_user["github_id"])
+    check_rate_limit(f"create_order_{github_id_str}", 5, 60)
 
     tier = get_tier(req.tier_id)
     if not tier:
         raise HTTPException(status_code=400, detail=f"Unknown tier: '{req.tier_id}'")
 
-    try:
-        github_id_int = int(req.github_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid github_id format")
-
-    user_db = get_user_by_github_id(github_id_int)
-    if not user_db:
-        raise HTTPException(status_code=404, detail="User not found. Please sign in first.")
-
-    user_id = str(user_db["id"])
+    user_id = str(current_user["user_id"])
     key_id = RAZORPAY_KEY_ID
 
     if req.discount:
@@ -148,9 +133,9 @@ def create_order(req: CreateOrderRequest):
         order_payload = {
             "amount": tier["price_in_cents"],
             "currency": RAZORPAY_CONFIG["currency"],
-            "receipt": f"rcpt_{req.github_id}_{req.tier_id}",
+            "receipt": f"rcpt_{github_id_str}_{req.tier_id}",
             "notes": {
-                "github_id": req.github_id,
+                "github_id": github_id_str,
                 "tier_id": req.tier_id,
                 "bonus_days": str(bonus_days),
             },
@@ -185,11 +170,10 @@ class VerifyPaymentRequest(BaseModel):
     razorpay_payment_id: str
     razorpay_order_id: str
     razorpay_signature: str
-    github_id: str
     tier_id: str = "pro"
 
 @app.post("/api/billing/verify-payment")
-def verify_payment(req: VerifyPaymentRequest):
+def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends(get_current_user_from_token)):
     """Verify Razorpay signature, activate subscription."""
     tier = get_tier(req.tier_id)
     if not tier:
@@ -217,16 +201,7 @@ def verify_payment(req: VerifyPaymentRequest):
     if stored_order["amount_cents"] != tier["price_in_cents"]:
         raise HTTPException(status_code=400, detail="Amount mismatch")
 
-    try:
-        github_id_int = int(req.github_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid github_id format")
-
-    user_db = get_user_by_github_id(github_id_int)
-    if not user_db:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user_id = str(user_db["id"])
+    user_id = str(current_user["user_id"])
 
     # Calculate new expiry (30 days + bonus from mid-cycle upgrade)
     current_sub = get_subscription(user_id, "user")
@@ -445,7 +420,7 @@ def get_impact(
     depth: int = Query(3, ge=1, le=5),
     file_filter: str = Query(None, alias="file"),
     project_path: str = Query(None),
-    current_user: dict = Depends(get_current_user_from_token)
+    current_user: dict = Depends(require_active_subscription)
 ):
     check_rate_limit(f"impact_{current_user['user_id']}", 20, 60)
     
@@ -596,6 +571,41 @@ def get_impact(
                 
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi import Header
+from n3mo.api.webhook_handler import revoke_github_installation
+
+@app.post("/internal/sweep-expired")
+def sweep_expired_subscriptions(authorization: str = Header(None)):
+    """Find all expired subscriptions and revoke their GitHub Apps."""
+    sweep_token = os.getenv("INTERNAL_SWEEP_TOKEN")
+    if not sweep_token or authorization != f"Bearer {sweep_token}":
+        raise HTTPException(status_code=401, detail="Unauthorized sweep request")
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT u.id, o.installation_id 
+                    FROM subscriptions s
+                    JOIN users u ON s.user_owner_id = u.id
+                    LEFT JOIN organizations o ON o.owner_user_id = u.id
+                    WHERE s.status = 'expired' AND o.installation_id IS NOT NULL
+                    """
+                )
+                rows = cur.fetchall()
+                count = 0
+                for row in rows:
+                    installation_id = str(row[1])
+                    if revoke_github_installation(installation_id):
+                        count += 1
+                        # Nullify installation_id to prevent retries
+                        cur.execute("UPDATE organizations SET installation_id = NULL WHERE installation_id = %s", (row[1],))
+                conn.commit()
+                return {"status": "success", "revoked_count": count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

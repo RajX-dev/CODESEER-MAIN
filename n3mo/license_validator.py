@@ -143,4 +143,3 @@ p6rtHwKuX4iTCm0tncFgSofgAYRUIuH3Fm/lYf8+e3uHCk/PMHwPDMLjBthlMPR7
             "reason": f"Decoding error: {str(e)}"
         }
 
-print("License validator loaded successfully 200 ok")

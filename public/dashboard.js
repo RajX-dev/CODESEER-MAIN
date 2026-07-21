@@ -377,7 +377,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        github_id: userData.user.github_id.toString(),
                         tier_id: targetPlan,
                         discount: discountCode
                     })
@@ -423,7 +422,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         razorpay_payment_id: response.razorpay_payment_id,
                                         razorpay_order_id: response.razorpay_order_id,
                                         razorpay_signature: response.razorpay_signature,
-                                        github_id: userData.user.github_id.toString(),
                                         tier_id: targetPlan
                                     })
                                 });

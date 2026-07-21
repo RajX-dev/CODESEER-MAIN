@@ -1,0 +1,24 @@
+name: Sweep Expired Subscriptions
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call N3MO Sweep Endpoint
+        env:
+          INTERNAL_SWEEP_TOKEN: ${{ secrets.INTERNAL_SWEEP_TOKEN }}
+          N3MO_API_URL: ${{ secrets.N3MO_API_URL }}
+        run: |
+          if [ -z "$N3MO_API_URL" ] || [ -z "$INTERNAL_SWEEP_TOKEN" ]; then
+            echo "Missing N3MO_API_URL or INTERNAL_SWEEP_TOKEN secrets."
+            exit 1
+          fi
+          
+          curl -X POST "${N3MO_API_URL}/internal/sweep-expired" \
+            -H "Authorization: Bearer ${INTERNAL_SWEEP_TOKEN}" \
+            -H "Content-Type: application/json"
