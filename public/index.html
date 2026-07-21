@@ -733,14 +733,12 @@ $ n3mo mcp install</code></pre>
                     security boundaries and data governance rules:</p>
                 <div class="privacy-grid-details">
                     <div class="p-item">
-                        <h5>Zero External API Calls</h5>
-                        <p>N3MO parses everything locally using Tree-sitter and executes SQL queries on your PostgreSQL
-                            instance. Your code never leaves your network bounds.</p>
+                        <h5>Zero Stored Source Code</h5>
+                        <p>For SaaS users, N3MO analyzes code entirely in-memory on highly secure, ephemeral GitHub runners. We extract only the structural graph metadata, and the runner is instantly destroyed. We never store your raw source code.</p>
                     </div>
                     <div class="p-item">
-                        <h5>Private Deployments</h5>
-                        <p>Enterprise users run N3MO inside isolated self-hosted Docker containers, authenticated
-                            locally via JWT keys. Perfect for high-compliance environments.</p>
+                        <h5>Zero-Trust Deployments</h5>
+                        <p>Enterprise users run the N3MO CLI natively inside their own private, air-gapped CI/CD pipelines. In this mode, your code literally never leaves your Virtual Private Cloud (VPC).</p>
                     </div>
                 </div>
                 <div class="p-link-container">
