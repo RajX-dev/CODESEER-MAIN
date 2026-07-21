@@ -198,7 +198,7 @@ def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends(get_c
     if stored_order.get("status") == "paid":
         return {"status": "success", "message": "Payment already processed."}
     
-    if stored_order["amount_cents"] != tier["price_in_cents"]:
+    if stored_order.get("amount_paise") != tier["price_in_cents"]:
         raise HTTPException(status_code=400, detail="Amount mismatch")
 
     user_id = str(current_user["user_id"])

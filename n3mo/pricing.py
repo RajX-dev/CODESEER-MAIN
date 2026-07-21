@@ -177,9 +177,9 @@ def calculate_upgrade_bonus_days(current_expires_at: Optional[datetime.datetime]
 
     now = datetime.datetime.now(datetime.timezone.utc)
 
-    # Ensure timezone awareness
+    # Ensure timezone awareness by defaulting to UTC if naive
     if current_expires_at.tzinfo is None:
-        raise ValueError("datetime must include timezone info")
+        current_expires_at = current_expires_at.replace(tzinfo=datetime.timezone.utc)
 
     exp_utc = current_expires_at.astimezone(datetime.timezone.utc)
     remaining = (exp_utc - now).days
