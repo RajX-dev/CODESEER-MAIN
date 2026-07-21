@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const planType = data.subscription?.plan_type || 'free';
 
-        const isProOrEnt = planType === 'pro' || planType === 'enterprise';
+        const isProOrEnt = planType === 'pro' || planType === 'enterprise' || planType === 'team_basic' || planType === 'team_pro';
 
         let isExpired = false;
 
@@ -153,11 +153,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         }
 
-        if (!isExpired && (isProOrEnt || planType === 'team')) {
+        if (!isExpired && (isProOrEnt || planType.startsWith('team'))) {
 
             planBadge.className = "plan-badge pro";
 
-            if (planType === 'team') {
+            if (planType.startsWith('team')) {
 
                 viewTeam.style.display = 'block';
 
