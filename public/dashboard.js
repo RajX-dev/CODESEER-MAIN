@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const planType = data.subscription?.plan_type || 'free';
 
-        const isProOrEnt = planType === 'pro' || planType === 'enterprise' || planType === 'team_basic' || planType === 'team_pro';
+        const isProOrEnt = planType === 'standard' || planType === 'pro' || planType === 'enterprise' || planType === 'team_basic' || planType === 'team_pro';
 
         let isExpired = false;
 
@@ -180,6 +180,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (descEl) descEl.innerHTML = 'Thank you for supporting N3MO! You can now analyze repositories with <strong>unlimited lines of code</strong>.';
 
                 if (upgradeSec) upgradeSec.style.display = 'none';
+
+            } else if (planType === 'standard') {
+
+                viewPro.style.display = 'block';
+
+                const titleEl = document.getElementById('paid-plan-title');
+
+                const descEl = document.getElementById('paid-plan-desc');
+
+                if (titleEl) titleEl.textContent = 'Standard Subscription Active';
+
+                if (descEl) descEl.innerHTML = 'Thank you for supporting N3MO! You can now analyze up to <strong>1 repository</strong>.';
 
             } else {
 
