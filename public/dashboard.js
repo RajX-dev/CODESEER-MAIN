@@ -433,8 +433,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     window.location.reload();
 
                                 } else {
-
-                                    alert("Payment verification failed. Please contact support.");
+                                    let errText = "Payment verification failed. Please contact support.";
+                                    try {
+                                        const errJson = await verifyRes.json();
+                                        errText = errJson.detail || errText;
+                                    } catch(e) {}
+                                    alert(errText);
 
                                     targetBtn.innerHTML = originalText;
 
