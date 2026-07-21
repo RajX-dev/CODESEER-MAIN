@@ -537,11 +537,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     logoutBtn.addEventListener('click', async () => {
-
+        const secretInput = document.getElementById('webhook-secret-input');
+        if (secretInput) {
+            secretInput.type = 'text';
+            secretInput.value = '';
+        }
         await fetch('/api/auth/logout', { method: 'POST' });
-
         window.location.href = '/';
-
     });
 
     copyBtn.addEventListener('click', () => {
