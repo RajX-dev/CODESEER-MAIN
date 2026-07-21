@@ -67,8 +67,8 @@ PRICING_TIERS: dict[str, dict] = {
     "team_basic": {
         "id": "team_basic",
         "name": "Team Basic",
-        "price_usd": 199,
-        "price_in_cents": 19900,
+        "price_usd": 1,
+        "price_in_cents": 100,
         "repos_limit": 5,
         "loc_per_repo": 200_000,
         "max_total_loc": 1_000_000,
@@ -132,7 +132,7 @@ TIER_ORDER: list[str] = ["standard", "pro", "team_basic", "team_pro", "enterpris
 # ---------------------------------------------------------------------------
 
 RAZORPAY_CONFIG: dict[str, object] = {
-    "currency": "USD",
+    "currency": "INR",
     "timeout": 900,  # 15 minutes to complete payment
     "tier_descriptions": {
         "standard": "N3MO Standard Plan - 1 Month",
