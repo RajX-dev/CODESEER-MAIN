@@ -21,11 +21,7 @@
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
-<<<<<<< HEAD
-**📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](https://n3mo.vercel.app/)
-=======
 **📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](https://n3mo.shop)
->>>>>>> 55b1e4e (docs: point commercial license to n3mo.shop)
 
 [What is N3MO](#-what-is-n3mo) • [Tutorial](#-tutorial) • [Benchmarks](#-benchmarks) • [Architecture](#-architecture) • [Installation](#-installation) • [MCP](#-model-context-protocol-mcp) • [Usage](#-usage) • [Roadmap](#-roadmap)
 
