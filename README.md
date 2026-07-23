@@ -6,6 +6,7 @@
 <br>
 
 ![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Layer-blue?style=for-the-badge)
+[![SaaS Pipeline](https://img.shields.io/badge/Enterprise_CI%2FCD-Deployed_on_n3mo.shop-7B61FF?style=for-the-badge&logo=vercel)](https://n3mo.shop)
 [![PyPI version](https://img.shields.io/pypi/v/n3mo?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/n3mo/)
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-green?style=for-the-badge)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=for-the-badge&logo=python)](https://www.python.org)
@@ -13,16 +14,24 @@
 [![Status](https://img.shields.io/badge/status-stable-brightgreen?style=for-the-badge)]()
 [![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge)](https://registry.modelcontextprotocol.io/?q=n3mo)
 [![CI](https://img.shields.io/github/actions/workflow/status/RajX-dev/N3MO/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI)](https://github.com/RajX-dev/N3MO/actions)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/n3mo?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/n3mo)
+[![Discord](https://img.shields.io/badge/Discord-Join_Community-7289da?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cTgZKHf2G)
+
 
 **A structural code intelligence layer that transforms source code into a queryable knowledge graph for search, impact analysis, and AI-powered development.**
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
 
-**📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](#-license)
+> *"Text diffs are the source of all code review anxiety. A developer modifies a core utility, and the reviewer has to spend an hour mentally tracing downstream services to guess if it's safe to merge. N3MO replaces human guesswork with hard math."* 
+> 
+> **[Deploy the GitHub Webhook Instantly at n3mo.shop →](https://n3mo.shop)**
 
-[What is N3MO](#-what-is-n3mo) • [Benchmarks](#-benchmarks) • [Architecture](#-architecture) • [Installation](#-installation) • [MCP](#-model-context-protocol-mcp) • [Usage](#-usage) • [Roadmap](#-roadmap)
+**📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](https://n3mo.shop)
+
+[What is N3MO](#-what-is-n3mo) • [Tutorial](#-tutorial) • [Benchmarks](#-benchmarks) • [Architecture](#-architecture) • [Installation](#-installation) • [MCP](#-model-context-protocol-mcp) • [Usage](#-usage) • [Roadmap](#-roadmap)
 
 </div>
+
 
 ---
 
@@ -34,7 +43,7 @@ For engineering leaders and teams, N3MO acts as a **structural insurance policy*
 
 ### 💡 Why N3MO?
 
-* **🛡️ Eliminate Regression Risks** — Utility functions are rarely refactored because developers fear unknown side effects. N3MO maps the transitive blast radius of any symbol to arbitrary depth, showing you exactly what will break before you make the edit.
+* **🛡️ Eliminate Regression Risks** — Utility functions are rarely refactored because developers fear unknown side effects. N3MO maps the transitive blast radius of any symbol to arbitrary depth, showing you exactly what will break before you make the edit. **[Automate this in your CI/CD →](https://n3mo.shop)**
 * **🏎️ Rapid Developer Onboarding** — Instead of senior engineers spending hours explaining codebase flow to new hires, developers run one command to visualize complex call chains and parent-child dependencies interactively.
 * **🤖 AI-Agent Ready Infrastructure** — Modern LLM agents (Cursor, Claude Desktop) are limited by context windows and text search. N3MO's native MCP server lets agents query the actual code graph, enabling fast, hallucination-free refactoring.
 * **⚡ No Embeddings, No Drift** — N3MO is pure static analysis: Tree-sitter AST parsing into PostgreSQL. There's no vector index to keep in sync, no embedding cost per repo, and no semantic-similarity guesswork — every edge in the graph is an exact, verifiable relationship.
@@ -92,11 +101,259 @@ Result:    3 direct callers → 5 ripple effects
 | 🕸️ | How do these components actually connect? | Call graph + parent-child hierarchy |
 | 🤖 | Can my AI agent understand this codebase structurally? | Native MCP server for Cursor / Claude |
 
+
 ---
+
+---
+
+
+## ✨ Core Capabilities
+
+### Ingestion & Parsing
+
+* **Multi-language support** — 27 Tree-sitter grammars supported (dynamically loaded); actively benchmarked on 10 major languages including Python, JS/TS, Go, Java, and C/C++
+* **Parallel AST ingestion** — `ProcessPoolExecutor` distributes CPU-bound parsing across all available cores
+* **Incremental re-indexing** — SHA-256 file hashing skips unchanged files automatically
+* **Idempotent operations** — re-indexing updates existing data without duplication
+* **Smart exclusions** — case-insensitive directory filters and camelCase-aware filename checks prevent false positives (e.g. allows `contest.py` while skipping `test_*.py`)
+
+### Analysis & Querying
+
+* **Symbol extraction** — functions, classes, methods with full file path + line context
+* **Hierarchical modeling** — parent-child relationships (Module → Class → Method)
+* **Call graph construction** — who calls whom, resolved at ingestion time
+* **Scope-aware resolution** — class scope > local file > imports > qualified dot paths > global
+* **Blast radius analysis** — recursive CTE traversal to arbitrary depth with cycle guards
+
+### Performance
+
+* **Connection pooling** — `ThreadedConnectionPool` eliminates per-symbol DB round trips
+* **Batch inserts** — symbols, imports, and calls batched per file in single transactions
+* **Optimized queries** — `SPLIT_PART` fix delivered a 2× speedup on call resolution
+
+### Visualization & Integration
+
+* **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
+* **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
+* **Premium styling** — sleek interactive dashboard landing page UI and graph visualizer styled with `Bricolage Grotesque`, `Inter`, and `JetBrains Mono` typography
+* **[SKILL.md](SKILL.md)** profile — system instructions to configure Claude as an impact-aware coding agent
+* **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
+* **Git hooks** — automatic re-indexing on every commit
+* **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
+
+
+---
+
+---
+
+
+## 🌐 Supported Languages
+
+<div align="center">
+
+| | | | |
+|:---:|:---:|:---:|:---:|
+| ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) | ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black) | ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white) | ![Go](https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white) |
+| ![Rust](https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white) | ![Java](https://img.shields.io/badge/Java-ED8B00?logo=openjdk&logoColor=white) | ![C](https://img.shields.io/badge/C-A8B9CC?logo=c&logoColor=black) | ![C++](https://img.shields.io/badge/C++-00599C?logo=cplusplus&logoColor=white) |
+| ![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white) | ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white) | ![Swift](https://img.shields.io/badge/Swift-F05138?logo=swift&logoColor=white) | ![Scala](https://img.shields.io/badge/Scala-DC322F?logo=scala&logoColor=white) |
+| ![Ruby](https://img.shields.io/badge/Ruby-CC342D?logo=ruby&logoColor=white) | ![PHP](https://img.shields.io/badge/PHP-777BB4?logo=php&logoColor=white) | ![Haskell](https://img.shields.io/badge/Haskell-5D4F85?logo=haskell&logoColor=white) | ![Perl](https://img.shields.io/badge/Perl-39457E?logo=perl&logoColor=white) |
+| ![Lua](https://img.shields.io/badge/Lua-2C2D72?logo=lua&logoColor=white) | ![R](https://img.shields.io/badge/R-276DC3?logo=r&logoColor=white) | ![Elixir](https://img.shields.io/badge/Elixir-4B275F?logo=elixir&logoColor=white) | ![Dart](https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white) |
+| ![Groovy](https://img.shields.io/badge/Groovy-4298B8?logoColor=white) | ![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?logo=powershell&logoColor=white) | ![MATLAB](https://img.shields.io/badge/MATLAB-orange?logoColor=white) | ![Delphi](https://img.shields.io/badge/Delphi-EE1F35?logo=delphi&logoColor=white) |
+| ![Bash](https://img.shields.io/badge/Bash-4EAA25?logo=gnubash&logoColor=white) | ![Zig](https://img.shields.io/badge/Zig-F7A41D?logo=zig&logoColor=black) | ![OCaml](https://img.shields.io/badge/OCaml-EC6813?logo=ocaml&logoColor=white) | *…and more* |
+
+</div>
+
+> Tree-sitter parsing supported for 27 languages. Deep semantic call graph mapping currently optimized for Python, JS/TS, and Java.
+
+
+---
+
+---
+
+
+## 🚀 Installation
+
+### Prerequisites
+
+![Docker](https://img.shields.io/badge/Docker-Required-2496ED?logo=docker)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python)
+![Git](https://img.shields.io/badge/Git-Required-F05032?logo=git)
+
+### Quick start
+
+Install N3MO directly from PyPI:
+
+```bash
+# Install the package
+pip install n3mo
+
+# Start Docker containers & initialize the database
+n3mo setup
+```
+
+Alternatively, for contributors running in editable mode:
+```bash
+git clone https://github.com/RajX-dev/N3MO.git
+cd N3MO
+pip install -e .
+n3mo setup
+```
+
+
+---
+
+---
+
+
+## 💻 Usage
+
+### Index a repository
+
+```bash
+cd /path/to/your/project
+n3mo index
+```
+
+**What gets indexed:**
+* ✅ Source files in all 27 supported languages
+* ❌ Virtual environments (`venv/`, `.venv/`)
+* ❌ Dependencies (`node_modules/`, `site-packages/`)
+* ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
+* ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
+
+### Visualizer
+
+#### Dark Mode — Radial Layout
+![Dark Mode Radial Layout](docs/images/dark_mode_radial.png)
+
+#### Horizontal Tree View
+![Horizontal Tree View](docs/images/horizontal_tree.png)
+
+**Example terminal output:**
+
+```
+  ◈ IMPACT ANALYSIS
+  ──────────────────────────────────────────────────────────────────
+  Target:  authenticate_user
+  ──────────────────────────────────────────────────────────────────
+
+  ◉ Direct Callers  (3 symbols)
+
+  ▸ login_endpoint             api/auth.py:12
+  ▸ refresh_token              api/token.py:23
+  ▸ validate_session           middleware/auth.py:89
+
+  ◎ Ripple Effects  (5 symbols)
+
+    ╰─▸ POST /login              routes.py:67
+    ╰─▸ admin_login              admin/views.py:34
+    ╰─▸ require_auth             decorators.py:12
+    ╰─▸ dashboard_view           views/dashboard.py:8
+    ╰─▸ settings_view            views/settings.py:22
+
+  ──────────────────────────────────────────────────────────────────
+  Total impacted: 8 references  │  depth ≤ 3
+```
+
+### Dependency graph visualization
+
+```mermaid
+graph LR
+    A[main.py] --> B[auth.py::login]
+    A --> C[db.py::connect]
+    B --> D[utils.py::hash_password]
+    B --> E[models.py::User]
+    C --> F[config.py::DB_URI]
+
+    style A fill:#ff6b6b,stroke:#c92a2a,stroke-width:2px,color:#fff
+    style B fill:#4ecdc4,stroke:#0ca89e,stroke-width:2px,color:#000
+    style C fill:#45b7d1,stroke:#1098ad,stroke-width:2px,color:#000
+    style D fill:#96ceb4,stroke:#63b598,stroke-width:2px,color:#000
+    style E fill:#ffd93d,stroke:#f5c200,stroke-width:2px,color:#000
+    style F fill:#e0e0e0,stroke:#a0a0a0,stroke-width:2px,color:#000
+```
+
+
+---
+
+---
+
 
 ## 🎥 Tutorial
 
-<video src="https://raw.githubusercontent.com/RajX-dev/N3MO/main/docs/tutorial.mp4" controls width="100%"></video>
+[Watch the Tutorial Video on GitHub](https://github.com/RajX-dev/N3MO/blob/main/docs/tutorial.mp4?raw=true)
+
+
+---
+
+---
+
+
+## 🤖 Model Context Protocol (MCP)
+
+N3MO includes a native MCP server that exposes repository analysis and graph traversal tools to LLM agents (like Claude, Cursor, or Windsurf).
+
+### Automatic Claude Desktop Setup
+```bash
+# Navigate to the workspace you want Claude to analyze, then run:
+n3mo mcp install
+```
+This registers N3MO and sets up the paths automatically. Restart Claude Desktop and you're ready!
+
+### 🧠 Claude Skill (System Instructions)
+To configure Claude to run N3MO impact queries proactively before changing code in the editor, import or copy-paste the custom instructions from the **[SKILL.md](SKILL.md)** profile.
+
+### Cursor Setup
+1. Go to **Settings → Models → MCP**.
+2. Click **+ Add New MCP Server**.
+3. Set the configuration details:
+   * **Name**: `n3mo`
+   * **Type**: `command`
+   * **Command**: `n3mo mcp start` (or `uvx n3mo mcp start` to run directly)
+   * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
+4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
+
+### 🏢 Scale to Team Callout
+*Bringing AI agents to your team workspace?* Stop forcing every developer to run heavy indexing pipelines and PostgreSQL instances on their local laptops. 
+
+Connect Cursor directly to the global cloud graph at **[n3mo.shop](https://n3mo.shop)** to bypass local machine database overhead entirely. Your agents query the cloud graph instantly.
+
+### 🧰 Available MCP Tools
+
+| Tool | Description |
+|:---|:---|
+| `n3mo_index` | Ingests and indexes the codebase |
+| `n3mo_search_symbol` | Locates the definition of a symbol across the workspace (file path, line number) |
+| `n3mo_get_dependencies` | Finds all external symbols that a given symbol calls (forward-dependency graph) |
+| `n3mo_get_file_symbols` | Lists all classes and functions defined inside a specific file |
+| `n3mo_get_blast_radius` | Traces the transitive impact/call graph of a code symbol |
+
+
+---
+
+---
+
+
+## ☁️ Enterprise CI/CD Automation (The SaaS Pivot)
+
+Running deterministic AST parsing in a local loop is great, but manually building multi-step YAML actions, maintaining CI database infrastructure, and orchestrating PR timeline events is a massive friction point for engineering teams. 
+
+**[n3mo.shop](https://n3mo.shop)** is our definitive, zero-maintenance infrastructure layer that abstracts all of this away. 
+
+* **Zero-Config Webhooks:** 2-click GitHub App sync. No YAML boilerplate to maintain.
+* **Automated Inline PR Comments:** N3MO hooks into your repository and posts the exact blast radius directly into your GitHub review timeline:
+  
+  ```markdown
+  ◈ N3MO Pull Request Impact Analysis
+  ⚠️ Blast Radius Detected: Modifying `core_auth.py` transitively impacts 3 downstream services.
+  - `api/billing.py:process_payment()`
+  - `web/handlers.py:login_route()`
+  - `cron/sync_users.py:execute()`
+  ```
+* **Strict "Zero-Trust" Privacy:** We only parse structural AST metadata (symbol relationships). **Your raw source code is never stored on our servers.** The ephemeral parsing container is instantly destroyed the millisecond the PR comment is posted.
+
+**[Offload your pipeline infrastructure today at n3mo.shop →](https://n3mo.shop)**
+
 
 ---
 
@@ -183,432 +440,27 @@ Impact analysis uses PostgreSQL recursive CTEs with cycle guards. Query times ar
 python benchmarks/benchmark_indexing.py
 ```
 
----
-
-## 🏗️ Architecture
-
-### Knowledge graph model
-
-N3MO builds a **symbol-centric knowledge graph** stored in PostgreSQL:
-
-```mermaid
-graph TD
-    A["📄 Source Code"] -->|Tree-sitter| B["🌳 AST Parser"]
-    B --> C["🔍 Symbol Extractor"]
-    D["🔄 Git Hooks"] -->|post-commit| A
-
-    C --> E[("🗄️ PostgreSQL<br/>Projects · Symbols · Calls<br/>Imports · Files")]
-
-    E --> F["💥 Impact Analysis"]
-    E --> G["📞 Call Graph"]
-    E --> H["📊 Dependency Graph"]
-
-    F --> I["🎨 Visualizer"]
-    G --> I
-    H --> I
-
-    F --> J["🤖 MCP Server"]
-
-    style A fill:#6c63ff,stroke:#4a3fbf,color:#fff
-    style B fill:#7c74ff,stroke:#4a3fbf,color:#fff
-    style C fill:#7c74ff,stroke:#4a3fbf,color:#fff
-    style D fill:#ffd93d,stroke:#d4b800,color:#1a202c
-    style E fill:#ff6b6b,stroke:#c53030,color:#fff,stroke-width:3px
-    style F fill:#45b7d1,stroke:#2c8ea8,color:#1a202c
-    style G fill:#45b7d1,stroke:#2c8ea8,color:#1a202c
-    style H fill:#45b7d1,stroke:#2c8ea8,color:#1a202c
-    style I fill:#9ae6b4,stroke:#2f855a,color:#1a202c
-    style J fill:#ffd93d,stroke:#d4b800,color:#1a202c
-```
-
-### System flow
-
-```mermaid
-sequenceDiagram
-    participant User as User / CI
-    participant CLI as N3MO CLI
-    participant DB as PostgreSQL (Docker)
-    participant Viz as Graph Visualizer
-
-    rect rgb(26, 27, 46)
-    Note over User, DB: Indexing Flow (Local CLI)
-    User->>CLI: n3mo index
-    CLI->>DB: Start PostgreSQL container (if not running)
-    CLI->>CLI: Walk file tree (SHA-256 hash checks)
-    CLI->>CLI: Parse AST (Tree-sitter, multiprocessing)
-    CLI->>DB: Batch insert symbols, calls, imports
-    CLI->>DB: Resolve imports & call links
-    DB-->>CLI: Success
-    CLI-->>User: Complete summary
-    end
-
-    rect rgb(26, 27, 46)
-    Note over User, Viz: Query & Visualization Flow
-    User->>CLI: n3mo impact "symbol" --graph
-    CLI->>DB: Recursive CTE traversal (depth & file filters)
-    DB-->>CLI: Blast radius subgraph
-    CLI->>Viz: Generate orbital vis.js HTML
-    CLI->>User: Launch local web server & open browser
-    end
-```
-
-### Data model
-
-```mermaid
-erDiagram
-    PROJECT ||--o{ SYMBOL : contains
-    PROJECT ||--o{ CALL : tracks
-    PROJECT ||--o{ IMPORT : tracks
-    PROJECT ||--o{ FILE : indexes
-    SYMBOL ||--o{ CALL : "source of"
-    SYMBOL ||--o{ CALL : "resolved to"
-    SYMBOL ||--o{ SYMBOL : "parent of"
-
-    PROJECT {
-        uuid id PK
-        text name
-        text repo_url
-        timestamp created_at
-    }
-    SYMBOL {
-        uuid id PK
-        uuid project_id FK
-        text name
-        text file_path
-        text kind "function|class|method"
-        text signature
-        int start_line
-        int end_line
-        uuid parent_id FK
-    }
-    CALL {
-        uuid id PK
-        uuid project_id FK
-        uuid source_symbol_id FK
-        text call_name
-        int line_number
-        uuid resolved_symbol_id FK
-    }
-    IMPORT {
-        uuid id PK
-        uuid project_id FK
-        text file_path
-        text module
-        text name
-        text alias
-        uuid resolved_symbol_id FK
-    }
-    FILE {
-        uuid project_id FK
-        text file_path PK
-        text sha256
-    }
-```
 
 ---
 
-## ✨ Core Capabilities
+---
 
-### Ingestion & Parsing
 
-* **Multi-language support** — 27 Tree-sitter grammars supported (dynamically loaded); actively benchmarked on 10 major languages including Python, JS/TS, Go, Java, and C/C++
-* **Parallel AST ingestion** — `ProcessPoolExecutor` distributes CPU-bound parsing across all available cores
-* **Incremental re-indexing** — SHA-256 file hashing skips unchanged files automatically
-* **Idempotent operations** — re-indexing updates existing data without duplication
-* **Smart exclusions** — case-insensitive directory filters and camelCase-aware filename checks prevent false positives (e.g. allows `contest.py` while skipping `test_*.py`)
 
-### Analysis & Querying
 
-* **Symbol extraction** — functions, classes, methods with full file path + line context
-* **Hierarchical modeling** — parent-child relationships (Module → Class → Method)
-* **Call graph construction** — who calls whom, resolved at ingestion time
-* **Scope-aware resolution** — class scope > local file > imports > qualified dot paths > global
-* **Blast radius analysis** — recursive CTE traversal to arbitrary depth with cycle guards
-
-### Performance
-
-* **Connection pooling** — `ThreadedConnectionPool` eliminates per-symbol DB round trips
-* **Batch inserts** — symbols, imports, and calls batched per file in single transactions
-* **Optimized queries** — `SPLIT_PART` fix delivered a 2× speedup on call resolution
-
-### Visualization & Integration
-
-* **Interactive graph** — vis.js orbit map with click-to-inspect nodes, sidebar, and depth slider
-* **Dark mode** — toggleable canvas dark mode with real-time node/edge updates, persisted in `localStorage`
-* **Premium styling** — sleek interactive dashboard landing page UI and graph visualizer styled with `Bricolage Grotesque`, `Inter`, and `JetBrains Mono` typography
-* **[SKILL.md](SKILL.md)** profile — system instructions to configure Claude as an impact-aware coding agent
-* **Native MCP server** — first-class integration with Cursor, Claude Desktop, and Windsurf
-* **Git hooks** — automatic re-indexing on every commit
-* **CI pipeline** — GitHub Actions with linting (`ruff`), type checking (`mypy`), and `pytest`
 
 ---
 
-## 🌐 Supported Languages
+## 📈 Project Status
 
-<div align="center">
+N3MO's core architecture and distribution phases (Foundations, Performance, Correctness & Scaling, and Distribution) have been successfully completed. 
+The project is currently stable, actively maintained, and ready for production use.
 
-| | | | |
-|:---:|:---:|:---:|:---:|
-| ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) | ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black) | ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white) | ![Go](https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white) |
-| ![Rust](https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white) | ![Java](https://img.shields.io/badge/Java-ED8B00?logo=openjdk&logoColor=white) | ![C](https://img.shields.io/badge/C-A8B9CC?logo=c&logoColor=black) | ![C++](https://img.shields.io/badge/C++-00599C?logo=cplusplus&logoColor=white) |
-| ![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white) | ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white) | ![Swift](https://img.shields.io/badge/Swift-F05138?logo=swift&logoColor=white) | ![Scala](https://img.shields.io/badge/Scala-DC322F?logo=scala&logoColor=white) |
-| ![Ruby](https://img.shields.io/badge/Ruby-CC342D?logo=ruby&logoColor=white) | ![PHP](https://img.shields.io/badge/PHP-777BB4?logo=php&logoColor=white) | ![Haskell](https://img.shields.io/badge/Haskell-5D4F85?logo=haskell&logoColor=white) | ![Perl](https://img.shields.io/badge/Perl-39457E?logo=perl&logoColor=white) |
-| ![Lua](https://img.shields.io/badge/Lua-2C2D72?logo=lua&logoColor=white) | ![R](https://img.shields.io/badge/R-276DC3?logo=r&logoColor=white) | ![Elixir](https://img.shields.io/badge/Elixir-4B275F?logo=elixir&logoColor=white) | ![Dart](https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white) |
-| ![Groovy](https://img.shields.io/badge/Groovy-4298B8?logoColor=white) | ![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?logo=powershell&logoColor=white) | ![MATLAB](https://img.shields.io/badge/MATLAB-orange?logoColor=white) | ![Delphi](https://img.shields.io/badge/Delphi-EE1F35?logo=delphi&logoColor=white) |
-| ![Bash](https://img.shields.io/badge/Bash-4EAA25?logo=gnubash&logoColor=white) | ![Zig](https://img.shields.io/badge/Zig-F7A41D?logo=zig&logoColor=black) | ![OCaml](https://img.shields.io/badge/OCaml-EC6813?logo=ocaml&logoColor=white) | *…and more* |
-
-</div>
-
-> Tree-sitter parsing supported for 27 languages. Deep semantic call graph mapping currently optimized for Python, JS/TS, and Java.
 
 ---
 
-## 🚀 Installation
-
-### Prerequisites
-
-![Docker](https://img.shields.io/badge/Docker-Required-2496ED?logo=docker)
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python)
-![Git](https://img.shields.io/badge/Git-Required-F05032?logo=git)
-
-### Quick start
-
-Install N3MO directly from PyPI:
-
-```bash
-# Install the package
-pip install n3mo
-
-# Start Docker containers & initialize the database
-n3mo setup
-```
-
-Alternatively, for contributors running in editable mode:
-```bash
-git clone https://github.com/RajX-dev/N3MO.git
-cd N3MO
-pip install -e .
-n3mo setup
-```
-
 ---
 
-## 🤖 Model Context Protocol (MCP)
-
-N3MO includes a native MCP server that exposes repository analysis and graph traversal tools to LLM agents (like Claude, Cursor, or Windsurf).
-
-### Automatic Claude Desktop Setup
-```bash
-# Navigate to the workspace you want Claude to analyze, then run:
-n3mo mcp install
-```
-This registers N3MO and sets up the paths automatically. Restart Claude Desktop and you're ready!
-
-### 🧠 Claude Skill (System Instructions)
-To configure Claude to run N3MO impact queries proactively before changing code in the editor, import or copy-paste the custom instructions from the **[SKILL.md](SKILL.md)** profile.
-
-### Cursor Setup
-1. Go to **Settings → Models → MCP**.
-2. Click **+ Add New MCP Server**.
-3. Set the configuration details:
-   * **Name**: `n3mo`
-   * **Type**: `command`
-   * **Command**: `n3mo mcp start` (or `uvx n3mo mcp start` to run directly)
-   * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
-4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
-
-### 🧰 Available MCP Tools
-
-| Tool | Description |
-|:---|:---|
-| `n3mo_index` | Ingests and indexes the codebase |
-| `n3mo_search_symbol` | Locates the definition of a symbol across the workspace (file path, line number) |
-| `n3mo_get_dependencies` | Finds all external symbols that a given symbol calls (forward-dependency graph) |
-| `n3mo_get_file_symbols` | Lists all classes and functions defined inside a specific file |
-| `n3mo_get_blast_radius` | Traces the transitive impact/call graph of a code symbol |
-
----
-
-## ⚓ GitHub Webhook Integration
-
-For team collaboration and automated pull-request analysis in your CI/CD pipeline, visit **[n3mo.shop](https://n3mo.shop)** to get started with the GitHub Webhook integration.
-
-### 💰 Pricing & Licensing
-
-N3MO is free under the **PolyForm Noncommercial 1.0.0 License** for local usage and single-developer MCP integrations.
-
-* **100% Free & Local** — CLI queries, local MCP integrations, and the visualizer with zero limits.
-* **Enterprise Licensing** — for large-scale organization deployments or commercial licensing terms, reach out to the author.
-
----
-
-## 💻 Usage
-
-### Index a repository
-
-```bash
-cd /path/to/your/project
-n3mo index
-```
-
-**What gets indexed:**
-* ✅ Source files in all 27 supported languages
-* ❌ Virtual environments (`venv/`, `.venv/`)
-* ❌ Dependencies (`node_modules/`, `site-packages/`)
-* ❌ Build artifacts (`.git/`, `__pycache__/`, `dist/`)
-* ❌ Test / fixture directories (`tests/`, `mocks/`, `specs/`)
-
-### Visualizer
-
-#### Dark Mode — Radial Layout
-![Dark Mode Radial Layout](docs/images/dark_mode_radial.png)
-
-#### Horizontal Tree View
-![Horizontal Tree View](docs/images/horizontal_tree.png)
-
-**Example terminal output:**
-
-```
-  ◈ IMPACT ANALYSIS
-  ──────────────────────────────────────────────────────────────────
-  Target:  authenticate_user
-  ──────────────────────────────────────────────────────────────────
-
-  ◉ Direct Callers  (3 symbols)
-
-  ▸ login_endpoint             api/auth.py:12
-  ▸ refresh_token              api/token.py:23
-  ▸ validate_session           middleware/auth.py:89
-
-  ◎ Ripple Effects  (5 symbols)
-
-    ╰─▸ POST /login              routes.py:67
-    ╰─▸ admin_login              admin/views.py:34
-    ╰─▸ require_auth             decorators.py:12
-    ╰─▸ dashboard_view           views/dashboard.py:8
-    ╰─▸ settings_view            views/settings.py:22
-
-  ──────────────────────────────────────────────────────────────────
-  Total impacted: 8 references  │  depth ≤ 3
-```
-
-### Dependency graph visualization
-
-```mermaid
-graph LR
-    A[main.py] --> B[auth.py::login]
-    A --> C[db.py::connect]
-    B --> D[utils.py::hash_password]
-    B --> E[models.py::User]
-    C --> F[config.py::DB_URI]
-
-    style A fill:#ff6b6b,stroke:#c92a2a,stroke-width:2px,color:#fff
-    style B fill:#4ecdc4,stroke:#0ca89e,stroke-width:2px,color:#000
-    style C fill:#45b7d1,stroke:#1098ad,stroke-width:2px,color:#000
-    style D fill:#96ceb4,stroke:#63b598,stroke-width:2px,color:#000
-    style E fill:#ffd93d,stroke:#f5c200,stroke-width:2px,color:#000
-    style F fill:#e0e0e0,stroke:#a0a0a0,stroke-width:2px,color:#000
-```
-
----
-
-## 🛠️ Technology Stack
-
-<div align="center">
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Parser** | ![Tree-sitter](https://img.shields.io/badge/Tree--sitter-AST-orange) | Error-tolerant syntax analysis across 27 languages |
-| **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql) | Relational graph storage + recursive CTE queries |
-| **Runtime** | ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python) | Core logic + multiprocessing |
-| **Infrastructure** | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker) | Containerization |
-| **Visualization** | ![JavaScript](https://img.shields.io/badge/vis.js-Graph-yellow) | Interactive impact graph |
-| **AI Integration** | ![MCP](https://img.shields.io/badge/MCP-Server-purple) | Native tool for LLM agents |
-
-</div>
-
----
-
-## 🗺️ Roadmap
-
-All four development phases have been completed. N3MO is stable and actively maintained.
-
-| Phase | Component | Status |
-|-------|-----------|--------|
-| **Phase 1 — Foundations** | | |
-| | Docker setup | ✅ Complete |
-| | Database schema | ✅ Complete |
-| | Tree-sitter integration | ✅ Complete |
-| | Symbol + call extraction | ✅ Complete |
-| | Blast radius (recursive CTE) | ✅ Complete |
-| | Interactive visualizer | ✅ Complete |
-| **Phase 2 — Performance** | | |
-| | Connection pooling | ✅ Complete |
-| | Batch DB operations (symbols/imports/calls) | ✅ Complete |
-| | SPLIT_PART query optimization | ✅ Complete |
-| | `--file` / `--depth` CLI flags | ✅ Complete |
-| | Interactive depth slider | ✅ Complete |
-| **Phase 3 — Correctness & Scaling** | | |
-| | Incremental re-index (file hashing) | ✅ Complete |
-| | Multiprocessing (AST parsing) | ✅ Complete |
-| | Scope-aware call resolution | ✅ Complete |
-| | CTE cycle guard | ✅ Complete |
-| | Full type annotations + mypy | ✅ Complete |
-| | pytest suite + CI | ✅ Complete |
-| | Multi-language support (27 languages) | ✅ Complete |
-| **Phase 4 — Distribution** | | |
-| | MCP server (Cursor / Claude / Windsurf) | ✅ Complete |
-| | Real-time git-hook indexing | ✅ Complete |
-
-<details>
-<summary><b>Phase 1: Foundations</b> ✅ Complete</summary>
-
-- [x] Docker environment (PostgreSQL)
-- [x] Database schema — Projects, Symbols, Calls, Imports tables
-- [x] Tree-sitter parser integration
-- [x] Symbol extractor with full AST traversal
-- [x] Idempotent upsert logic
-- [x] Blast radius via recursive CTE
-- [x] Interactive vis.js visualizer
-
-</details>
-
-<details>
-<summary><b>Phase 2: Performance</b> ✅ Complete</summary>
-
-- [x] `psycopg2.pool.ThreadedConnectionPool` — replace per-call connections
-- [x] `execute_values()` batch inserts for symbols, imports, and calls — 1 transaction per file
-- [x] SPLIT_PART query optimization for call resolution
-- [x] `--file` and `--depth` CLI flags for targeted impact analysis
-- [x] Interactive depth slider in visualizer
-
-**Results:** Django (3,021 files, ~43K symbols, ~181K calls) — 23min → 2.5min (9× faster)
-
-</details>
-
-<details>
-<summary><b>Phase 3: Correctness + Scaling</b> ✅ Complete</summary>
-
-- [x] SHA-256 file hashing for incremental re-index
-- [x] `ProcessPoolExecutor` for parallel AST parsing
-- [x] Scope-aware call resolution using imports table
-- [x] CTE cycle guard (visited node tracking)
-- [x] Full type annotations, `mypy` clean checking in CI
-- [x] pytest unit + integration test suite
-- [x] GitHub Actions CI pipeline
-- [x] Multi-language support (27 languages)
-
-</details>
-
-<details>
-<summary><b>Phase 4: Distribution</b> ✅ Complete</summary>
-
-- [x] MCP server — N3MO as a tool for Cursor, Claude Code, Windsurf
-- [x] Real-time incremental indexing via git hooks
-
-</details>
-
----
 
 ## 📝 Design Principles
 
@@ -624,7 +476,11 @@ The parser must handle syntax errors gracefully without corrupting the graph. A 
 **4. Idempotent operations**
 Re-running ingestion produces identical results, enabling safe incremental updates and CI/CD integration.
 
+
 ---
+
+---
+
 
 ## 🤝 Contributing
 
@@ -646,9 +502,24 @@ mypy n3mo/
 pytest tests/
 ```
 
+
 ---
 
-## 📜 License
+---
+
+
+## 📜 License & Pricing
+
+### Pricing & Licensing
+
+N3MO is free under the **PolyForm Noncommercial 1.0.0 License** for local usage and single-developer MCP integrations.
+
+* **100% Free & Local** — CLI queries, local MCP integrations, and the visualizer with zero limits.
+* **Commercial SaaS & Webhooks** — To use N3MO in team environments, CI/CD pipelines, and private GitHub webhooks, purchase a commercial license at [n3mo.shop](https://n3mo.shop).
+* **Enterprise Licensing** — for large-scale organization deployments, custom SLAs, or zero-trust air-gapped environments, reach out for Enterprise options.
+
+
+---
 
 Licensed under the **PolyForm Noncommercial 1.0.0** License.
 
@@ -661,7 +532,11 @@ For commercial deployments or proprietary modifications, contact for licensing o
 
 See [LICENSE](LICENSE) for full legal details.
 
+
 ---
+
+---
+
 
 ## 👨💻 Author
 
@@ -670,7 +545,11 @@ See [LICENSE](LICENSE) for full legal details.
 [![GitHub](https://img.shields.io/badge/GitHub-RajX--dev-181717?logo=github)](https://github.com/RajX-dev)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?logo=linkedin)](https://linkedin.com/in/raj-shekhar349)
 
+
 ---
+
+---
+
 
 ## 🙏 Acknowledgments
 
@@ -680,6 +559,7 @@ See [LICENSE](LICENSE) for full legal details.
 * **[vis.js](https://visjs.org/)** — for the interactive graph visualization
 * **[FastAPI](https://fastapi.tiangolo.com/)** — for the high-performance REST layer
 
+
 ---
 
 <div align="center">
@@ -688,7 +568,8 @@ See [LICENSE](LICENSE) for full legal details.
 
 *Building tools for understanding code at scale.*
 
-![Visitors](https://visitor-badge.laobi.icu/badge?page_id=RajX-dev.N3MO)
+![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FRajX-dev%2FN3MO&countColor=%233776AB)
+![Alt](https://repobeats.axiom.co/api/embed/c4cb93bd38f8cf6cdc088bb8ad615ce5ba8a143d.svg "Repobeats analytics image")
 
 <br><br>
 
