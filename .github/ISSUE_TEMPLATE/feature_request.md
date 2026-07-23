@@ -1,22 +1,23 @@
 ---
 name: Feature Request
-about: Suggest an idea for the Open Core parsing engine or tools.
-title: '[FEATURE] '
+about: Suggest an idea for the local CLI, AST parser, or MCP server.
+title: "[FEATURE] "
 labels: enhancement
 assignees: ''
----
-
-## 🚀 Is your feature request related to a problem? Please describe.
-<!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
-
-## 💡 Describe the solution you'd like
-<!-- A clear and concise description of what you want to happen. -->
-
-## 🔄 Describe alternatives you've considered
-<!-- A clear and concise description of any alternative solutions or features you've considered. -->
-
-## 📝 Additional context
-<!-- Add any other context or screenshots about the feature request here. -->
 
 ---
-**⚠️ Open Core Note:** Please keep feature requests focused on the core graph engine, parsers, CLI, or MCP. We do not accept public feature requests for the SaaS/Enterprise layers.
+
+**Why do we need this feature?**
+A clear and concise description of the problem this feature solves. (e.g., "I'm always frustrated when...")
+
+**What is the proposed solution?**
+A clear and concise description of what you want to happen.
+
+**How should this be implemented?**
+If you have an idea of the technical implementation in the core AST engine or Postgres schema, describe it here.
+
+**AI Agent Workflow Alignment**
+- [ ] This feature enhances the Model Context Protocol (MCP) / AI Agent developer workflow.
+
+---
+*Note: Enterprise-grade team collaboration features, multi-tenant scaling, and automated PR webhooks are actively deployed and supported on the SaaS cloud layer. To upgrade your team's workflow instantly without waiting for new open-source CLI releases, visit **[https://n3mo.shop](https://n3mo.shop)***.

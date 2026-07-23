@@ -6,6 +6,7 @@
 <br>
 
 ![N3MO Banner](https://img.shields.io/badge/N3MO-Code%20Intelligence%20Layer-blue?style=for-the-badge)
+[![SaaS Pipeline](https://img.shields.io/badge/Enterprise_CI%2FCD-Deployed_on_n3mo.shop-7B61FF?style=for-the-badge&logo=vercel)](https://n3mo.shop)
 [![PyPI version](https://img.shields.io/pypi/v/n3mo?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/n3mo/)
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-green?style=for-the-badge)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=for-the-badge&logo=python)](https://www.python.org)
@@ -20,6 +21,10 @@
 **A structural code intelligence layer that transforms source code into a queryable knowledge graph for search, impact analysis, and AI-powered development.**
 
 *Parse once. Query forever. Know exactly what breaks before it does.*
+
+> *"Text diffs are the source of all code review anxiety. A developer modifies a core utility, and the reviewer has to spend an hour mentally tracing downstream services to guess if it's safe to merge. N3MO replaces human guesswork with hard math."* 
+> 
+> **[Deploy the GitHub Webhook Instantly at n3mo.shop →](https://n3mo.shop)**
 
 **📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](https://n3mo.shop)
 
@@ -38,7 +43,7 @@ For engineering leaders and teams, N3MO acts as a **structural insurance policy*
 
 ### 💡 Why N3MO?
 
-* **🛡️ Eliminate Regression Risks** — Utility functions are rarely refactored because developers fear unknown side effects. N3MO maps the transitive blast radius of any symbol to arbitrary depth, showing you exactly what will break before you make the edit.
+* **🛡️ Eliminate Regression Risks** — Utility functions are rarely refactored because developers fear unknown side effects. N3MO maps the transitive blast radius of any symbol to arbitrary depth, showing you exactly what will break before you make the edit. **[Automate this in your CI/CD →](https://n3mo.shop)**
 * **🏎️ Rapid Developer Onboarding** — Instead of senior engineers spending hours explaining codebase flow to new hires, developers run one command to visualize complex call chains and parent-child dependencies interactively.
 * **🤖 AI-Agent Ready Infrastructure** — Modern LLM agents (Cursor, Claude Desktop) are limited by context windows and text search. N3MO's native MCP server lets agents query the actual code graph, enabling fast, hallucination-free refactoring.
 * **⚡ No Embeddings, No Drift** — N3MO is pure static analysis: Tree-sitter AST parsing into PostgreSQL. There's no vector index to keep in sync, no embedding cost per repo, and no semantic-similarity guesswork — every edge in the graph is an exact, verifiable relationship.
@@ -308,6 +313,11 @@ To configure Claude to run N3MO impact queries proactively before changing code 
    * **Environment Variables**: `TARGET_CODE_DIR=/absolute/path/to/your/active/workspace`
 4. Click Save, and Cursor will instantly be able to index and query your workspace blast radius.
 
+### 🏢 Scale to Team Callout
+*Bringing AI agents to your team workspace?* Stop forcing every developer to run heavy indexing pipelines and PostgreSQL instances on their local laptops. 
+
+Connect Cursor directly to the global cloud graph at **[n3mo.shop](https://n3mo.shop)** to bypass local machine database overhead entirely. Your agents query the cloud graph instantly.
+
 ### 🧰 Available MCP Tools
 
 | Tool | Description |
@@ -324,9 +334,25 @@ To configure Claude to run N3MO impact queries proactively before changing code 
 ---
 
 
-## ⚓ GitHub Webhook Integration
+## ☁️ Enterprise CI/CD Automation (The SaaS Pivot)
 
-N3MO provides a webhook integration available for SaaS purposes. This enables team collaboration and automated pull-request analysis in your CI/CD pipelines. Visit **[n3mo.shop](https://n3mo.shop)** to get started.
+Running deterministic AST parsing in a local loop is great, but manually building multi-step YAML actions, maintaining CI database infrastructure, and orchestrating PR timeline events is a massive friction point for engineering teams. 
+
+**[n3mo.shop](https://n3mo.shop)** is our definitive, zero-maintenance infrastructure layer that abstracts all of this away. 
+
+* **Zero-Config Webhooks:** 2-click GitHub App sync. No YAML boilerplate to maintain.
+* **Automated Inline PR Comments:** N3MO hooks into your repository and posts the exact blast radius directly into your GitHub review timeline:
+  
+  ```markdown
+  ◈ N3MO Pull Request Impact Analysis
+  ⚠️ Blast Radius Detected: Modifying `core_auth.py` transitively impacts 3 downstream services.
+  - `api/billing.py:process_payment()`
+  - `web/handlers.py:login_route()`
+  - `cron/sync_users.py:execute()`
+  ```
+* **Strict "Zero-Trust" Privacy:** We only parse structural AST metadata (symbol relationships). **Your raw source code is never stored on our servers.** The ephemeral parsing container is instantly destroyed the millisecond the PR comment is posted.
+
+**[Offload your pipeline infrastructure today at n3mo.shop →](https://n3mo.shop)**
 
 
 ---

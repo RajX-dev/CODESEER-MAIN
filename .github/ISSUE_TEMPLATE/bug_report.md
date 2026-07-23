@@ -1,31 +1,35 @@
 ---
 name: Bug Report
-about: Create a report to help us improve the core parsing engine or CLI.
-title: '[BUG] '
+about: Create a report to help us improve the local CLI or core AST engine.
+title: "[BUG] "
 labels: bug
 assignees: ''
+
 ---
 
-## 🐛 Bug Description
-<!-- A clear and concise description of what the bug is. -->
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-## 💻 Steps to Reproduce
-<!-- Please provide code snippets or exact steps to reproduce the parsing error. -->
-1. Run `...`
-2. Given the following code:
-```python
-# Insert code here
-```
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Run command '...'
+2. Parse codebase '...'
 3. See error
 
-## 🎯 Expected Behavior
-<!-- A clear and concise description of what you expected to happen (e.g., "The function call should link to UUID X"). -->
+**Expected behavior**
+A clear and concise description of what you expected to happen.
 
-## 🖥️ Environment
-- **OS:** [e.g. Ubuntu 22.04, Windows 11]
-- **Python Version:** [e.g. 3.10.12]
-- **N3MO Version:** [e.g. 0.1.0 or commit hash]
-- **Language Parsed:** [e.g. Python, TypeScript]
+**Telemetry & Environment (Required)**
+Please provide the following information to help us debug the deterministic parser:
+ - OS: [e.g. Ubuntu 22.04, macOS Sonoma]
+ - Python Version: [e.g. 3.11]
+ - N3MO Version: [e.g. 1.2.0]
+ - Target Language: [e.g. Python, TypeScript]
+ - Codebase Size: [e.g. ~500 files, ~10,000 LOC]
+ - Error Logs / AST Parse Trace:
+```bash
+# Paste exact error traceback here
+```
 
-## 📝 Additional Context
-<!-- Add any other context about the problem here. -->
+---
+*Tired of maintaining local PostgreSQL instances and writing custom GitHub Actions to run N3MO in CI? Offload your pipeline infrastructure to our zero-config cloud engine at **[https://n3mo.shop](https://n3mo.shop)***.

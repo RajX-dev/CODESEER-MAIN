@@ -16,8 +16,11 @@ Since we are building this in public, communication is key. Please follow these 
 * **Bug Reports:** If you found a confirmed bug in the parsing engine, CLI, or MCP server, open a [GitHub Issue](https://github.com/RajX-dev/N3MO/issues) using the Bug Report template.
 * **Good First Issues:** If you're new to the codebase, check the `good first issue` or `help wanted` tags in the issue tracker. Drop a comment saying "I'd like to work on this!" so we can assign it to you.
 
-### ⚠️ Open Core Notice
-N3MO operates on an Open Core model. The core parsing engine, graph builder, CLI, and MCP integrations are open source. **Please do not submit PRs targeting the SaaS billing, Razorpay integration, or proprietary enterprise webhook logic.** If you find a security vulnerability or bug in the enterprise layer, please reach out to the maintainers privately rather than opening a public issue.
+### ⚠️ Scope Boundary Clause (Strict Open Core Policy)
+N3MO operates on a strict Open Core model to protect our commercial infrastructure while fostering a vibrant open-source ecosystem. 
+
+* **What we accept PRs for:** The core local CLI parser, the Tree-sitter AST mapping engine, Postgres graph schemas, and local MCP server interfaces.
+* **What we DO NOT accept PRs for:** Any features attempting to implement local CI/CD webhooks, multi-tenant database scaling, enterprise single sign-on (SSO), or automated GitHub timeline integrations. These are proprietary components managed exclusively by our commercial team at **[n3mo.shop](https://n3mo.shop)**. Please respect this commercial boundary.
 
 ---
 
