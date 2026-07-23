@@ -69,39 +69,52 @@
 
     <section class="legal-page">
         <div class="container legal-content">
-            <h1>Commercial Terms of Service</h1>
-            <p>Last updated: July 2026</p>
+            <h1>Terms of Service</h1>
+            <p><strong>Effective Date:</strong> July 23, 2026</p>
 
-            <h2>1. Service Overview</h2>
-            <p>N3MO SaaS provides automated structural code intelligence and impact analysis for your repositories via GitHub Webhooks. By purchasing a commercial license, you gain access to team environments, CI/CD pipeline integrations, and priority indexing queues.</p>
+            <p>Welcome to N3MO Code Intelligence. These Terms of Service ("Terms") govern your use of the N3MO software, SaaS platform, and related services (collectively, the "Service") provided by N3MO Code Intelligence ("Company", "we", "us", or "our"), founded by Raj Shekhar (CEO) and Ayush Singh Chand (Co-founder).</p>
 
-            <h2>2. Data Ownership & Security</h2>
-            <p>We believe in absolute security and transparency regarding your proprietary code:</p>
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing, installing, or using the Service, you agree to be bound by these Terms. If you are entering into these Terms on behalf of a company, enterprise, or other legal entity, you represent that you have the authority to bind such entity to these Terms.</p>
+
+            <h2>2. License Grant and Restrictions</h2>
+            <p>Depending on your subscription tier, we grant you a limited, non-exclusive, non-transferable license to use the Service:</p>
             <ul>
-                <li><strong>You retain 100% ownership</strong> of your source code at all times.</li>
-                <li><strong>Ephemeral Analysis:</strong> When using our Standard, Pro, or Team tiers, your code is analyzed on ephemeral, secure GitHub Action runners. The runner is instantly destroyed the second the Pull Request comment is posted.</li>
-                <li><strong>No Raw Source Code is Stored:</strong> N3MO only stores AST graph relationships and symbol names (e.g., function definitions and caller relationships) in our PostgreSQL database to enable fast transitive traversal. Your actual source code text is never saved to our servers.</li>
-                <li><strong>Zero-Trust Architecture:</strong> For Enterprise clients with strict compliance requirements, you can run the N3MO CLI completely natively inside your own private CI/CD pipelines. This ensures your code literally never leaves your Virtual Private Cloud (VPC).</li>
+                <li><strong>SaaS Tiers (Starter, Pro, Team):</strong> You may integrate our GitHub App into your repositories. Analysis is performed on our ephemeral runners.</li>
+                <li><strong>Enterprise Tier (Zero-Trust BYOR):</strong> You are granted a license to run the N3MO CLI natively within your own Virtual Private Cloud (VPC) and CI/CD pipelines.</li>
+            </ul>
+            <p><strong>Restrictions:</strong> You shall not: (a) reverse engineer, decompile, or disassemble the Service; (b) share or distribute your Enterprise License Key to third parties; or (c) use the Service to build a competitive product.</p>
+
+            <h2>3. Data Privacy and the "Zero-Trust" Guarantee</h2>
+            <p>We take your code security seriously:</p>
+            <ul>
+                <li><strong>Ephemeral Processing (SaaS):</strong> For SaaS tiers, your code is cloned to an ephemeral, highly secure runner. It is analyzed in-memory to generate an Abstract Syntax Tree (AST) graph, and the runner is <strong>instantly destroyed</strong>. We never store your raw source code.</li>
+                <li><strong>Air-Gapped Processing (Enterprise):</strong> Enterprise deployments run entirely within your infrastructure. Your source code never leaves your VPC, and no telemetry or source code is transmitted to our servers.</li>
+                <li><strong>Metadata:</strong> We only store structural metadata (symbol names, call graphs) necessary for blast radius analysis in our PostgreSQL database.</li>
             </ul>
 
-            <h2>3. Cancellation Policy</h2>
-            <p>We don't believe in vendor lock-in. If you choose to cancel your commercial subscription:</p>
-            <ul>
-                <li>Your GitHub Webhook integration will be disabled at the end of your billing cycle.</li>
-                <li>Your historical AST indexing data remains safely stored for a 30-day grace period in case you choose to resubscribe.</li>
-                <li><strong>Local Fallback:</strong> You can continue using the open-source N3MO CLI locally on your own machine, completely free, forever.</li>
-            </ul>
+            <h2>4. Intellectual Property</h2>
+            <p><strong>Your Code:</strong> You retain 100% ownership of all source code, intellectual property, and data you process using the Service.</p>
+            <p><strong>Our Service:</strong> The Company retains all right, title, and interest in and to the N3MO software, Core Engine, heuristics, and documentation.</p>
 
-            <h2>4. Support & Service Level Agreements (SLA)</h2>
-            <p>The level of support provided depends on your active tier:</p>
-            <ul>
-                <li><strong>Standard:</strong> Access to community support via Discord and GitHub Issues.</li>
-                <li><strong>Pro & Team:</strong> Priority email support with guaranteed response times.</li>
-                <li><strong>Enterprise:</strong> Dedicated Support Engineer and custom SLA contracts.</li>
-            </ul>
+            <h2>5. Payment, Billing, and Cancellation</h2>
+            <p><strong>Fees:</strong> You agree to pay all fees associated with your chosen subscription tier via our payment processor, Razorpay. All fees are non-refundable.</p>
+            <p><strong>Cancellation & Notice Period:</strong> 
+                <ul>
+                    <li><strong>Team/Pro Tiers:</strong> You may cancel at any time. You are only billed for your active usage period.</li>
+                    <li><strong>Enterprise Tier:</strong> Cancellation requires a 30-day written notice prior to the end of your annual contract term.</li>
+                </ul>
+            </p>
 
-            <h2>5. Service Continuity</h2>
-            <p>In the unlikely event that N3MO SaaS shuts down, you are fully protected. Because the N3MO core engine is distributed under a source-available PolyForm Noncommercial license, you will always be able to run the tool locally on your own hardware, completely independent of our servers.</p>
+            <h2>6. Limitation of Liability (CRITICAL)</h2>
+            <p>N3MO IS PROVIDED "AS IS". WE DO NOT WARRANT THAT THE SERVICE WILL BE ERROR-FREE OR CATCH EVERY BUG. N3MO IS A STATIC ANALYSIS ASSISTANT AND DOES NOT REPLACE MANUAL CODE REVIEW OR TESTING.</p>
+            <p>IN NO EVENT SHALL THE COMPANY, RAJ SHEKHAR, AYUSH SINGH CHAND, OR ITS AFFILIATES BE LIABLE FOR ANY INDIRECT, PUNITIVE, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN ANY WAY CONNECTED WITH THE USE OF THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR TOTAL AGGREGATE LIABILITY SHALL NOT EXCEED THE AMOUNT PAID BY YOU FOR THE SERVICE IN THE 12 MONTHS PRECEDING THE CLAIM.</p>
+
+            <h2>7. Governing Law and Jurisdiction</h2>
+            <p>These Terms shall be governed by and construed in accordance with the laws of India. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts located in New Delhi, India.</p>
+
+            <h2>8. Contact Information</h2>
+            <p>For legal inquiries, please contact us at: <a href="mailto:workraj345@gmail.com">workraj345@gmail.com</a>.</p>
         </div>
     </section>
 

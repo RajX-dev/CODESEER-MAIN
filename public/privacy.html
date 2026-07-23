@@ -70,19 +70,42 @@
     <section class="legal-page">
         <div class="container legal-content">
             <h1>Privacy Policy</h1>
+            <p><strong>Effective Date:</strong> July 23, 2026</p>
             
-            <p>Your privacy is critically important to us. This policy outlines how we handle your data.</p>
+            <p>At N3MO Code Intelligence ("Company", "we", "us", or "our"), your privacy and the security of your intellectual property are our highest priorities. This Privacy Policy outlines how we collect, use, and protect your information.</p>
+            
             <h2>1. Information We Collect</h2>
-            <p>We collect basic information required to provide our service, including your GitHub Profile ID, username, email address, and avatar URL when you authenticate via GitHub OAuth. We also collect transaction data (handled securely by our payment processors).</p>
-            <h2>2. Code and Telemetry</h2>
-            <p>We do <strong>not</strong> store your proprietary source code. For SaaS PR checks, code is cloned ephemerally to a secure container, analyzed for AST impacts, and immediately deleted. Local CLI users run everything entirely on their own machines with zero external data transmission.</p>
-            <h2>3. Information Sharing</h2>
-            <p>We do not sell or rent your personal information to third parties. Information may be shared with payment processors or infrastructure providers strictly for the purpose of operating the N3MO service.</p>
-            <h2>4. Security Measures</h2>
-            <p>We employ industry-standard security measures including HTTPS, JWT-based authentication, and secure ephemeral containers to protect your data against unauthorized access.</p>
-            <h2>5. Contact</h2>
-            <p>For any privacy-related queries, please contact <a href="mailto:sraj4090ti@gmail.com">sraj4090ti@gmail.com</a>.</p>
-        
+            <p>We only collect the absolute minimum data required to operate the Service:</p>
+            <ul>
+                <li><strong>Account Data:</strong> When you authenticate via GitHub, we collect your GitHub Profile ID, username, email address, and avatar URL.</li>
+                <li><strong>Payment Data:</strong> Payment processing is handled entirely by our secure third-party provider, Razorpay. We do not store or process your credit card numbers on our servers.</li>
+                <li><strong>Usage Telemetry:</strong> For SaaS users, we collect anonymized metrics regarding indexing speed and request counts to enforce subscription limits and monitor system health.</li>
+            </ul>
+
+            <h2>2. Strict Code Processing Policy</h2>
+            <p>Our entire infrastructure is designed around the principle of "Zero Stored Source Code".</p>
+            <ul>
+                <li><strong>Ephemeral SaaS Processing:</strong> When a Pull Request is analyzed, your code is securely cloned into an isolated, ephemeral GitHub Action runner. The code is parsed in-memory to extract structural dependencies. Once the analysis is complete, the runner and the cloned source code are <strong>instantly and permanently destroyed</strong>.</li>
+                <li><strong>Metadata Storage:</strong> We only store the resulting structural Abstract Syntax Tree (AST) metadata (e.g., function definitions, line numbers, caller relationships) in our PostgreSQL database. Your raw proprietary source code text is never stored in our databases.</li>
+                <li><strong>Enterprise (BYOR):</strong> If you use our Enterprise Zero-Trust tier, the processing happens entirely within your Virtual Private Cloud. We have zero access to your code or metadata.</li>
+            </ul>
+
+            <h2>3. Information Sharing and Subprocessors</h2>
+            <p>We will never sell or rent your personal information to third parties. We only share information with trusted subprocessors required to run the service:</p>
+            <ul>
+                <li><strong>GitHub:</strong> For OAuth authentication, Webhooks, and ephemeral Action runners.</li>
+                <li><strong>Razorpay:</strong> For secure payment processing and subscription management.</li>
+                <li><strong>Hosting Providers:</strong> Our API and databases are hosted on highly secure, compliant infrastructure (e.g., Vercel, Supabase, or AWS).</li>
+            </ul>
+
+            <h2>4. Security Practices</h2>
+            <p>We employ industry-standard security measures, including HTTPS encryption in transit, encrypted databases at rest, and strict JWT-based authentication. We regularly audit our systems to prevent unauthorized access.</p>
+
+            <h2>5. User Rights (GDPR & CCPA)</h2>
+            <p>You have the right to access, update, or delete your personal information at any time. If you cancel your subscription, you may request the immediate deletion of all your associated AST metadata and account records by contacting us.</p>
+
+            <h2>6. Contact Us</h2>
+            <p>If you have any questions or concerns about this Privacy Policy, please contact us at: <a href="mailto:workraj345@gmail.com">workraj345@gmail.com</a>.</p>
         </div>
     </section>
 
