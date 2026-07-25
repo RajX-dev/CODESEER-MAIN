@@ -215,7 +215,7 @@ def main():
         if user_id:
             from n3mo.saas_db import get_subscription
             sub = get_subscription(user_id, "user")
-            if sub.get("status") != "active":
+            if not sub or sub.get("status") != "active":
                 logger.warning(f"Subscription became inactive during processing for user {user_id}")
                 sys.exit(0)
         
