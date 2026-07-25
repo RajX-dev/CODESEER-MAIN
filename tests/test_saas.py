@@ -103,7 +103,11 @@ def test_saas_auth_callback(mock_upsert, mock_urlopen):
         "GITHUB_CLIENT_SECRET": "csec",
         "JWT_SESSION_SECRET": "test_jwt_secret"
     }):
-        resp = client.get("/api/auth/callback?code=mock_code", follow_redirects=False)
+        resp = client.get(
+            "/api/auth/callback?code=mock_code&state=mock_state",
+            cookies={"oauth_state": "mock_state"},
+            follow_redirects=False
+        )
         assert resp.status_code == 307
         assert resp.headers["location"] == "/dashboard.html"
         
@@ -117,10 +121,12 @@ def test_saas_auth_callback(mock_upsert, mock_urlopen):
         assert payload["username"] == "testuser"
 
 # Test Marketplace Webhook Integration Endpoints
+@patch("n3mo.api.marketplace.check_rate_limit_db")
 @patch("n3mo.api.marketplace.upsert_organization")
 @patch("n3mo.api.marketplace.update_subscription")
 @patch("n3mo.api.marketplace.save_license_key")
-def test_marketplace_webhook_purchase_enterprise(mock_save_key, mock_update_sub, mock_upsert_org):
+def test_marketplace_webhook_purchase_enterprise(mock_save_key, mock_update_sub, mock_upsert_org, mock_rate_limit):
+    mock_rate_limit.return_value = True
     mock_upsert_org.return_value = {"id": "org-uuid-456"}
     mock_update_sub.return_value = {"status": "active"}
     
