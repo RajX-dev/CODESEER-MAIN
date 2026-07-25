@@ -50,7 +50,7 @@ def fetch_pr_details(repo_full_name: str, pr_number: str) -> dict:
         raise ValueError(f"Failed to connect to GitHub API: {e.reason}")
 
 
-def _get_plan_limits(plan_type: str, sub: dict = None) -> tuple[int, str]:
+def _get_plan_limits(plan_type: str, sub: dict | None = None) -> tuple[int, str]:
     """Return (max_loc, plan_name) for a given plan type based on subscription data."""
     if sub and sub.get("pricing_version") == "2":
         loc_limit = sub.get("loc_per_repo_limit")

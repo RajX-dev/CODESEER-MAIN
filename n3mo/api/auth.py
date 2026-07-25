@@ -48,7 +48,7 @@ def validate_frontend_url(url: str) -> str:
     # Fallback safe relative path
     return "/dashboard.html"
 
-def provision_user_trial(user_id: str, profile: dict = None):
+def provision_user_trial(user_id: str, profile: dict | None = None):
     """Provisions a 15-day free trial if the user has no existing subscription."""
     if profile:
         created_at_str = profile.get("created_at")
@@ -64,6 +64,7 @@ def provision_user_trial(user_id: str, profile: dict = None):
 
     try:
         pro_tier = get_tier("pro")
+        assert pro_tier is not None
         expires_at = datetime.now(timezone.utc) + timedelta(days=TRIAL_DAYS)
         provision_trial_if_none(
             user_id=user_id,
