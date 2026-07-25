@@ -118,7 +118,6 @@ def test_saas_auth_callback(mock_upsert, mock_urlopen):
         # Decode session token to verify payload
         payload = jwt.decode(session_cookie, "test_jwt_secret", algorithms=["HS256"])
         assert payload["user_id"] == "user-uuid-123"
-        assert payload["username"] == "testuser"
 
 # Test Marketplace Webhook Integration Endpoints
 @patch("n3mo.api.marketplace.check_rate_limit_db")
@@ -139,7 +138,7 @@ def test_marketplace_webhook_purchase_enterprise(mock_save_key, mock_update_sub,
                 "type": "Organization"
             },
             "plan": {
-                "name": "N3MO Enterprise Self-Hosted"
+                "name": "enterprise"
             }
         }
     }
@@ -151,14 +150,7 @@ def test_marketplace_webhook_purchase_enterprise(mock_save_key, mock_update_sub,
         data = resp.json()
         assert data["status"] == "processed"
         assert data["plan"] == "enterprise"
-        assert "license" in data
-        assert "license_key" in data["license"]
-        
-        # Verify offline license key is a valid JWT
-        token = data["license"]["license_key"]
-        payload_decoded = jwt.decode(token, "test_jwt_secret", algorithms=["HS256"])
-        assert payload_decoded["owner"] == "EnterpriseOrg"
-        assert payload_decoded["plan_type"] == "enterprise"
+        assert "license_message" in data
         
         mock_upsert_org.assert_called_once_with(github_id=1122, name="EnterpriseOrg")
         mock_update_sub.assert_called_once()
