@@ -101,6 +101,16 @@ Result:    3 direct callers → 5 ripple effects
 | 🕸️ | How do these components actually connect? | Call graph + parent-child hierarchy |
 | 🤖 | Can my AI agent understand this codebase structurally? | Native MCP server for Cursor / Claude |
 
+---
+
+## 👥 Who it's for
+
+| | Start here |
+|---|---|
+| **Individual Developers** | `pip install n3mo` → index locally, query instantly. Bring N3MO to Cursor/Claude via our native MCP server. Open source and free under PolyForm Noncommercial. |
+| **Code Reviewers & Team Leads** | Stop merging blindly. Install the **N3MO Webhook** via [n3mo.shop](https://n3mo.shop) to get deterministic blast-radius comments on every PR automatically. |
+| **Engineering Leaders** | Offload pipeline infrastructure entirely. Zero-config, cloud-managed graph engine. No local PostgreSQL to maintain, zero data retention, and strict privacy. |
+
 
 ---
 
