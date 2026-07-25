@@ -1,0 +1,8 @@
+exclude = [
+    "benchmarks",
+    "generate_ppt*.py"
+]
+
+[lint]
+select = ["E", "F"]
+ignore = ["E501"]

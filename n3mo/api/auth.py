@@ -17,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Query, Response, Depends, Cookie
 from fastapi.responses import RedirectResponse
 import warnings
 
-from n3mo.saas_db import upsert_user, get_subscription, update_subscription, provision_trial_if_none
+from n3mo.saas_db import upsert_user, provision_trial_if_none
 from n3mo.pricing import TRIAL_DAYS, get_tier
 
 # Suppress PyJWT InsecureKeyLengthWarning for short testing secrets

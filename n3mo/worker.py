@@ -253,7 +253,7 @@ def main():
         
         logger.info("✅ N3MO Core Engine finished successfully!")
         
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Core Engine Pipeline Failed: {e}")
         logger.error(traceback.format_exc())
         
@@ -262,7 +262,7 @@ def main():
         try:
             error_md = f"### ⚠️ N3MO Core Engine Failed\n\nAn internal error occurred during AST analysis (Error ID: `{error_id}`). Please contact support."
             post_github_comment(target_repo, int(pr_number), error_md, installation_id)
-        except Exception as post_err:
+        except Exception as post_err:  # noqa: BLE001
             logger.error(f"Failed to post error comment to PR: {post_err}")
         sys.exit(1)
 

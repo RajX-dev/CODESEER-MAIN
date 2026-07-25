@@ -8,7 +8,6 @@
 import os
 import logging
 import json
-import time
 from fastapi import FastAPI, HTTPException, Request, Depends, Query
 import uvicorn
 from fastapi.staticfiles import StaticFiles
@@ -22,7 +21,7 @@ from n3mo.api.marketplace import router as marketplace_router
 from n3mo.api.auth import get_current_user_from_token
 from n3mo.api.entitlement import require_active_subscription
 from n3mo.saas_db import (
-    get_subscription, get_user_by_id, get_user_by_github_id, update_subscription,
+    get_subscription, get_user_by_id, update_subscription,
     get_user_repo_loc_stats, save_payment_order, update_payment_order_status,
     get_payment_order, check_rate_limit_db
 )
@@ -237,7 +236,7 @@ def verify_payment(req: VerifyPaymentRequest, current_user: dict = Depends(get_c
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         import traceback
         err_msg = traceback.format_exc()
         logging.error(f"Error in verify_payment: {err_msg}")
@@ -582,8 +581,8 @@ def get_impact(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-from fastapi import Header
-from n3mo.api.webhook_handler import revoke_github_installation
+from fastapi import Header  # noqa: E402
+from n3mo.api.webhook_handler import revoke_github_installation  # noqa: E402
 
 @app.post("/internal/sweep-expired")
 def sweep_expired_subscriptions(authorization: str = Header(None)):

@@ -11,7 +11,6 @@ import hmac
 import hashlib
 import logging
 import jwt
-import time
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Request, Header, HTTPException
 
