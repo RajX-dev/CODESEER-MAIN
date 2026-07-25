@@ -103,11 +103,11 @@ def test_saas_auth_callback(mock_upsert, mock_urlopen):
         "GITHUB_CLIENT_SECRET": "csec",
         "JWT_SESSION_SECRET": "test_jwt_secret"
     }):
-        client.cookies.update({"oauth_state": "mock_state"})
-        resp = client.get(
-            "/api/auth/callback?code=mock_code&state=mock_state",
-            follow_redirects=False
-        )
+        with TestClient(app, cookies={"oauth_state": "mock_state"}) as test_client:
+            resp = test_client.get(
+                "/api/auth/callback?code=mock_code&state=mock_state",
+                follow_redirects=False
+            )
         assert resp.status_code == 307
         assert resp.headers["location"] == "/dashboard.html"
         
