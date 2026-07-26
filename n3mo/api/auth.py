@@ -14,7 +14,7 @@ import jwt
 import secrets
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, Query, Response, Depends, Cookie
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 import warnings
 
 from n3mo.saas_db import upsert_user, provision_trial_if_none
@@ -159,7 +159,21 @@ def login_redirect(response: Response):
     }
     url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
     
-    resp = RedirectResponse(url, headers={
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="refresh" content="0; url={url}">
+        <script>window.location.href = "{url}";</script>
+        <title>Redirecting...</title>
+    </head>
+    <body>
+        <p>Redirecting to authentication... <a href="{url}">Click here</a> if not redirected.</p>
+    </body>
+    </html>
+    """
+    
+    resp = HTMLResponse(content=html_content, headers={
         "Cache-Control": "no-cache, no-store, must-revalidate"
     })
     resp.set_cookie(
