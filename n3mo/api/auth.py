@@ -14,7 +14,7 @@ import jwt
 import secrets
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, Query, Response, Depends, Cookie
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import RedirectResponse
 import warnings
 
 from n3mo.saas_db import upsert_user, provision_trial_if_none
@@ -109,6 +109,40 @@ def get_current_user_from_token(session: str = Cookie(None)) -> dict:
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Not authenticated: Session expired or invalid")
 
+def _create_oauth_state_token() -> str:
+    """Create a signed JWT to use as the OAuth state parameter (cookie-free CSRF).
+
+    The state token is a short-lived JWT containing a random nonce.  GitHub
+    round-trips it back to our callback, where we verify the signature.  This
+    completely eliminates the need for a cookie, making the flow immune to CDN
+    caching, Safari ITP, and proxy cookie stripping.
+    """
+    config = get_oauth_config()
+    secret = config["session_secret"]
+    if not secret:
+        raise ValueError("JWT_SESSION_SECRET must be explicitly set.")
+    nonce = secrets.token_urlsafe(16)
+    payload = {
+        "nonce": nonce,
+        "purpose": "oauth_state",
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=10),
+    }
+    return jwt.encode(payload, secret, algorithm="HS256")
+
+
+def _verify_oauth_state_token(state_token: str) -> bool:
+    """Verify that a state token is a valid, unexpired JWT we signed."""
+    config = get_oauth_config()
+    secret = config["session_secret"]
+    if not secret:
+        return False
+    try:
+        payload = jwt.decode(state_token, secret, algorithms=["HS256"])
+        return payload.get("purpose") == "oauth_state"
+    except jwt.PyJWTError:
+        return False
+
+
 @router.api_route("/login", methods=["GET", "POST"])
 def login_redirect(response: Response):
     """Redirects the client to GitHub's OAuth authorization page, or mocks login if missing config."""
@@ -147,8 +181,8 @@ def login_redirect(response: Response):
         )
         return resp
     
-    # Generate CSRF state token
-    oauth_state = secrets.token_urlsafe(32)
+    # Generate a signed JWT state token (no cookie needed)
+    oauth_state = _create_oauth_state_token()
     
     params = {
         "client_id": config["client_id"],
@@ -159,50 +193,23 @@ def login_redirect(response: Response):
     }
     url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
     
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta http-equiv="refresh" content="0; url={url}">
-        <script>window.location.href = "{url}";</script>
-        <title>Redirecting...</title>
-    </head>
-    <body>
-        <p>Redirecting to authentication... <a href="{url}">Click here</a> if not redirected.</p>
-    </body>
-    </html>
-    """
-    
-    resp = HTMLResponse(content=html_content, headers={
+    return RedirectResponse(url=url, headers={
         "Cache-Control": "no-cache, no-store, must-revalidate"
     })
-    resp.set_cookie(
-        key="oauth_state",
-        value=oauth_state,
-        httponly=True,
-        max_age=600, # 10 minutes
-        samesite="lax",
-        secure=is_secure_cookie,
-        path="/"
-    )
-    return resp
 
 @router.get("/callback")
 def oauth_callback(
     response: Response, 
     code: str = Query(None), 
-    state: str = Query(None), 
-    oauth_state: str = Cookie(None)
+    state: str = Query(None),
 ):
     """Handles GitHub's OAuth redirect, requests token, fetches profile, and creates session."""
     if not code:
         raise HTTPException(status_code=400, detail="OAuth authorization code missing")
         
-    if not state or state != oauth_state:
-        raise HTTPException(
-            status_code=400, 
-            detail="CSRF warning: OAuth state mismatch. Please ensure cookies are enabled and try logging in again."
-        )
+    # Verify the signed JWT state token — no cookie involved
+    if not state or not _verify_oauth_state_token(state):
+        raise HTTPException(status_code=400, detail="OAuth state verification failed. Please try logging in again.")
 
     config = get_oauth_config()
     safe_redirect_url = validate_frontend_url(config["frontend_url"])
@@ -291,8 +298,6 @@ def oauth_callback(
         secure=is_secure_cookie,
         path="/"
     )
-    # Clear the OAuth state cookie
-    resp.delete_cookie("oauth_state", secure=is_secure_cookie, httponly=True, samesite="lax", path="/")
     return resp
 
 @router.get("/me")

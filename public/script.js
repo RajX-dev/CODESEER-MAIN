@@ -40,18 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 // Not logged in
                 const loginBtn = document.createElement('a');
-                loginBtn.href = '#';
+                loginBtn.href = '/api/auth/login';
                 loginBtn.className = 'btn btn-outline';
                 loginBtn.innerHTML = '<i class="fa-brands fa-github"></i> Sign In';
                 loginBtn.style.marginRight = '12px';
-                loginBtn.onclick = (e) => {
-                    e.preventDefault();
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '/api/auth/login';
-                    document.body.appendChild(form);
-                    form.submit();
-                };
                 navCta.prepend(loginBtn);
             }
         })
@@ -167,11 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
 // Razorpay Checkout Flow
 async function handleCheckout(planType) {
     // Redirect to login -> dashboard flow
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/api/auth/login?plan=${planType}`;
-    document.body.appendChild(form);
-    form.submit();
+    // The user will upgrade from their actual dashboard once logged in.
+    window.location.href = `/api/auth/login?plan=${planType}`;
 }
 
 // Mouse Tracker

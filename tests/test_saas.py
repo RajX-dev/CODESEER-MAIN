@@ -68,11 +68,12 @@ def test_license_validator_expired():
 
 # Test SaaS Auth Routing Endpoints
 def test_saas_auth_login():
-    with patch.dict(os.environ, {"GITHUB_CLIENT_ID": "mock_client_id"}):
+    with patch.dict(os.environ, {"GITHUB_CLIENT_ID": "mock_client_id", "JWT_SESSION_SECRET": "test_jwt_secret"}):
         resp = client.get("/api/auth/login", follow_redirects=False)
         assert resp.status_code == 307 # Temporary redirect
         assert "github.com/login/oauth/authorize" in resp.headers["location"]
         assert "client_id=mock_client_id" in resp.headers["location"]
+        assert "state=" in resp.headers["location"]
 
 @patch("urllib.request.urlopen")
 @patch("n3mo.api.auth.upsert_user")
@@ -103,11 +104,14 @@ def test_saas_auth_callback(mock_upsert, mock_urlopen):
         "GITHUB_CLIENT_SECRET": "csec",
         "JWT_SESSION_SECRET": "test_jwt_secret"
     }):
-        with TestClient(app, cookies={"oauth_state": "mock_state"}) as test_client:
-            resp = test_client.get(
-                "/api/auth/callback?code=mock_code&state=mock_state",
-                follow_redirects=False
-            )
+        # Generate a valid signed JWT state token
+        from n3mo.api.auth import _create_oauth_state_token
+        valid_state = _create_oauth_state_token()
+        
+        resp = client.get(
+            f"/api/auth/callback?code=mock_code&state={valid_state}",
+            follow_redirects=False
+        )
         assert resp.status_code == 307
         assert resp.headers["location"] == "/dashboard.html"
         
