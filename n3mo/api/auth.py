@@ -109,7 +109,7 @@ def get_current_user_from_token(session: str = Cookie(None)) -> dict:
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Not authenticated: Session expired or invalid")
 
-@router.get("/login")
+@router.api_route("/login", methods=["GET", "POST"])
 def login_redirect(response: Response):
     """Redirects the client to GitHub's OAuth authorization page, or mocks login if missing config."""
     config = get_oauth_config()
