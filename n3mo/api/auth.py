@@ -133,14 +133,17 @@ def login_redirect(response: Response):
         provision_user_trial(user["id"])
             
         session_token = create_session_token(user["id"], user["github_id"])
-        resp = RedirectResponse(url=safe_redirect_url)
+        resp = RedirectResponse(url=safe_redirect_url, headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate"
+        })
         resp.set_cookie(
             key="session",
             value=session_token,
             httponly=True,
             max_age=7 * 24 * 60 * 60, # 7 Days
             samesite="lax",
-            secure=is_secure_cookie
+            secure=is_secure_cookie,
+            path="/"
         )
         return resp
     
@@ -156,14 +159,17 @@ def login_redirect(response: Response):
     }
     url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
     
-    resp = RedirectResponse(url)
+    resp = RedirectResponse(url, headers={
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+    })
     resp.set_cookie(
         key="oauth_state",
         value=oauth_state,
         httponly=True,
         max_age=600, # 10 minutes
         samesite="lax",
-        secure=is_secure_cookie
+        secure=is_secure_cookie,
+        path="/"
     )
     return resp
 
@@ -179,7 +185,10 @@ def oauth_callback(
         raise HTTPException(status_code=400, detail="OAuth authorization code missing")
         
     if not state or state != oauth_state:
-        raise HTTPException(status_code=400, detail="CSRF warning: OAuth state mismatch")
+        raise HTTPException(
+            status_code=400, 
+            detail="CSRF warning: OAuth state mismatch. Please ensure cookies are enabled and try logging in again."
+        )
 
     config = get_oauth_config()
     safe_redirect_url = validate_frontend_url(config["frontend_url"])
@@ -265,10 +274,11 @@ def oauth_callback(
         httponly=True,
         max_age=7 * 24 * 60 * 60, # 7 Days
         samesite="lax",
-        secure=is_secure_cookie
+        secure=is_secure_cookie,
+        path="/"
     )
     # Clear the OAuth state cookie
-    resp.delete_cookie("oauth_state", secure=is_secure_cookie, httponly=True, samesite="lax")
+    resp.delete_cookie("oauth_state", secure=is_secure_cookie, httponly=True, samesite="lax", path="/")
     return resp
 
 @router.get("/me")
