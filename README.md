@@ -15,6 +15,7 @@
 [![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge)](https://registry.modelcontextprotocol.io/?q=n3mo)
 [![CI](https://img.shields.io/github/actions/workflow/status/RajX-dev/N3MO/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI)](https://github.com/RajX-dev/N3MO/actions)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/n3mo?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/n3mo)
+[![Sponsor](https://img.shields.io/badge/Sponsor-❤_GitHub_Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/RajX-dev)
 [![Discord](https://img.shields.io/badge/Discord-Join_Community-7289da?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cTgZKHf2G)
 
 
@@ -28,7 +29,7 @@
 
 **📜 Licensed under PolyForm Noncommercial 1.0.0** — Source available for noncommercial use. • [Need commercial use? **Get a commercial license →**](https://n3mo.shop)
 
-[What is N3MO](#-what-is-n3mo) • [Tutorial](#-tutorial) • [Benchmarks](#-benchmarks) • [Architecture](#-architecture) • [Installation](#-installation) • [MCP](#-model-context-protocol-mcp) • [Usage](#-usage) • [Roadmap](#-roadmap)
+[What is N3MO](#-what-is-n3mo) • [Capabilities](#-core-capabilities) • [Installation](#-installation) • [Usage](#-usage) • [MCP](#-model-context-protocol-mcp) • [CI/CD SaaS](#%EF%B8%8F-enterprise-cicd-automation-the-saas-pivot) • [Benchmarks](#-benchmarks) • [Tutorial](#-tutorial) • [Sponsor](#-sponsor)
 
 </div>
 
@@ -111,8 +112,6 @@ Result:    3 direct callers → 5 ripple effects
 | **Code Reviewers & Team Leads** | Stop merging blindly. Install the **N3MO Webhook** via [n3mo.shop](https://n3mo.shop) to get deterministic blast-radius comments on every PR automatically. |
 | **Engineering Leaders** | Offload pipeline infrastructure entirely. Zero-config, cloud-managed graph engine. No local PostgreSQL to maintain, zero data retention, and strict privacy. |
 
-
----
 
 ---
 
@@ -453,14 +452,6 @@ python benchmarks/benchmark_indexing.py
 
 ---
 
----
-
-
-
-
-
----
-
 ## 📈 Project Status
 
 N3MO's core architecture and distribution phases (Foundations, Performance, Correctness & Scaling, and Distribution) have been successfully completed. 
@@ -545,10 +536,22 @@ See [LICENSE](LICENSE) for full legal details.
 
 ---
 
+## ❤️ Sponsor
+
+If N3MO saves you time during code reviews or helps your AI agents understand your codebase, consider sponsoring the project to support continued development.
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor_on_GitHub-❤-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/RajX-dev)
+
+Your sponsorship helps fund:
+* 🔧 Continued maintenance and new language support
+* 🚀 Performance improvements and scaling
+* 📖 Better documentation and tutorials
+* 🌍 Keeping the CLI and MCP server free for individual developers
+
+
 ---
 
-
-## 👨💻 Author
+## 👨‍💻 Author
 
 **Raj Shekhar** — Delhi Technological University
 
