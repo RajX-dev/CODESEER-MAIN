@@ -1,0 +1,7 @@
+# N3MO — Automated PR Review & Code Impact Analysis
+# https://n3mo.shop
+
+User-agent: *
+Allow: /
+
+Sitemap: https://n3mo.shop/sitemap.xml

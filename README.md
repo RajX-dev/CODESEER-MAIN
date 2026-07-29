@@ -121,7 +121,7 @@ Result:    3 direct callers → 5 ripple effects
 ### Ingestion & Parsing
 
 * **Multi-language support** — 27 Tree-sitter grammars supported (dynamically loaded); actively benchmarked on 10 major languages including Python, JS/TS, Go, Java, and C/C++
-* **Parallel AST ingestion** — `ProcessPoolExecutor` distributes CPU-bound parsing across all available cores
+* **Parallel AST ingestion** — `ThreadPoolExecutor` distributes parsing across cores (Tree-sitter's C extension releases the GIL, enabling true multithreading with zero IPC overhead)
 * **Incremental re-indexing** — SHA-256 file hashing skips unchanged files automatically
 * **Idempotent operations** — re-indexing updates existing data without duplication
 * **Smart exclusions** — case-insensitive directory filters and camelCase-aware filename checks prevent false positives (e.g. allows `contest.py` while skipping `test_*.py`)
@@ -391,9 +391,9 @@ Batch Inserts       █████████                                 
 | v0.3 baseline | 23 min | 1× | Per-symbol DB inserts, naive call resolution |
 | + SPLIT_PART query fix | 11 min | 2× | Eliminated redundant string splitting in call resolution |
 | + Batch inserts | 5 min | 4.6× | Symbols, imports, and calls batched per file (1 transaction) |
-| + Multiprocessing | ~2.5 min | **~9×** | `ProcessPoolExecutor` distributes AST parsing across cores |
+| + Multithreading (GIL bypass) | ~2.5 min | **~9×** | `ThreadPoolExecutor` scales parsing (Tree-sitter releases the GIL) |
 
-> ✅ All results are real measurements on the [Django](https://github.com/django/django) repository. Multiprocessing gains scale with core count.
+> ✅ All results are real measurements on the [Django](https://github.com/django/django) repository. Multithreading gains scale with core count.
 
 ### TensorFlow — Enterprise-Scale Monorepo
 
