@@ -87,7 +87,7 @@ document.head.appendChild(o)}initApollo();</script>
     <header>
         <div class="nav-container">
             <div class="logo">
-                <a href="/"><img src="logo.svg" alt="N3MO Logo" style="height: 42px; width: auto;"></a>
+                <a href="/"><img src="logo.svg" alt="N3MO Logo" width="153" height="42" style="height: 42px; width: auto;"></a>
             </div>
             <nav>
                 <a href="#features">Features</a>
@@ -104,7 +104,7 @@ document.head.appendChild(o)}initApollo();</script>
         </div>
     </header>
 
-
+    <main>
     <section class="hero-dashboard">
         <div class="grid-overlay"></div>
         <div class="container hero-layout">
@@ -354,7 +354,7 @@ document.head.appendChild(o)}initApollo();</script>
                 <div class="bento-card step-card" style="padding: 24px;">
                     <div class="step-number" style="color: var(--accent);">01</div>
                     <div>
-                        <h4 style="margin-bottom: 8px; font-size: 18px;">Install the GitHub Webhook</h4>
+                        <h3 style="margin-bottom: 8px; font-size: 18px;">Install the GitHub Webhook</h3>
                         <p style="font-size: 14px; color: var(--text-secondary);">Navigate to your repository settings
                             and grant N3MO read access to your source code. You don't need to configure CI/CD pipelines
                             or write custom workflows.</p>
@@ -363,7 +363,7 @@ document.head.appendChild(o)}initApollo();</script>
                 <div class="bento-card step-card" style="padding: 24px;">
                     <div class="step-number" style="color: var(--accent);">02</div>
                     <div>
-                        <h4 style="margin-bottom: 8px; font-size: 18px;">Open a Pull Request</h4>
+                        <h3 style="margin-bottom: 8px; font-size: 18px;">Open a Pull Request</h3>
                         <p style="font-size: 14px; color: var(--text-secondary);">A junior developer opens a PR
                             modifying a seemingly isolated utility function, `format_date()`. Unbeknownst to them, this
                             function is indirectly used by the core billing service.</p>
@@ -372,7 +372,7 @@ document.head.appendChild(o)}initApollo();</script>
                 <div class="bento-card step-card" style="padding: 24px;">
                     <div class="step-number" style="color: var(--accent);">03</div>
                     <div>
-                        <h4 style="margin-bottom: 8px; font-size: 18px;">Review the Impact Report</h4>
+                        <h3 style="margin-bottom: 8px; font-size: 18px;">Review the Impact Report</h3>
                         <p style="font-size: 14px; color: var(--text-secondary);">Within 2 seconds, N3MO intercepts the
                             webhook, parses the entire AST, and posts a comment on the PR detailing the exact downstream
                             services that depend on `format_date()`. You catch the breaking change before it hits
@@ -434,8 +434,8 @@ $ n3mo mcp install</code></pre>
 
             <div
                 style="max-width: 650px; margin: 32px auto 48px auto; background: var(--panel-bg); border-left: 4px solid var(--border-highlight); padding: 20px 24px; text-align: left; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                <h4 style="font-size: 18px; margin-bottom: 12px; color: var(--text-primary);">No seat-based pricing.
-                    Ever.</h4>
+                <h3 style="font-size: 18px; margin-bottom: 12px; color: var(--text-primary);">No seat-based pricing.
+                    Ever.</h3>
                 <p style="margin: 0; font-size: 15px; color: var(--text-secondary); line-height: 1.6;">N3MO prices by
                     repositories, not users, so your entire engineering team can collaborate without buying additional
                     licenses. Each repository receives continuous indexing, dependency analysis, PR impact detection,
@@ -448,7 +448,7 @@ $ n3mo mcp install</code></pre>
                 <!-- STANDARD -->
                 <div class="price-card reveal-fade">
                     <div class="price-header">
-                        <h4>Standard Plan</h4>
+                        <h3>Standard Plan</h3>
                         <div class="price-amount">$19<span>/month</span></div>
                         <p>For solo devs and small projects</p>
                     </div>
@@ -467,7 +467,7 @@ $ n3mo mcp install</code></pre>
                 <div class="price-card featured reveal-fade reveal-delay-1">
                     <div class="featured-badge"><i class="fa-solid fa-star"></i> Popular</div>
                     <div class="price-header">
-                        <h4>Pro Plan</h4>
+                        <h3>Pro Plan</h3>
                         <div class="price-amount">$69<span>/month</span></div>
                         <p>For small teams (2–5 devs)</p>
                         <p style="color: var(--accent-green); font-size: 12px; margin-top: 4px; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> Includes 15-Day Free Trial</p>
@@ -486,7 +486,7 @@ $ n3mo mcp install</code></pre>
                 <!-- TEAM BASIC -->
                 <div class="price-card reveal-fade reveal-delay-1">
                     <div class="price-header">
-                        <h4>Team Basic</h4>
+                        <h3>Team Basic</h3>
                         <div class="price-amount">$199<span>/month</span></div>
                         <p>For growing teams (6–20 devs)</p>
                     </div>
@@ -504,7 +504,7 @@ $ n3mo mcp install</code></pre>
                 <!-- TEAM PRO -->
                 <div class="price-card reveal-fade reveal-delay-2">
                     <div class="price-header">
-                        <h4>Team Pro</h4>
+                        <h3>Team Pro</h3>
                         <div class="price-amount">$399<span>/month</span></div>
                         <p>For advanced engineering teams</p>
                     </div>
@@ -522,7 +522,7 @@ $ n3mo mcp install</code></pre>
                 <!-- ENTERPRISE -->
                 <div class="price-card reveal-fade reveal-delay-3">
                     <div class="price-header">
-                        <h4>Enterprise</h4>
+                        <h3>Enterprise</h3>
                         <div class="price-amount">Custom</div>
                         <p>For large orgs (20+ devs)</p>
                     </div>
@@ -629,28 +629,28 @@ $ n3mo mcp install</code></pre>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
                     <div>
-                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What counts as a
-                            repository?</h5>
+                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What counts as a
+                            repository?</h4>
                         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Any GitHub
                             repository that you connect to N3MO and actively analyze using our webhook integrations.</p>
                     </div>
                     <div>
-                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">Can I invite
-                            unlimited teammates?</h5>
+                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">Can I invite
+                            unlimited teammates?</h4>
                         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Yes! Once a
                             repository is indexed, anyone on your team can view PR impact reports and use the
                             interactive graph without needing their own license.</p>
                     </div>
                     <div>
-                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What is a monorepo?
-                        </h5>
+                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What is a monorepo?
+                        </h4>
                         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">A single repository
                             containing multiple distinct projects or services. Monorepo support on the Team plan ensures
                             we index all nested dependencies properly.</p>
                     </div>
                     <div>
-                        <h5 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What happens if I
-                            exceed the limit?</h5>
+                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What happens if I
+                            exceed the limit?</h4>
                         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">You'll get a
                             heads-up before any repo stops syncing, with a one-click upgrade — no PRs are ever silently
                             blocked without warning.</p>
@@ -669,22 +669,22 @@ $ n3mo mcp install</code></pre>
             <div class="docs-grid">
                 <div class="docs-content">
                     <div class="step-item">
-                        <h4>1. Installation</h4>
+                        <h3>1. Installation</h3>
                         <p>Install the N3MO CLI package directly from PyPI.</p>
                         <pre><code>pip install n3mo</code></pre>
                     </div>
                     <div class="step-item">
-                        <h4>2. Setup Database & Crawler</h4>
+                        <h3>2. Setup Database & Crawler</h3>
                         <p>Spin up N3MO's PostgreSQL docker container and verify local variables in one command.</p>
                         <pre><code>n3mo setup</code></pre>
                     </div>
                     <div class="step-item">
-                        <h4>3. Index the Workspace</h4>
+                        <h3>3. Index the Workspace</h3>
                         <p>Index AST structures and build the relational call links inside Postgres.</p>
                         <pre><code>n3mo index</code></pre>
                     </div>
                     <div class="step-item">
-                        <h4>4. Run Impact Queries</h4>
+                        <h3>4. Run Impact Queries</h3>
                         <p>Trace the impact chain and launch the orbital interactive visualizer in your local browser.
                         </p>
                         <pre><code>n3mo impact "symbol_name" --graph</code></pre>
@@ -755,6 +755,7 @@ $ n3mo mcp install</code></pre>
             </div>
         </div>
     </section>
+    </main>
 
 
     <footer>
