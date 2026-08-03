@@ -1,0 +1,44 @@
+[
+  {
+    "name": "express",
+    "language": "JavaScript",
+    "git_url": "https://github.com/expressjs/express.git",
+    "status": "success",
+    "source_files_detected": 50,
+    "index_time_seconds": 1.03,
+    "indexer_success": true,
+    "files_indexed": 6,
+    "symbols": 18,
+    "calls": 56,
+    "resolved_calls": 3,
+    "imports": 0
+  },
+  {
+    "name": "spring-petclinic",
+    "language": "Java",
+    "git_url": "https://github.com/spring-projects/spring-petclinic.git",
+    "status": "success",
+    "source_files_detected": 30,
+    "index_time_seconds": 0.33,
+    "indexer_success": true,
+    "files_indexed": 0,
+    "symbols": 0,
+    "calls": 0,
+    "resolved_calls": 0,
+    "imports": 0
+  },
+  {
+    "name": "hugo",
+    "language": "Go",
+    "git_url": "https://github.com/gohugoio/hugo.git",
+    "status": "success",
+    "source_files_detected": 930,
+    "index_time_seconds": 27.06,
+    "indexer_success": true,
+    "files_indexed": 435,
+    "symbols": 3595,
+    "calls": 17625,
+    "resolved_calls": 1111,
+    "imports": 3122
+  }
+]

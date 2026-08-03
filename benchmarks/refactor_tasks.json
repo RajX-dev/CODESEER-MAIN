@@ -1,0 +1,522 @@
+[
+  {
+    "sha": "5f90dc2468bc52373efe4b231c4eb383b3f1edd2",
+    "author": "CharulL00",
+    "subject": "Fixed #37178 -- Moved MiddlewareMixin out of utils.deprecation.",
+    "date": "2026-06-19T00:23:04+05:30",
+    "python_files_changed": 21,
+    "files": [
+      "django/contrib/admindocs/middleware.py",
+      "django/contrib/auth/middleware.py",
+      "django/contrib/flatpages/middleware.py",
+      "django/contrib/messages/middleware.py",
+      "django/contrib/redirects/middleware.py",
+      "django/contrib/sessions/middleware.py",
+      "django/contrib/sites/middleware.py",
+      "django/middleware/__init__.py",
+      "django/middleware/cache.py",
+      "django/middleware/clickjacking.py",
+      "django/middleware/common.py",
+      "django/middleware/csp.py",
+      "django/middleware/csrf.py",
+      "django/middleware/gzip.py",
+      "django/middleware/http.py",
+      "django/middleware/locale.py",
+      "django/middleware/security.py",
+      "django/utils/deprecation.py",
+      "tests/csrf_tests/views.py",
+      "tests/deprecation/test_middleware_mixin.py",
+      "tests/urlpatterns_reverse/middleware.py"
+    ],
+    "affected_functions": [
+      "__init__",
+      "__call__",
+      "__repr__"
+    ]
+  },
+  {
+    "sha": "65a9f14196c338d70889bd54753370606b3fb4eb",
+    "author": "Leland",
+    "subject": "Fixed #36864 -- Supported modules and submodules in import_string().",
+    "date": "2026-05-18T15:32:12-07:00",
+    "python_files_changed": 8,
+    "files": [
+      "django/contrib/auth/password_validation.py",
+      "django/db/backends/base/creation.py",
+      "django/utils/module_loading.py",
+      "tests/auth_tests/test_models.py",
+      "tests/auth_tests/test_validators.py",
+      "tests/utils_tests/test_module/collision/__init__.py",
+      "tests/utils_tests/test_module/collision/collider.py",
+      "tests/utils_tests/test_module_loading.py"
+    ],
+    "affected_functions": [
+      "cached_import",
+      "test_get_password_validators_custom_invalid"
+    ]
+  },
+  {
+    "sha": "5d489a52c3c604018c786f11d45453eb75fa24b3",
+    "author": "Carlton Gibson",
+    "subject": "Refs #36983 -- Skipped GC specific tests when GIL disabled.",
+    "date": "2026-06-19T11:59:21+02:00",
+    "python_files_changed": 4,
+    "files": [
+      "django/test/utils.py",
+      "tests/backends/base/test_base.py",
+      "tests/model_regress/test_state.py",
+      "tests/select_related/tests.py"
+    ],
+    "affected_functions": [
+      "assert_no_memory_leaks"
+    ]
+  },
+  {
+    "sha": "f970a98e464320c09dde8d45009eadfb4d038a57",
+    "author": "zhengkangyang",
+    "subject": "Fixed #37142 -- Moved django_file_prefixes() to django.utils.warnings.",
+    "date": "2026-06-06T16:17:24+08:00",
+    "python_files_changed": 18,
+    "files": [
+      "django/conf/__init__.py",
+      "django/contrib/admin/options.py",
+      "django/core/mail/deprecation.py",
+      "django/core/signing.py",
+      "django/db/models/fields/__init__.py",
+      "django/db/models/fields/json.py",
+      "django/db/models/query.py",
+      "django/db/models/sql/compiler.py",
+      "django/db/models/sql/query.py",
+      "django/db/transaction.py",
+      "django/http/response.py",
+      "django/template/base.py",
+      "django/utils/crypto.py",
+      "django/utils/deprecation.py",
+      "django/utils/log.py",
+      "django/utils/warnings.py",
+      "tests/deprecation/tests.py",
+      "tests/utils_tests/test_warnings.py"
+    ],
+    "affected_functions": [
+      "test_with_file",
+      "setUp",
+      "test_no_file",
+      "django_file_prefixes",
+      "test_does_not_match_packages_prefixed_with_django"
+    ]
+  },
+  {
+    "sha": "57c8c8b107248a3358dd26276ac497c577454011",
+    "author": "Karolis Ryselis",
+    "subject": "Fixed #36984 -- Made inline formset error messages respect delete_confirmation_max_display.",
+    "date": "2026-03-19T09:46:21+02:00",
+    "python_files_changed": 6,
+    "files": [
+      "django/contrib/admin/checks.py",
+      "django/contrib/admin/options.py",
+      "tests/admin_inlines/admin.py",
+      "tests/admin_inlines/models.py",
+      "tests/admin_inlines/tests.py",
+      "tests/modeladmin/test_checks.py"
+    ],
+    "affected_functions": [
+      "_check_delete_confirmation_max_display"
+    ]
+  },
+  {
+    "sha": "4bbc27c8686f10f9556cef02dbfa9f5157fbcf56",
+    "author": "Simon Charette",
+    "subject": "Fixed #36492 -- Restored exact boolean lookup against literals on SQLite.",
+    "date": "2025-07-05T21:19:05-04:00",
+    "python_files_changed": 7,
+    "files": [
+      "django/db/backends/base/features.py",
+      "django/db/backends/base/operations.py",
+      "django/db/backends/mysql/operations.py",
+      "django/db/backends/oracle/operations.py",
+      "django/db/backends/postgresql/features.py",
+      "django/db/models/lookups.py",
+      "tests/lookup/tests.py"
+    ],
+    "affected_functions": [
+      "conditional_expression_supported_in_where_clause"
+    ]
+  },
+  {
+    "sha": "3328078a01f5268f9b8659f56fd28c5a2ed083dc",
+    "author": "Jacob Walls",
+    "subject": "Refs CVE-2026-6873 -- Defaulted SIGNED_COOKIE_LEGACY_SALT_FALLBACK transitional setting to False.",
+    "date": "2026-06-03T09:23:37-04:00",
+    "python_files_changed": 5,
+    "files": [
+      "django/conf/__init__.py",
+      "django/conf/global_settings.py",
+      "django/core/signing.py",
+      "tests/deprecation/test_signed_cookie_legacy_salt_fallback.py",
+      "tests/signed_cookies_tests/tests.py"
+    ],
+    "affected_functions": [
+      "test_legacy_salt_namespace_is_accepted_by_default"
+    ]
+  },
+  {
+    "sha": "804660d685a5abd49fc66ba20c98d1a523f28f9f",
+    "author": "Chris Rose",
+    "subject": "Refs #28800 -- Lifted some url functions from admindocs into urls.utils.",
+    "date": "2026-05-24T09:59:38-07:00",
+    "python_files_changed": 5,
+    "files": [
+      "django/contrib/admindocs/utils.py",
+      "django/contrib/admindocs/views.py",
+      "django/urls/utils.py",
+      "tests/admin_docs/test_views.py",
+      "tests/urlpatterns/tests.py"
+    ],
+    "affected_functions": [
+      "_find_groups",
+      "simplify_regex",
+      "replace_metacharacters",
+      "_get_group_start_end",
+      "replace_named_groups",
+      "remove_non_capturing_groups",
+      "extract_views_from_urlpatterns",
+      "replace_unnamed_groups",
+      "test_simplify_regex"
+    ]
+  },
+  {
+    "sha": "9b95c676a1670917c508015ddbfbf3d6c82e3091",
+    "author": "Tim Graham",
+    "subject": "Removed hardcoded Site pks.",
+    "date": "2026-05-24T15:25:27-04:00",
+    "python_files_changed": 9,
+    "files": [
+      "tests/contenttypes_tests/test_views.py",
+      "tests/flatpages_tests/test_csrf.py",
+      "tests/flatpages_tests/test_forms.py",
+      "tests/flatpages_tests/test_middleware.py",
+      "tests/flatpages_tests/test_sitemaps.py",
+      "tests/flatpages_tests/test_templatetags.py",
+      "tests/flatpages_tests/test_views.py",
+      "tests/redirects_tests/tests.py",
+      "tests/view_tests/tests/test_defaults.py"
+    ],
+    "affected_functions": [
+      "setUpTestData"
+    ]
+  },
+  {
+    "sha": "0f581cd29d42d1b5ed1dafb67794c2f3ce6705c9",
+    "author": "Mike Edmunds",
+    "subject": "Fixed #35514 -- Implemented dictionary-based MAILERS.",
+    "date": "2026-04-01T16:59:14-07:00",
+    "python_files_changed": 34,
+    "files": [
+      "django/conf/__init__.py",
+      "django/conf/global_settings.py",
+      "django/core/mail/__init__.py",
+      "django/core/mail/backends/base.py",
+      "django/core/mail/backends/console.py",
+      "django/core/mail/backends/filebased.py",
+      "django/core/mail/backends/locmem.py",
+      "django/core/mail/backends/smtp.py",
+      "django/core/mail/deprecation.py",
+      "django/core/mail/exceptions.py",
+      "django/core/mail/handler.py",
+      "django/core/mail/message.py",
+      "django/middleware/common.py",
+      "django/test/utils.py",
+      "django/utils/log.py",
+      "tests/admin_views/test_actions.py",
+      "tests/admin_views/tests.py",
+      "tests/auth_tests/test_forms.py",
+      "tests/auth_tests/test_models.py",
+      "tests/auth_tests/test_views.py",
+      "tests/logging_tests/tests.py",
+      "tests/mail/__init__.py",
+      "tests/mail/custombackend.py",
+      "tests/mail/test_backends.py",
+      "tests/mail/test_deprecated.py",
+      "tests/mail/test_handler.py",
+      "tests/mail/test_sendtestemail.py",
+      "tests/mail/tests.py",
+      "tests/middleware/tests.py",
+      "tests/project_template/test_settings.py",
+      "tests/test_client/tests.py",
+      "tests/test_client/views.py",
+      "tests/test_utils/tests.py",
+      "tests/view_tests/tests/test_debug.py"
+    ],
+    "affected_functions": [
+      "connection",
+      "get_connection",
+      "create_backend",
+      "__init__",
+      "send",
+      "test_error_if_file_path_is_not_writeable"
+    ]
+  },
+  {
+    "sha": "f30acb184f75fd9260cfd6ddc48a3bbbd49f9c1d",
+    "author": "Marcelo Galigniana",
+    "subject": "Fixed #12090 -- Added admin actions to the admin change form.",
+    "date": "2026-04-22T13:04:41+02:00",
+    "python_files_changed": 9,
+    "files": [
+      "django/contrib/admin/__init__.py",
+      "django/contrib/admin/checks.py",
+      "django/contrib/admin/decorators.py",
+      "django/contrib/admin/options.py",
+      "django/contrib/admin/templatetags/admin_modify.py",
+      "tests/admin_views/admin.py",
+      "tests/admin_views/models.py",
+      "tests/admin_views/test_actions.py",
+      "tests/modeladmin/test_actions.py"
+    ],
+    "affected_functions": [
+      "_get_base_actions",
+      "action",
+      "get_action",
+      "get_action_choices",
+      "get_actions",
+      "response_action"
+    ]
+  },
+  {
+    "sha": "21dcd9a94fb3e9edeec883d12cd1dcac5e773abe",
+    "author": "Mike Edmunds",
+    "subject": "Refs #35514 -- Cleaned up logging and middleware tests.",
+    "date": "2026-04-14T12:43:07-07:00",
+    "python_files_changed": 4,
+    "files": [
+      "tests/auth_tests/test_forms.py",
+      "tests/logging_tests/logconfig.py",
+      "tests/logging_tests/tests.py",
+      "tests/middleware/tests.py"
+    ],
+    "affected_functions": [
+      "my_mail_admins",
+      "send_messages",
+      "test_fail_silently"
+    ]
+  },
+  {
+    "sha": "5686ce41958b21f0ae5bfa290e8d4420a6349c1b",
+    "author": "Natalia",
+    "subject": "Fixed #36784 -- Added csp_nonce_attr template tag for CSP nonce inclusion.",
+    "date": "2026-03-25T22:53:58-03:00",
+    "python_files_changed": 6,
+    "files": [
+      "django/forms/widgets.py",
+      "django/template/context_processors.py",
+      "django/template/defaulttags.py",
+      "django/utils/csp.py",
+      "tests/forms_tests/tests/test_media.py",
+      "tests/template_tests/syntax_tests/test_csp_nonce_attr.py"
+    ],
+    "affected_functions": [
+      "render",
+      "__repr__",
+      "render_css",
+      "render_js"
+    ]
+  },
+  {
+    "sha": "d75d57c2c06934a65feabd206129b9d1a230a1da",
+    "author": "varunkasyap",
+    "subject": "Fixed #36767 -- Allowed max redirect URL length to be set on HttpResponseRedirect.",
+    "date": "2025-11-22T11:52:36+05:30",
+    "python_files_changed": 4,
+    "files": [
+      "django/http/response.py",
+      "django/shortcuts.py",
+      "tests/httpwrappers/tests.py",
+      "tests/shortcuts/tests.py"
+    ],
+    "affected_functions": [
+      "redirect",
+      "__init__"
+    ]
+  },
+  {
+    "sha": "0f4fff79d33b7cc84822e66bd1fc16caf8222e3a",
+    "author": "Denny Biasiolli",
+    "subject": "Fixed #37078 -- Deprecated SHA-1 default for salted_hmac() and base64_hmac() algorithm.",
+    "date": "2026-04-30T19:53:33+02:00",
+    "python_files_changed": 4,
+    "files": [
+      "django/core/signing.py",
+      "django/utils/crypto.py",
+      "tests/signing/tests.py",
+      "tests/utils_tests/test_crypto.py"
+    ],
+    "affected_functions": [
+      "base64_hmac",
+      "salted_hmac"
+    ]
+  },
+  {
+    "sha": "a586f03f36f511064f171c0e30f4ca2ebfd60085",
+    "author": "Rodrigo Vieira",
+    "subject": "Refs #10919 -- Refactored walk_items as module-level _walk_items and added truncated_unordered_list filter.",
+    "date": "2026-04-22T18:53:13-03:00",
+    "python_files_changed": 4,
+    "files": [
+      "django/contrib/admin/templatetags/admin_filters.py",
+      "django/template/defaultfilters.py",
+      "tests/admin_views/test_templatetags.py",
+      "tests/template_tests/filter_tests/test_unordered_list.py"
+    ],
+    "affected_functions": [
+      "walk_items"
+    ]
+  },
+  {
+    "sha": "63c56cda133a85a158502891c40465bc0331d3d9",
+    "author": "Annabelle Wiegart",
+    "subject": "Fixed #35870 -- Made blank choice label in forms more accessible.",
+    "date": "2026-01-18T20:03:28+01:00",
+    "python_files_changed": 23,
+    "files": [
+      "django/conf/__init__.py",
+      "django/conf/global_settings.py",
+      "django/contrib/admin/options.py",
+      "django/db/models/fields/__init__.py",
+      "django/db/models/fields/reverse_related.py",
+      "django/db/models/utils.py",
+      "django/forms/fields.py",
+      "django/forms/models.py",
+      "tests/admin_views/test_actions.py",
+      "tests/admin_views/test_related_object_lookups.py",
+      "tests/admin_views/tests.py",
+      "tests/admin_widgets/tests.py",
+      "tests/forms_tests/field_tests/test_typedchoicefield.py",
+      "tests/forms_tests/locale/de/__init__.py",
+      "tests/forms_tests/tests/test_forms.py",
+      "tests/forms_tests/tests/test_i18n.py",
+      "tests/forms_tests/widget_tests/test_radioselect.py",
+      "tests/model_fields/test_booleanfield.py",
+      "tests/model_fields/tests.py",
+      "tests/model_forms/test_modelchoicefield.py",
+      "tests/model_forms/tests.py",
+      "tests/model_formsets/tests.py",
+      "tests/modeladmin/tests.py"
+    ],
+    "affected_functions": [
+      "get_action_choices"
+    ]
+  },
+  {
+    "sha": "ed79c5959add54b6e8ea589ec601e0d2e801517e",
+    "author": "Mariusz Felisiak",
+    "subject": "Fixed #37028 -- Added BitAnd(), BitOr(), and BitXor() aggregates.",
+    "date": "2026-04-18T08:53:21+02:00",
+    "python_files_changed": 9,
+    "files": [
+      "django/contrib/postgres/aggregates/general.py",
+      "django/db/backends/base/features.py",
+      "django/db/backends/mysql/features.py",
+      "django/db/backends/oracle/features.py",
+      "django/db/backends/sqlite3/_functions.py",
+      "django/db/models/aggregates.py",
+      "tests/aggregation/models.py",
+      "tests/aggregation/tests.py",
+      "tests/postgres_tests/test_aggregates.py"
+    ],
+    "affected_functions": [
+      "test_bit_and_on_only_false_values",
+      "test_bit_xor_on_only_true_values",
+      "test_bit_or_on_only_true_values",
+      "test_bit_or_on_only_false_values",
+      "test_bit_and_on_only_true_values",
+      "test_bit_xor_on_only_false_values",
+      "test_bit_xor_general",
+      "test_bit_and_general",
+      "test_bit_or_general"
+    ]
+  },
+  {
+    "sha": "3157285e27a426530ef571855e0e29c317e210df",
+    "author": "VIZZARD-X",
+    "subject": "Fixed #27150 -- Made base File objects truthy by default.",
+    "date": "2025-11-26T14:06:20+05:30",
+    "python_files_changed": 4,
+    "files": [
+      "django/core/files/base.py",
+      "django/core/files/uploadedfile.py",
+      "django/db/models/fields/files.py",
+      "tests/files/tests.py"
+    ],
+    "affected_functions": [
+      "__bool__"
+    ]
+  },
+  {
+    "sha": "f2169ef3688422d394d36007e320bac839117f0b",
+    "author": "Tim Graham",
+    "subject": "Refs #36883 -- Split monolithic aggregation/lookup/queries tests.",
+    "date": "2026-02-09T20:57:37-05:00",
+    "python_files_changed": 4,
+    "files": [
+      "tests/aggregation_regress/tests.py",
+      "tests/lookup/tests.py",
+      "tests/many_to_one/tests.py",
+      "tests/queries/tests.py"
+    ],
+    "affected_functions": [
+      "test_values_list",
+      "test_values",
+      "test_more"
+    ]
+  },
+  {
+    "sha": "f05fac88c4699c6d04a8f1ac3328cf6c7bd39228",
+    "author": "Simon Charette",
+    "subject": "Fixed #36795 -- Enforced quoting of all database object names.",
+    "date": "2026-02-01T16:53:54-05:00",
+    "python_files_changed": 7,
+    "files": [
+      "django/db/backends/mysql/compiler.py",
+      "django/db/models/expressions.py",
+      "django/db/models/sql/compiler.py",
+      "django/db/models/sql/datastructures.py",
+      "tests/filtered_relation/tests.py",
+      "tests/foreign_object/models/article.py",
+      "tests/queries/tests.py"
+    ],
+    "affected_functions": [
+      "quote_name_unless_alias"
+    ]
+  },
+  {
+    "sha": "1a8fd5cf75bf855852f6bc2f75c3da9f7b145669",
+    "author": "Simon Charette",
+    "subject": "Fixed #36727 -- Deprecated Field.get_placeholder in favor of get_placeholder_sql.",
+    "date": "2025-11-22T13:32:34-05:00",
+    "python_files_changed": 15,
+    "files": [
+      "django/contrib/gis/db/backends/base/operations.py",
+      "django/contrib/gis/db/backends/oracle/operations.py",
+      "django/contrib/gis/db/backends/postgis/operations.py",
+      "django/contrib/gis/db/models/fields.py",
+      "django/contrib/gis/db/models/lookups.py",
+      "django/contrib/postgres/fields/array.py",
+      "django/contrib/postgres/fields/ranges.py",
+      "django/db/backends/base/operations.py",
+      "django/db/backends/mysql/operations.py",
+      "django/db/backends/postgresql/compiler.py",
+      "django/db/models/expressions.py",
+      "django/db/models/fields/__init__.py",
+      "django/db/models/sql/compiler.py",
+      "tests/model_fields/tests.py",
+      "tests/postgres_tests/fields.py"
+    ],
+    "affected_functions": [
+      "field_as_sql",
+      "binary_placeholder_sql",
+      "get_placeholder",
+      "transform_value",
+      "get_geom_placeholder"
+    ]
+  }
+]
