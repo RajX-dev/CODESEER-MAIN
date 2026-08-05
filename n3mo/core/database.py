@@ -36,9 +36,12 @@ def get_pool():
             )
     return _pool
 
+import logging
+
 # 1. Database Connection Config
 def get_connection():
     """Borrow a connection from the pool."""
+    logging.debug("N3MO: Borrowing connection from database pool")
     return get_pool().getconn()
 
 def release_connection(conn):
