@@ -290,7 +290,33 @@ graph LR
 
 ## 🎥 Tutorial
 
-[Watch the Tutorial Video on GitHub](https://github.com/RajX-dev/N3MO/blob/main/docs/tutorial.mp4?raw=true)
+<div align="center">
+
+### See N3MO in Action — Full Walkthrough
+
+https://github.com/user-attachments/assets/tutorial.mp4
+
+<video src="docs/tutorial.mp4" width="800" autoplay loop muted playsinline>
+  Your browser does not support the video tag.
+</video>
+
+<br>
+
+*Index a repository, trace blast radius, and visualize the dependency graph — all in under 30 seconds.*
+
+</div>
+
+**What the tutorial covers:**
+
+| Step | What You'll See |
+|:---|:---|
+| **1. Install & Setup** | `pip install n3mo` → `n3mo setup` spins up Docker + PostgreSQL in one command |
+| **2. Index a Codebase** | `n3mo index` parses ASTs across 27 languages and builds the call graph |
+| **3. Query Impact** | `n3mo impact "symbol_name"` traces direct callers and transitive ripple effects |
+| **4. Visualize** | `--graph` flag launches the interactive orbit map in your browser |
+| **5. PR Webhook** | A live GitHub PR triggers N3MO's automated blast-radius comment |
+
+> 💡 **Prefer hands-on?** Follow the [Quick Start](#-installation) to run N3MO locally in under 60 seconds.
 
 
 ---
