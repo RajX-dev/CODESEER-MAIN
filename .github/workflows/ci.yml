@@ -57,4 +57,6 @@ jobs:
         POSTGRES_USER: n3mo
         POSTGRES_PASSWORD: n3mo
       run: |
+        PGPASSWORD=n3mo psql -h localhost -U n3mo -d n3mo -f db/schema.sql
         pytest tests/
+
