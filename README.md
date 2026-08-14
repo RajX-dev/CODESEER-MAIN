@@ -13,7 +13,7 @@
 [![Docker](https://img.shields.io/badge/docker-required-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen?style=for-the-badge)]()
 [![MCP Registry](https://img.shields.io/badge/MCP-Registry-purple?style=for-the-badge)](https://registry.modelcontextprotocol.io/?q=n3mo)
-[![CI](https://img.shields.io/github/actions/workflow/status/RajX-dev/N3MO/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI)](https://github.com/RajX-dev/N3MO/actions)
+
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/n3mo?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/n3mo)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤_GitHub_Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/RajX-dev)
 [![Discord](https://img.shields.io/badge/Discord-Join_Community-7289da?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cTgZKHf2G)
