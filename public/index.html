@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N3MO — Automated PR Review & Code Impact Analysis Tool</title>
+    <title>N3MO &mdash; Automated PR Review &amp; Code Impact Analysis Tool</title>
     <meta name="description"
         content="Automate your GitHub pull request reviews. N3MO maps code dependencies and calculates the blast radius of every PR change before you merge. Supports 27 languages. Free 15-day trial.">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -15,25 +15,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&family=Space+Grotesque:wght@500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&display=swap"
         rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta name="google-site-verification" content="14ev9e5QtP7K1HyvIn2sqzIW4ZTBDLb5b0wiGlRsNnQ" />
     <link rel="canonical" href="https://n3mo.shop/">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://n3mo.shop/">
-    <meta property="og:title" content="N3MO — Automated PR Review & Code Impact Analysis Tool">
+    <meta property="og:title" content="N3MO &mdash; Automated PR Review &amp; Code Impact Analysis Tool">
     <meta property="og:description"
         content="Automate your GitHub pull request reviews. N3MO maps code dependencies and calculates the blast radius of every PR change before you merge. Supports 27 languages. Free 15-day trial.">
     <meta property="og:image" content="https://n3mo.shop/og-image.png">
 
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://n3mo.shop/">
-    <meta property="twitter:title" content="N3MO — Automated PR Review & Code Impact Analysis Tool">
+    <meta property="twitter:title" content="N3MO &mdash; Automated PR Review &amp; Code Impact Analysis Tool">
     <meta property="twitter:description"
         content="Automate your GitHub pull request reviews. N3MO maps code dependencies and calculates the blast radius of every PR change before you merge. Supports 27 languages. Free 15-day trial.">
     <meta property="twitter:image" content="https://n3mo.shop/og-image.png">
@@ -68,227 +67,199 @@ document.head.appendChild(o)}initApollo();</script>
 
 <body>
 
-
-    <div id="grain-overlay"></div>
-
-
-    <div id="ambient-field">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
-    </div>
+    <div id="scroll-progress"></div>
 
 
-    <div class="cur-dot"></div>
-    <div class="cursor-glow"></div>
-
-
+    <!-- ── Dynamic Island Nav ── -->
     <header>
         <div class="nav-container">
             <div class="logo">
-                <a href="/"><img src="logo.svg" alt="N3MO Logo" width="153" height="42" style="height: 42px; width: auto;"></a>
+                <a href="/"><img src="logo.svg" alt="N3MO Logo" width="110" height="32" style="height:32px;width:auto;display:block;"></a>
             </div>
             <nav>
                 <a href="#features">Features</a>
                 <a href="#pricing">Pricing</a>
                 <a href="#mcp">MCP</a>
-                <a href="#docs">CLI & Docs</a>
+                <a href="#docs">CLI &amp; Docs</a>
                 <a href="#privacy">Privacy</a>
-                <a href="https://rajx-dev.vercel.app/" target="_blank">Portfolio</a>
             </nav>
             <div class="nav-cta">
-                <a href="https://github.com/RajX-dev/N3MO" class="btn btn-secondary" target="_blank"><i
-                        class="fa-brands fa-github"></i> Star on GitHub</a>
+                <a href="https://github.com/RajX-dev/N3MO" class="btn btn-secondary" target="_blank"><i class="fa-brands fa-github"></i> Star on GitHub</a>
             </div>
         </div>
     </header>
 
     <main>
+
+    <!-- ── Hero ── -->
     <section class="hero-dashboard">
         <div class="grid-overlay"></div>
         <div class="container hero-layout">
-            <div class="hero-left">
-                <div class="badge">
-                    <i class="fa-solid fa-gift"></i> 15-Day Free Trial Available
+
+            <p class="hero-eyebrow">Code Intelligence for Engineering Teams</p>
+
+            <h1>Stop merging PRs<br><span class="hero-thin">without knowing</span><br>what <span class="accent-text shiny-text">breaks</span>.</h1>
+
+            <p class="subtitle">
+                N3MO posts a structural blast-radius report on every PR &mdash; showing exactly which downstream services are at risk before anyone clicks Merge. No LLMs. No guesswork. Pure AST math.
+            </p>
+
+            <div class="hero-actions">
+                <a href="dashboard.html" class="btn btn-primary" id="hero-cta-primary">Get Started Free</a>
+                <a href="https://github.com/RajX-dev/N3MO" class="btn btn-outline" target="_blank">View on GitHub</a>
+            </div>
+
+            <!-- Stats strip -->
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <i class="fa-solid fa-star" style="color:var(--accent);"></i>
+                    <span id="gh-stars">&mdash;</span> GitHub Stars
                 </div>
-                <h1>Automated PR Review — Know What Breaks <span class="accent-text shiny-text">Before You Push</span></h1>
-                <p class="subtitle">N3MO is a code review automation tool that parses your repository's ASTs and builds a call graph to trace the
-                    transitive blast radius of any pull request change instantly.</p>
-
-                <div class="benchmark-pill"
-                    style="margin-top: 10px; margin-bottom: 20px; font-size: 12px; color: var(--accent-green); background: rgba(16, 185, 129, 0.1); display: inline-block; padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); font-family: var(--font-mono);">
-                    <i class="fa-solid fa-bolt"></i> <b>Benchmark:</b> Indexed TensorFlow in 14.06 minutes (14,611
-                    files, 79,523 symbols, 480,851 edges)
+                <div class="stat-item">
+                    <i class="fa-solid fa-box" style="color:var(--accent-indigo);"></i>
+                    <span id="pypi-downloads">&mdash;</span> PyPI Downloads
                 </div>
-
-                <div class="hero-actions">
-                    <a href="dashboard.html" class="btn btn-primary"><i class="fa-solid fa-rocket"></i> Get Started for Free</a>
-                    <a href="https://github.com/RajX-dev/N3MO" class="btn btn-outline" target="_blank"><i
-                            class="fa-brands fa-github"></i> Star on GitHub</a>
-                </div>
-
-
-                <div class="terminal-widget">
-                    <div class="terminal-header">
-                        <span class="dot red"></span>
-                        <span class="dot yellow"></span>
-                        <span class="dot green"></span>
-                        <span class="terminal-title">Quick Install</span>
-                    </div>
-                    <div class="terminal-body">
-                        <span class="prompt">$</span> <code id="install-cmd">pip install n3mo</code>
-                        <button class="copy-btn" onclick="copyCommand()" aria-label="Copy Command">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
-                    </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-diagram-project" style="color:var(--accent-teal);"></i>
+                    <span id="edges-count">480</span>K Edges Indexed
                 </div>
             </div>
 
-            <div class="hero-right">
+            <!-- Hero demo card -->
+            <div class="hero-demo-card reveal-fade">
+                <div class="anno-badge top-left">⚠️ HIGH severity</div>
+                <div class="anno-badge top-right">3 files affected</div>
+                <div class="anno-badge bottom-right">8 caller nodes</div>
 
-                <div class="playground-window">
-                    <div class="window-header">
-                        <span class="window-dot red"></span>
-                        <span class="window-dot yellow"></span>
-                        <span class="window-dot green"></span>
-                        <span class="window-title">n3mo interactive playground</span>
+                <div class="hero-demo-card-inner">
+                    <div class="card-chrome">
+                        <span class="chrome-dot r"></span>
+                        <span class="chrome-dot y"></span>
+                        <span class="chrome-dot g"></span>
+                        <span class="chrome-title">n3mo &middot; blast-radius analysis</span>
                     </div>
-                    <div class="playground-content">
 
-                        <div class="playground-control">
-                            <div class="control-header">Query Symbol</div>
-                            <div class="symbol-selector">
-                                <button class="symbol-btn active" data-symbol="auth_user">auth_user</button>
-                                <button class="symbol-btn" data-symbol="db_pool">db_pool</button>
-                                <button class="symbol-btn" data-symbol="validate_jwt">validate_jwt</button>
-                            </div>
-                            <div class="telemetry-box">
-                                <div class="telemetry-header">Blast Radius Info</div>
-                                <div class="telemetry-row">
-                                    <span>Affected Files:</span>
-                                    <strong id="telemetry-files">3</strong>
-                                </div>
-                                <div class="telemetry-row">
-                                    <span>Transitive Callers:</span>
-                                    <strong id="telemetry-callers">8</strong>
-                                </div>
-                                <div class="telemetry-row">
-                                    <span>Severity:</span>
-                                    <span class="severity-badge high" id="telemetry-severity">High Impact</span>
-                                </div>
-                            </div>
+                    <div class="card-split">
+                        <!-- Terminal -->
+                        <div class="card-terminal">
+                            <span class="t-line t-dim">◈ IMPACT ANALYSIS ─────────────────────────────</span>
+                            <span class="t-line t-dim">  Target: <span class="t-amber">format_date</span>  &nbsp;utils/date.py:14</span>
+                            <span class="t-line">&nbsp;</span>
+                            <span class="t-line t-green">◉ Direct Callers (3 symbols)</span>
+                            <span class="t-line t-dim">  ▸ <span class="t-white">billing_service</span> &nbsp;&nbsp;&nbsp;&nbsp;billing/core.py:88</span>
+                            <span class="t-line t-dim">  ▸ <span class="t-white">export_report</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reports/pdf.py:22</span>
+                            <span class="t-line t-dim">  ▸ <span class="t-white">schedule_job</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jobs/cron.py:41</span>
+                            <span class="t-line">&nbsp;</span>
+                            <span class="t-line t-red">◎ Ripple Effects (5 symbols)  depth &le; 4</span>
+                            <span class="t-line t-dim">  &nbsp;&nbsp;╰─▸ <span class="t-white">charge_customer</span> &nbsp;billing/stripe.py:12</span>
+                            <span class="t-line t-dim">  &nbsp;&nbsp;╰─▸ <span class="t-white">send_invoice</span> &nbsp;&nbsp;&nbsp;&nbsp;billing/email.py:7</span>
+                            <span class="t-line t-dim">  &nbsp;&nbsp;╰─▸ <span class="t-white">generate_pdf</span> &nbsp;&nbsp;&nbsp;&nbsp;reports/pdf.py:67</span>
+                            <span class="t-line">&nbsp;</span>
+                            <span class="t-line t-amber">⚠️ BILLING SERVICE DEPENDENCY DETECTED</span>
+                            <span class="t-line t-dim">──────────────────────────────────────────</span>
+                            <span class="t-line t-dim">Total: <span class="t-red">8 references</span> &middot; Severity: <span class="t-red">HIGH</span></span>
                         </div>
 
-                        <div class="playground-graph">
-                            <div class="graph-canvas" id="interactive-canvas">
-                                <div class="center-node" id="graph-center">auth_user</div>
-                                <div class="orbit-path r1">
-                                    <div class="orbit-node node-a active" style="--angle: 0deg;"
-                                        data-name="login_endpoint">login</div>
-                                    <div class="orbit-node node-b active" style="--angle: 120deg;"
-                                        data-name="refresh_token">refresh</div>
-                                    <div class="orbit-node node-c active" style="--angle: 240deg;"
-                                        data-name="validate_session">validate</div>
+                        <!-- GitHub PR comment -->
+                        <div class="card-gh">
+                            <div class="gh-header">
+                                <div class="gh-avatar">N</div>
+                                <div class="gh-meta">
+                                    <span class="gh-user">n3mo-bot</span>
+                                    <span class="gh-time">commented just now</span>
                                 </div>
-                                <div class="orbit-path r2">
-                                    <div class="orbit-node node-d active" style="--angle: 45deg;"
-                                        data-name="POST /login">POST /login</div>
-                                    <div class="orbit-node node-e active" style="--angle: 165deg;"
-                                        data-name="admin_login">admin_login</div>
-                                    <div class="orbit-node node-f active" style="--angle: 285deg;"
-                                        data-name="require_auth">require_auth</div>
-                                </div>
+                                <span class="gh-bot-badge">bot</span>
+                            </div>
+                            <div class="gh-title">
+                                <i class="fa-solid fa-diamond" style="color:var(--accent);font-size:11px;"></i>
+                                N3MO Impact Check &mdash; <span class="impact-high">HIGH</span>
+                            </div>
+                            <div class="gh-body">
+                                Modifying <code>format_date()</code> in <code>utils/date.py</code> affects <strong>7 downstream components</strong>.<br><br>
+                                &bull; Direct callers: <strong>3 symbols</strong> across 2 files<br>
+                                &bull; Transitive blast radius: <strong class="impact-high">HIGH</strong> (8 caller nodes, depth &le; 4)<br>
+                                &bull; ⚠️ <strong>Billing service</strong> dependency detected &mdash; recommend extra review before merge.
+                            </div>
+                            <div class="gh-check">
+                                <i class="fa-solid fa-circle-check"></i> Analysis complete &middot; 1.8s
                             </div>
                         </div>
                     </div>
-                </div>
+                </div><!-- end .hero-demo-card-inner -->
             </div>
+
         </div>
     </section>
 
 
+    <!-- ── Features ── -->
     <section id="features" class="features">
         <div class="container">
-            <h2 class="section-title">Powerful Features for Automated Code Review</h2>
-            <p class="section-subtitle">Stop guessing what your pull requests will break. N3MO builds a relational knowledge graph of
-                your codebase to empower engineering teams with precise impact analysis.</p>
+            <p class="eyebrow">Capabilities</p>
+            <h2 class="section-title">Built for precision.<br>Not guesswork.</h2>
+            <p class="section-subtitle">N3MO builds a relational knowledge graph of your entire codebase to deliver exact, deterministic impact analysis on every PR.</p>
 
             <div class="bento-grid">
 
-                <div class="bento-card col-span-2 row-span-1 highlight-card reveal-fade">
+                <div class="bento-card col-span-2 highlight-card reveal-fade">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-burst"></i></div>
                             <h3>Transitive Blast Radius</h3>
                         </div>
-                        <p>Traces call links recursively to arbitrary depth, showing you direct and indirect downstream
-                            impacts of any refactor or deletion. Find hidden dependencies that standard search tools
-                            miss.</p>
-
+                        <p>Traces call links recursively to arbitrary depth &mdash; showing direct and indirect downstream impacts of any refactor or deletion. Find hidden dependencies that standard search tools miss.</p>
                         <div class="bento-telemetry-demo">
                             <div class="telemetry-bar">
-                                <span class="metric-item">Root: <code>auth.py</code></span>
+                                <span class="metric-item">Root: <code class="mono-accent">auth.py</code></span>
                                 <span class="metric-item text-orange">Transitive Depth: 5</span>
                                 <span class="metric-item text-green">DB Resolution: Scope-Aware</span>
                             </div>
                             <div class="telemetry-code">
-                                <span class="line-c"><span class="t-keyword">SELECT</span> symbol, file_path <span
-                                        class="t-keyword">FROM</span> callers <span class="t-keyword">WHERE</span>
-                                    target = <span class="t-string">'db_pool'</span>;</span><br>
-                                <span class="line-c text-muted">&gt; Found 12 matching transitive callers across 4
-                                    service layers.</span>
+                                <span class="line-c"><span class="t-keyword">SELECT</span> symbol, file_path <span class="t-keyword">FROM</span> callers <span class="t-keyword">WHERE</span> target = <span class="t-string">'db_pool'</span>;</span><br>
+                                <span class="line-c text-muted">&gt; Found 12 matching transitive callers across 4 service layers.</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-
-                <div class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-1">
+                <div class="bento-card reveal-fade reveal-delay-1">
                     <div class="bento-body">
                         <div class="feature-header">
                             <i class="fa-solid fa-language feature-icon"></i>
-                            <h3>27 Languages*</h3>
+                            <h3>27 Languages</h3>
                         </div>
-                        <p>Powered by GitHub's Tree-sitter. We parse Python, TS/JS, Java, Go, Rust, C++, Ruby, PHP, and
-                            more locally.<br><br>
-                            <span style="font-size: 11px; color: var(--text-muted);">*Tree-sitter parsing supported for
-                                27 languages. Deep semantic call graph mapping currently optimized for Python, JS/TS,
-                                and Java.</span>
-                        </p>
+                        <p>Powered by GitHub's Tree-sitter. Parses Python, TS/JS, Java, Go, Rust, C++, Ruby, PHP, and 19 more &mdash; entirely locally.</p>
                         <div class="language-cloud">
                             <span class="lang-tag">Python</span>
                             <span class="lang-tag">TypeScript</span>
                             <span class="lang-tag">Java</span>
+                            <span class="lang-tag">Go</span>
+                            <span class="lang-tag">Rust</span>
+                            <span class="lang-tag">C++</span>
                         </div>
                     </div>
                 </div>
 
-
-                <div class="bento-card col-span-1 row-span-1 reveal-fade reveal-delay-2">
+                <div class="bento-card reveal-fade reveal-delay-2">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
                             <h3>Native MCP Server</h3>
                         </div>
-                        <p>Integrate N3MO directly into Cursor, Claude Desktop, or Windsurf. Allow AI agents to trace
-                            structures without hallucinations.</p>
+                        <p>Integrate directly into Cursor, Claude Desktop, or Windsurf. Let AI agents trace structures without hallucinating file paths.</p>
                         <div class="mcp-badge">
-                            <i class="fa-solid fa-circle-check text-green"></i> Model Context Protocol Active
+                            <i class="fa-solid fa-circle-check"></i> Model Context Protocol Active
                         </div>
                     </div>
                 </div>
 
-
-                <div class="bento-card col-span-2 row-span-1 highlight-card reveal-fade reveal-delay-3">
+                <div class="bento-card col-span-2 highlight-card reveal-fade reveal-delay-3">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-git-pull-request"></i></div>
-                            <h3>GitHub Webhook</h3>
+                            <h3>GitHub Webhook &mdash; in under 2 seconds</h3>
                         </div>
-                        <p>Enforce codebase size-aware checkpoints on every Pull Request, posting a comprehensive impact
-                            markdown report directly to PR comments in under 2 seconds.</p>
-
+                        <p>Automatically post a full structural impact report as a PR comment the moment a pull request opens. No pipeline changes. No configuration overhead.</p>
                         <div class="pr-preview-box">
                             <div class="pr-header">
                                 <i class="fa-brands fa-github"></i> github-actions <span class="bot-badge">bot</span>
@@ -296,87 +267,51 @@ document.head.appendChild(o)}initApollo();</script>
                             </div>
                             <div class="pr-body">
                                 <strong>◈ N3MO Impact Check: PASSED</strong><br>
-                                • Modifying <code>auth_user</code> affects <strong>3</strong> downstream components.<br>
-                                • Transitive blast radius: <strong>High Impact</strong> (8 caller nodes).
+                                &bull; Modifying <code>auth_user</code> affects <strong>3</strong> downstream components.<br>
+                                &bull; Transitive blast radius: <strong>High Impact</strong> (8 caller nodes).
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
 
 
-    <section id="audience" class="audience" style="padding: 60px 0; background-color: rgba(255,255,255,0.02);">
+    <!-- ── Who It's For ── -->
+    <section id="audience" class="audience">
         <div class="container">
-            <h2 class="section-title">Who is N3MO Built For?</h2>
-            <p class="section-subtitle">A concise breakdown of our ideal user profiles.</p>
-            <div class="bento-grid audience-grid" style="margin-top: 40px;">
+            <p class="eyebrow">Who it's for</p>
+            <h2 class="section-title">Made for the people<br>who own the codebase.</h2>
+            <p class="section-subtitle">N3MO is built for the engineers who feel the most pain when a PR silently breaks production.</p>
+
+            <div class="audience-grid bento-grid">
                 <div class="bento-card">
                     <div class="bento-body">
-                        <h3 style="color: var(--accent); margin-bottom: 12px;"><i class="fa-solid fa-code-merge"></i>
-                            Staff Engineers</h3>
-                        <p style="font-size: 14px; color: var(--text-secondary);">Architects managing large, legacy
-                            monoliths who need a reliable way to map sprawling dependencies before initiating major
-                            refactors.</p>
-                    </div>
-                </div>
-                <div class="bento-card">
-                    <div class="bento-body">
-                        <h3 style="color: var(--accent); margin-bottom: 12px;"><i class="fa-solid fa-user-shield"></i>
-                            Code Reviewers</h3>
-                        <p style="font-size: 14px; color: var(--text-secondary);">Senior developers acting as
-                            gatekeepers on PRs who want automated, mathematically-proven impact analysis instead of
-                            relying entirely on unit tests.</p>
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-code-merge"></i></div>
+                            <h3>Staff Engineers</h3>
+                        </div>
+                        <p>Architects managing large, legacy monoliths who need a reliable way to map sprawling dependencies before initiating major refactors.</p>
                     </div>
                 </div>
                 <div class="bento-card">
                     <div class="bento-body">
-                        <h3 style="color: var(--accent); margin-bottom: 12px;"><i class="fa-solid fa-robot"></i> AI Code
-                            Agents</h3>
-                        <p style="font-size: 14px; color: var(--text-secondary);">Autonomous coding bots like Claude and
-                            Cursor that require a precise, deterministic knowledge graph to avoid hallucinating file
-                            structures.</p>
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-user-shield"></i></div>
+                            <h3>Engineering Managers</h3>
+                        </div>
+                        <p>Team leads who need confidence that a PR won't silently break a billing service or shared utility &mdash; without spending hours manually tracing dependencies.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-
-    <section id="how-it-works" class="how-it-works" style="padding: 80px 0;">
-        <div class="container">
-            <h2 class="section-title">How It Works: A Practical Scenario</h2>
-            <p class="section-subtitle">Step-by-step instructions on catching breaking changes.</p>
-
-            <div
-                style="display: flex; flex-direction: column; gap: 24px; margin-top: 40px; max-width: 800px; margin-left: auto; margin-right: auto;">
-                <div class="bento-card step-card" style="padding: 24px;">
-                    <div class="step-number" style="color: var(--accent);">01</div>
-                    <div>
-                        <h3 style="margin-bottom: 8px; font-size: 18px;">Install the GitHub Webhook</h3>
-                        <p style="font-size: 14px; color: var(--text-secondary);">Navigate to your repository settings
-                            and grant N3MO read access to your source code. You don't need to configure CI/CD pipelines
-                            or write custom workflows.</p>
-                    </div>
-                </div>
-                <div class="bento-card step-card" style="padding: 24px;">
-                    <div class="step-number" style="color: var(--accent);">02</div>
-                    <div>
-                        <h3 style="margin-bottom: 8px; font-size: 18px;">Open a Pull Request</h3>
-                        <p style="font-size: 14px; color: var(--text-secondary);">A junior developer opens a PR
-                            modifying a seemingly isolated utility function, `format_date()`. Unbeknownst to them, this
-                            function is indirectly used by the core billing service.</p>
-                    </div>
-                </div>
-                <div class="bento-card step-card" style="padding: 24px;">
-                    <div class="step-number" style="color: var(--accent);">03</div>
-                    <div>
-                        <h3 style="margin-bottom: 8px; font-size: 18px;">Review the Impact Report</h3>
-                        <p style="font-size: 14px; color: var(--text-secondary);">Within 2 seconds, N3MO intercepts the
-                            webhook, parses the entire AST, and posts a comment on the PR detailing the exact downstream
-                            services that depend on `format_date()`. You catch the breaking change before it hits
-                            production.</p>
+                <div class="bento-card">
+                    <div class="bento-body">
+                        <div class="feature-header">
+                            <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+                            <h3>AI Code Agents</h3>
+                        </div>
+                        <p>Autonomous coding bots like Claude and Cursor that require a precise, deterministic knowledge graph to avoid hallucinating file structures.</p>
                     </div>
                 </div>
             </div>
@@ -384,40 +319,70 @@ document.head.appendChild(o)}initApollo();</script>
     </section>
 
 
-    <section id="mcp" class="mcp-integration" style="padding: 80px 0; background-color: rgba(255,255,255,0.02);">
+    <!-- ── How It Works ── -->
+    <section id="how-it-works" class="how-it-works">
         <div class="container">
-            <h2 class="section-title">Native MCP Server Integration</h2>
-            <p class="section-subtitle">Give AI agents like Cursor and Claude deterministic structural context instead
-                of random file chunks.</p>
+            <p class="eyebrow">How it works</p>
+            <h2 class="section-title">Catches a breaking change<br>in three steps.</h2>
+            <p class="section-subtitle">A junior developer touches a utility function. N3MO catches the billing dependency before anyone clicks Merge.</p>
 
-            <div style="display: flex; gap: 32px; flex-wrap: wrap; margin-top: 40px;">
-                <div class="bento-card" style="flex: 1; min-width: 300px;">
+            <div class="steps-list">
+                <div class="bento-card step-card reveal-fade">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Configure the GitHub Webhook</h3>
+                        <p class="step-desc">Connect your repository and paste your webhook secret from the N3MO dashboard. No CI/CD pipeline changes needed.</p>
+                    </div>
+                </div>
+                <div class="bento-card step-card reveal-fade reveal-delay-1">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Developer Opens a Pull Request</h3>
+                        <p class="step-desc">A junior developer modifies <code class="inline-code">format_date()</code> &mdash; a seemingly isolated utility. Unbeknownst to them, it's indirectly used by the billing service.</p>
+                    </div>
+                </div>
+                <div class="bento-card step-card reveal-fade reveal-delay-2">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3 class="step-title">N3MO Posts the Impact Report</h3>
+                        <p class="step-desc">Within 2 seconds, N3MO intercepts the webhook, parses the entire AST, and posts a comment detailing the exact downstream services that depend on <code class="inline-code">format_date()</code>. Breaking change caught.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ── MCP Integration ── -->
+    <section id="mcp" class="mcp-integration">
+        <div class="container">
+            <p class="eyebrow">MCP Integration</p>
+            <h2 class="section-title">Give your AI agent<br>a real map of your code.</h2>
+            <p class="section-subtitle">Give Cursor and Claude deterministic structural context instead of random file chunks.</p>
+
+            <div class="mcp-grid">
+                <div class="bento-card">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
                             <h3>Claude Desktop</h3>
                         </div>
-                        <p style="margin-bottom: 24px;">Automatically configure N3MO as an MCP tool for Claude to map
-                            blast radius before it writes code.</p>
-                        <pre
-                            style="background: var(--bg-color); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 14px; color: var(--text-secondary);"><code>$ cd /path/to/project
+                        <p class="mcp-desc">Automatically configure N3MO as an MCP tool for Claude to map blast radius before it writes code.</p>
+                        <pre class="code-block"><code>$ cd /path/to/project
 $ n3mo mcp install</code></pre>
                     </div>
                 </div>
-
-                <div class="bento-card highlight-card" style="flex: 1; min-width: 300px;">
+                <div class="bento-card highlight-card">
                     <div class="bento-body">
                         <div class="feature-header">
                             <div class="feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                             <h3>Cursor IDE</h3>
                         </div>
-                        <p style="margin-bottom: 12px;">Add N3MO directly to Cursor settings to enable instant
-                            transitive impact queries during refactoring.</p>
-                        <ul
-                            style="color: var(--text-secondary); font-size: 14px; padding-left: 20px; line-height: 1.6;">
-                            <li>Go to <strong>Settings -> Models -> MCP</strong></li>
-                            <li>Type: <code>command</code></li>
-                            <li>Command: <code>n3mo mcp start</code></li>
+                        <p class="mcp-desc">Add N3MO directly to Cursor settings for instant transitive impact queries during refactoring.</p>
+                        <ul class="mcp-steps">
+                            <li>Go to <strong>Settings &rarr; Models &rarr; MCP</strong></li>
+                            <li>Type: <code class="inline-code">command</code></li>
+                            <li>Command: <code class="inline-code">n3mo mcp start</code></li>
                         </ul>
                     </div>
                 </div>
@@ -426,234 +391,204 @@ $ n3mo mcp install</code></pre>
     </section>
 
 
+    <!-- ── Comparison ── -->
+    <section class="comparison-section">
+        <div class="container">
+            <p class="eyebrow">N3MO vs. The Alternatives</p>
+            <h2 class="section-title">Deterministic beats probabilistic.<br>Every time.</h2>
+            <p class="section-subtitle">Why static AST analysis outperforms LLM-based review for blast radius work.</p>
+
+            <div class="comparison-table-wrap reveal-fade">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Capability</th>
+                            <th>CodeRabbit / Greptile</th>
+                            <th class="n3mo-col">N3MO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Analysis basis</td>
+                            <td>LLM diff review (can hallucinate)</td>
+                            <td class="n3mo-col">Deterministic AST graph &mdash; exact</td>
+                        </tr>
+                        <tr>
+                            <td>Blast radius depth</td>
+                            <td>1&ndash;2 hops at best</td>
+                            <td class="n3mo-col"><span class="tag-green">⚡ Arbitrary transitive depth</span></td>
+                        </tr>
+                        <tr>
+                            <td>False positives</td>
+                            <td>Common with LLM models</td>
+                            <td class="n3mo-col"><span class="tag-green">Zero &mdash; pure math</span></td>
+                        </tr>
+                        <tr>
+                            <td>Cost at scale</td>
+                            <td>Grows with PR volume ($1/review)</td>
+                            <td class="n3mo-col">Fixed monthly &mdash; no per-review cost</td>
+                        </tr>
+                        <tr>
+                            <td>Self-hosted option</td>
+                            <td><span class="tag-red">✗ Cloud-only</span></td>
+                            <td class="n3mo-col"><span class="tag-green">✓ Enterprise self-hosted</span></td>
+                        </tr>
+                        <tr>
+                            <td>Native MCP for AI agents</td>
+                            <td><span class="tag-red">✗ Not supported</span></td>
+                            <td class="n3mo-col"><span class="tag-green">✓ First-class MCP support</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="comparison-note">N3MO is the structural safety net for teams already using CodeRabbit or Greptile.</p>
+        </div>
+    </section>
+
+
+    <!-- ── Pricing ── -->
     <section id="pricing" class="pricing">
         <div class="container">
-            <h2 class="section-title">Plans & Pricing</h2>
-            <p class="section-subtitle">Scale N3MO's PR impact check capabilities dynamically to fit the size of your
-                team's codebases.</p>
+            <p class="eyebrow">Pricing</p>
+            <h2 class="section-title">Plans &amp; Pricing</h2>
+            <p class="section-subtitle">Priced by repositories, not seats. Your whole team ships with one license.</p>
 
-            <div
-                style="max-width: 650px; margin: 32px auto 48px auto; background: var(--panel-bg); border-left: 4px solid var(--border-highlight); padding: 20px 24px; text-align: left; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                <h3 style="font-size: 18px; margin-bottom: 12px; color: var(--text-primary);">No seat-based pricing.
-                    Ever.</h3>
-                <p style="margin: 0; font-size: 15px; color: var(--text-secondary); line-height: 1.6;">N3MO prices by
-                    repositories, not users, so your entire engineering team can collaborate without buying additional
-                    licenses. Each repository receives continuous indexing, dependency analysis, PR impact detection,
-                    and code intelligence. Start free with local MCP — upgrade only when you want automated PR checks
-                    across your team.</p>
+            <div class="pricing-callout">
+                <h3>No seat-based pricing. Ever.</h3>
+                <p>N3MO prices by repositories, not users &mdash; your entire engineering team collaborates without buying additional licenses. Start free with local MCP; upgrade when you need automated PR checks.</p>
             </div>
 
             <div class="pricing-grid">
 
-                <!-- STANDARD -->
                 <div class="price-card reveal-fade">
                     <div class="price-header">
-                        <h3>Standard Plan</h3>
-                        <div class="price-amount">$19<span>/month</span></div>
-                        <p>For solo devs and small projects</p>
+                        <h3>Standard</h3>
+                        <div class="price-amount">$19<span>/mo</span></div>
+                        <p>Solo devs &amp; small projects</p>
+                        <p class="price-note">Ideal for 1 focused microservice</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span>Up to <strong>1 repo</strong></span></li>
                         <li><i class="fa-solid fa-check"></i> <span><strong>30,000</strong> LOC per repo</span></li>
-                        <li><i class="fa-solid fa-check"></i> <span><strong>30,000*</strong> max total LOC</span></li>
                         <li><i class="fa-solid fa-check"></i> Real-time PR Impact Analysis</li>
                         <li><i class="fa-solid fa-check"></i> Interactive Dependency Graph</li>
                         <li><i class="fa-solid fa-check"></i> Community support</li>
                     </ul>
-                    <button onclick="handleCheckout('standard')" class="btn btn-outline btn-full" style="margin-top: auto;">Buy Standard</button>
+                    <button onclick="handleCheckout('standard')" class="btn btn-outline btn-full">Buy Standard</button>
                 </div>
 
-                <!-- PRO -->
                 <div class="price-card featured reveal-fade reveal-delay-1">
                     <div class="featured-badge"><i class="fa-solid fa-star"></i> Popular</div>
                     <div class="price-header">
-                        <h3>Pro Plan</h3>
-                        <div class="price-amount">$69<span>/month</span></div>
-                        <p>For small teams (2–5 devs)</p>
-                        <p style="color: var(--accent-green); font-size: 12px; margin-top: 4px; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> Includes 15-Day Free Trial</p>
+                        <h3>Pro</h3>
+                        <div class="price-amount">$69<span>/mo</span></div>
+                        <p>Small teams (2&ndash;5 devs)</p>
+                        <p class="price-note">Covers most mid-size production apps</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span>Up to <strong>3 repos</strong></span></li>
                         <li><i class="fa-solid fa-check"></i> <span><strong>100,000</strong> LOC per repo</span></li>
-                        <li><i class="fa-solid fa-check"></i> <span><strong>300,000*</strong> max total LOC</span></li>
-                        <li><i class="fa-solid fa-check"></i> Everything in Standard Plan</li>
+                        <li><i class="fa-solid fa-check"></i> Everything in Standard</li>
                         <li><i class="fa-solid fa-check"></i> Multi-repo dashboard</li>
-                        <li><i class="fa-solid fa-check"></i> Email & community support</li>
+                        <li><i class="fa-solid fa-check"></i> Email &amp; community support</li>
                     </ul>
-                    <button onclick="handleCheckout('pro')" class="btn btn-primary btn-full" style="margin-top: auto;">Buy Pro</button>
+                    <button onclick="handleCheckout('pro')" class="btn btn-primary btn-full">Buy Pro</button>
                 </div>
 
-                <!-- TEAM BASIC -->
                 <div class="price-card reveal-fade reveal-delay-1">
                     <div class="price-header">
                         <h3>Team Basic</h3>
-                        <div class="price-amount">$199<span>/month</span></div>
-                        <p>For growing teams (6–20 devs)</p>
+                        <div class="price-amount">$199<span>/mo</span></div>
+                        <p>Growing teams (6&ndash;20 devs)</p>
+                        <p class="price-note">Full-stack teams and monorepos</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span>Up to <strong>5 repos</strong></span></li>
                         <li><i class="fa-solid fa-check"></i> <span><strong>200,000</strong> LOC per repo</span></li>
-                        <li><i class="fa-solid fa-check"></i> <span><strong>1,000,000*</strong> max total LOC</span></li>
                         <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
-                        <li><i class="fa-solid fa-check"></i> Slack notifications & RBAC</li>
+                        <li><i class="fa-solid fa-check"></i> Slack notifications &amp; RBAC</li>
                         <li><i class="fa-solid fa-check"></i> Priority SLA support</li>
                     </ul>
-                    <button onclick="handleCheckout('team_basic')" class="btn btn-outline btn-full" style="margin-top: auto;">Buy Team Basic</button>
+                    <button onclick="handleCheckout('team_basic')" class="btn btn-outline btn-full">Buy Team Basic</button>
                 </div>
 
-                <!-- TEAM PRO -->
                 <div class="price-card reveal-fade reveal-delay-2">
                     <div class="price-header">
                         <h3>Team Pro</h3>
-                        <div class="price-amount">$399<span>/month</span></div>
-                        <p>For advanced engineering teams</p>
+                        <div class="price-amount">$399<span>/mo</span></div>
+                        <p>Advanced engineering teams</p>
+                        <p class="price-note">Large-scale repos and monorepos</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span>Up to <strong>7 repos</strong></span></li>
                         <li><i class="fa-solid fa-check"></i> <span><strong>500,000</strong> LOC per repo</span></li>
-                        <li><i class="fa-solid fa-check"></i> <span><strong>3,500,000*</strong> max total LOC</span></li>
                         <li><i class="fa-solid fa-check"></i> Everything in Team Basic</li>
                         <li><i class="fa-solid fa-check"></i> Custom webhooks</li>
                         <li><i class="fa-solid fa-check"></i> Advanced Org RBAC</li>
                     </ul>
-                    <button onclick="handleCheckout('team_pro')" class="btn btn-outline btn-full" style="margin-top: auto;">Buy Team Pro</button>
+                    <button onclick="handleCheckout('team_pro')" class="btn btn-outline btn-full">Buy Team Pro</button>
                 </div>
 
-                <!-- ENTERPRISE -->
                 <div class="price-card reveal-fade reveal-delay-3">
                     <div class="price-header">
                         <h3>Enterprise</h3>
-                        <div class="price-amount">Custom</div>
-                        <p>For large orgs (20+ devs)</p>
+                        <div class="price-amount price-custom">Custom</div>
+                        <p>Large orgs (20+ devs)</p>
+                        <p class="price-note">Dedicated support &amp; custom SLA</p>
                     </div>
                     <ul class="price-features">
                         <li><i class="fa-solid fa-check"></i> <span><strong>Unlimited</strong> repos</span></li>
                         <li><i class="fa-solid fa-check"></i> <span><strong>Unlimited</strong> LOC</span></li>
-                        <li><i class="fa-solid fa-check"></i> Everything in Team Pro</li>
-                        <li><i class="fa-solid fa-check"></i> Self-hosted & Offline JWT</li>
-                        <li><i class="fa-solid fa-check"></i> SSO/SAML & Audit logs</li>
+                        <li><i class="fa-solid fa-check"></i> Self-hosted &amp; Offline JWT</li>
+                        <li><i class="fa-solid fa-check"></i> SSO/SAML &amp; Audit logs</li>
                         <li><i class="fa-solid fa-check"></i> Dedicated Success Engineer</li>
                     </ul>
-                    <button onclick="window.location.href='mailto:raj_shekhar@n3mo.shop'"
-                        class="btn btn-outline btn-full" style="margin-top: auto;">Contact Author</button>
+                    <button onclick="window.location.href='mailto:raj_shekhar@n3mo.shop'" class="btn btn-outline btn-full">Contact Us</button>
                 </div>
-            </div>
-            <div
-                style="text-align: center; margin-top: 32px; color: var(--text-secondary); font-size: 13px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">
-                <p><em>*Fair use applies. Repository limits are intended for typical engineering teams. Extremely large
-                        monorepos may count against your codebase quota. <a href="mailto:raj_shekhar@n3mo.shop"
-                            style="color: var(--accent-green); text-decoration: none;">Contact us</a> for larger
-                        deployments.</em></p>
+
             </div>
 
+            <p class="pricing-fine-print">*Fair use applies. <a href="mailto:raj_shekhar@n3mo.shop">Contact us</a> for extremely large monorepos.</p>
 
-            <div
-                style="text-align: center; margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border-color);">
-                <p
-                    style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
-                    Works with</p>
-                <div
-                    style="display: flex; justify-content: center; gap: 24px; color: var(--text-primary); font-weight: 500; font-size: 16px; margin-bottom: 32px;">
+            <!-- Works With -->
+            <div class="works-with">
+                <p class="works-with-label">Works with</p>
+                <div class="works-with-logos">
                     <span><i class="fa-brands fa-github"></i> GitHub</span>
                     <span><i class="fa-brands fa-gitlab"></i> GitLab</span>
                     <span><i class="fa-brands fa-bitbucket"></i> Bitbucket</span>
                 </div>
-
-                <p
-                    style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
-                    Supports</p>
-                <div
-                    style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; max-width: 600px; margin: 0 auto;">
-                    <span
-                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Python</span>
-                    <span
-                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Go</span>
-                    <span
-                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Java</span>
-                    <span
-                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">TypeScript</span>
-                    <span
-                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">Rust</span>
-                    <span
-                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">C++</span>
-                    <span
-                        style="background: var(--panel-raised); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 100px; font-size: 13px; color: var(--text-secondary);">C#</span>
+                <p class="works-with-label">Supports</p>
+                <div class="lang-pill-row">
+                    <span class="lang-pill">Python</span>
+                    <span class="lang-pill">Go</span>
+                    <span class="lang-pill">Java</span>
+                    <span class="lang-pill">TypeScript</span>
+                    <span class="lang-pill">Rust</span>
+                    <span class="lang-pill">C++</span>
+                    <span class="lang-pill">C#</span>
                 </div>
             </div>
 
-
-            <div style="margin-top: 80px; max-width: 800px; margin-left: auto; margin-right: auto;">
-                <h3 style="text-align: center; font-size: 24px; margin-bottom: 32px; color: var(--text-primary);">Why
-                    repositories instead of seats?</h3>
-                <div
-                    style="background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background: var(--panel-raised); border-bottom: 1px solid var(--border-color);">
-                                <th
-                                    style="padding: 16px 24px; font-weight: 500; color: var(--text-secondary); width: 50%;">
-                                    Traditional SaaS</th>
-                                <th style="padding: 16px 24px; font-weight: 500; color: var(--accent); width: 50%;">N3MO
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 16px 24px; color: var(--text-secondary);">Pay per developer</td>
-                                <td style="padding: 16px 24px; color: var(--text-primary);">Pay per repository</td>
-                            </tr>
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 16px 24px; color: var(--text-secondary);">More employees = higher
-                                    bill</td>
-                                <td style="padding: 16px 24px; color: var(--text-primary);">Unlimited teammates</td>
-                            </tr>
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 16px 24px; color: var(--text-secondary);">Seat licenses</td>
-                                <td style="padding: 16px 24px; color: var(--text-primary);">Repository intelligence</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 16px 24px; color: var(--text-secondary);">Penalizes team growth</td>
-                                <td style="padding: 16px 24px; color: var(--text-primary);">Encourages collaboration
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-            <div
-                style="margin-top: 80px; max-width: 800px; margin-left: auto; margin-right: auto; padding-bottom: 40px;">
-                <h3 style="text-align: center; font-size: 24px; margin-bottom: 40px; color: var(--text-primary);">
-                    Frequently Asked Questions</h3>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
-                    <div>
-                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What counts as a
-                            repository?</h4>
-                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Any GitHub
-                            repository that you connect to N3MO and actively analyze using our webhook integrations.</p>
+            <!-- FAQ -->
+            <div class="faq-section">
+                <h3 class="faq-title">Frequently Asked Questions</h3>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4>What counts as a repository?</h4>
+                        <p>Any GitHub repository that you connect to N3MO and actively analyze using our webhook integrations.</p>
                     </div>
-                    <div>
-                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">Can I invite
-                            unlimited teammates?</h4>
-                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Yes! Once a
-                            repository is indexed, anyone on your team can view PR impact reports and use the
-                            interactive graph without needing their own license.</p>
+                    <div class="faq-item">
+                        <h4>Can I invite unlimited teammates?</h4>
+                        <p>Yes. Once a repository is indexed, anyone on your team can view PR impact reports and use the interactive graph without needing their own license.</p>
                     </div>
-                    <div>
-                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What is a monorepo?
-                        </h4>
-                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">A single repository
-                            containing multiple distinct projects or services. Monorepo support on the Team plan ensures
-                            we index all nested dependencies properly.</p>
+                    <div class="faq-item">
+                        <h4>What is a monorepo?</h4>
+                        <p>A single repository containing multiple distinct projects. Monorepo support on the Team plan ensures we index all nested dependencies properly.</p>
                     </div>
-                    <div>
-                        <h4 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">What happens if I
-                            exceed the limit?</h4>
-                        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">You'll get a
-                            heads-up before any repo stops syncing, with a one-click upgrade — no PRs are ever silently
-                            blocked without warning.</p>
+                    <div class="faq-item">
+                        <h4>What happens if I exceed the limit?</h4>
+                        <p>You'll get a heads-up before any repo stops syncing, with a one-click upgrade &mdash; no PRs are ever silently blocked without warning.</p>
                     </div>
                 </div>
             </div>
@@ -661,10 +596,12 @@ $ n3mo mcp install</code></pre>
     </section>
 
 
+    <!-- ── CLI & Docs ── -->
     <section id="docs" class="docs-section">
         <div class="container">
-            <h2 class="section-title">Local CLI Reference</h2>
-            <p class="section-subtitle">N3MO is fully functional locally right from your terminal.</p>
+            <p class="eyebrow">Local CLI</p>
+            <h2 class="section-title">Fully functional<br>from your terminal.</h2>
+            <p class="section-subtitle">N3MO runs entirely locally &mdash; no cloud dependency required.</p>
 
             <div class="docs-grid">
                 <div class="docs-content">
@@ -674,7 +611,7 @@ $ n3mo mcp install</code></pre>
                         <pre><code>pip install n3mo</code></pre>
                     </div>
                     <div class="step-item">
-                        <h3>2. Setup Database & Crawler</h3>
+                        <h3>2. Setup Database &amp; Crawler</h3>
                         <p>Spin up N3MO's PostgreSQL docker container and verify local variables in one command.</p>
                         <pre><code>n3mo setup</code></pre>
                     </div>
@@ -685,13 +622,27 @@ $ n3mo mcp install</code></pre>
                     </div>
                     <div class="step-item">
                         <h3>4. Run Impact Queries</h3>
-                        <p>Trace the impact chain and launch the orbital interactive visualizer in your local browser.
-                        </p>
+                        <p>Trace the full impact chain and launch the interactive visualizer in your browser.</p>
                         <pre><code>n3mo impact "symbol_name" --graph</code></pre>
                     </div>
-                </div>
-                <div class="docs-code-preview">
 
+                    <div class="terminal-widget">
+                        <div class="terminal-header">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                            <span class="terminal-title">Quick Install</span>
+                        </div>
+                        <div class="terminal-body">
+                            <span class="prompt">$</span> <code id="install-cmd">pip install n3mo</code>
+                            <button class="copy-btn" onclick="copyCommand()" aria-label="Copy Command">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="docs-code-preview">
                     <div class="code-terminal">
                         <div class="code-header">
                             <span>n3mo impact output</span>
@@ -703,24 +654,16 @@ $ n3mo mcp install</code></pre>
                             ──────────────────────────────────────────────────<br>
                             <br>
                             <span class="c-green">◉ Direct Callers (3 symbols)</span><br>
-                            &nbsp;&nbsp;▸ login_endpoint
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;api/auth.py:12<br>
-                            &nbsp;&nbsp;▸ refresh_token
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;api/token.py:23<br>
-                            &nbsp;&nbsp;▸ validate_session
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;middleware/auth.py:89<br>
+                            &nbsp;&nbsp;▸ login_endpoint &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;api/auth.py:12<br>
+                            &nbsp;&nbsp;▸ refresh_token &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;api/token.py:23<br>
+                            &nbsp;&nbsp;▸ validate_session &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;middleware/auth.py:89<br>
                             <br>
                             <span class="c-purple">◎ Ripple Effects (5 symbols)</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ POST /login
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;routes.py:67<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ admin_login
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;admin/views.py:34<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ require_auth
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;decorators.py:12<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ dashboard_view
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;views/dashboard.py:8<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ settings_view
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;views/settings.py:22<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ POST /login &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;routes.py:67<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ admin_login &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;admin/views.py:34<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ require_auth &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;decorators.py:12<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ dashboard_view &nbsp;&nbsp;&nbsp;views/dashboard.py:8<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;╰─▸ settings_view &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;views/settings.py:22<br>
                             ──────────────────────────────────────────────────<br>
                             Total impacted: 8 references │ depth &le; 3
                         </div>
@@ -731,57 +674,74 @@ $ n3mo mcp install</code></pre>
     </section>
 
 
+    <!-- ── Privacy ── -->
     <section id="privacy" class="privacy-section">
         <div class="container">
             <div class="privacy-card">
                 <h2>Privacy and Code Governance</h2>
-                <p>We believe code should be analyzed where it lives. N3MO is designed from the ground up to respect
-                    security boundaries and data governance rules:</p>
+                <p>We believe code should be analyzed where it lives. N3MO is designed from the ground up to respect security boundaries and data governance rules.</p>
                 <div class="privacy-grid-details">
                     <div class="p-item">
                         <h5>Zero Stored Source Code</h5>
-                        <p>For SaaS users, N3MO analyzes code entirely in-memory on highly secure, ephemeral GitHub runners. We extract only the structural graph metadata, and the runner is instantly destroyed. We never store your raw source code.</p>
+                        <p>For SaaS users, N3MO analyzes code entirely in-memory on secure, ephemeral GitHub runners. We extract only structural graph metadata &mdash; your raw source code is never stored.</p>
                     </div>
                     <div class="p-item">
                         <h5>Zero-Trust Deployments</h5>
-                        <p>Enterprise users run the N3MO CLI natively inside their own private, air-gapped CI/CD pipelines. In this mode, your code literally never leaves your Virtual Private Cloud (VPC).</p>
+                        <p>Enterprise users run the N3MO CLI natively inside their own private, air-gapped CI/CD pipelines. In this mode, your code literally never leaves your VPC.</p>
                     </div>
                 </div>
                 <div class="p-link-container">
-                    Read the full <a href="https://github.com/RajX-dev/N3MO/blob/main/PRIVACY.md" target="_blank"
-                        rel="noopener noreferrer">N3MO Privacy Policy <i
-                            class="fa-solid fa-arrow-up-right-from-square"></i></a>.
+                    Read the full <a href="https://github.com/RajX-dev/N3MO/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">N3MO Privacy Policy <i class="fa-solid fa-arrow-up-right-from-square"></i></a>.
                 </div>
             </div>
         </div>
     </section>
+
+
+    <!-- ── Bottom CTA ── -->
+    <section class="bottom-cta">
+        <div class="container">
+            <p class="cta-eyebrow">Start in minutes</p>
+            <h2 class="cta-headline">Catch breaking changes<br>before they reach production.</h2>
+            <p class="cta-sub">Free to start. No credit card required. Works with GitHub, GitLab, and Bitbucket.</p>
+            <div class="cta-actions">
+                <a href="dashboard.html" class="btn btn-primary" id="bottom-cta-primary">Get Started Free</a>
+                <a href="#pricing" class="btn btn-outline">See Pricing</a>
+            </div>
+        </div>
+    </section>
+
     </main>
 
 
     <footer>
         <div class="container footer-content site-footer">
-            <div class="footer-links">
-                <a href="about.html">About Us</a>
-                <a href="contact.html">Contact Us</a>
-                <a href="shipping-policy.html">Shipping Policy</a>
-                <a href="refund-policy.html">Refund Policy</a>
-                <a href="terms.html">Terms & Conditions</a>
-                <a href="privacy.html">Privacy Policy</a>
-                <a href="https://rajx-dev.vercel.app/" target="_blank">Portfolio</a>
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <img src="logo.svg" alt="N3MO" height="28" style="height:28px;width:auto;opacity:0.7;">
+                    <p class="footer-brand-desc">Structural code intelligence for engineering teams.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="terms.html">Terms</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="refund-policy.html">Refund Policy</a>
+                </div>
             </div>
-            <div class="footer-socials">
-                <a href="https://github.com/RajX-dev/N3MO" target="_blank" rel="noopener noreferrer"
-                    aria-label="GitHub">
-                    <i class="fa-brands fa-github"></i>
-                </a>
-                <a href="https://twitter.com/n3mo_ai" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                    <i class="fa-brands fa-x-twitter"></i>
-                </a>
+            <div class="footer-bottom">
+                <p class="footer-copyright">Copyright &copy; 2026 N3MO Code Intelligence. All rights reserved.</p>
+                <div class="footer-socials">
+                    <a href="https://github.com/RajX-dev/N3MO" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                        <i class="fa-brands fa-github"></i>
+                    </a>
+                    <a href="https://twitter.com/n3mo_ai" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </a>
+                </div>
             </div>
-            <p class="footer-copyright">Copyright &copy; 2026 N3MO Code Intelligence. All rights reserved.</p>
         </div>
     </footer>
-
 
     <script src="script.js"></script>
 </body>

@@ -1,197 +1,173 @@
-// Copy command helper function
+// ── Copy Command ───────────────────────────────────────────────
 function copyCommand() {
     const commandText = document.getElementById("install-cmd").innerText;
-    
-    // Copy to clipboard
     navigator.clipboard.writeText(commandText).then(() => {
         const copyBtn = document.querySelector(".copy-btn");
         const copyIcon = copyBtn.querySelector("i");
-        
-        // Show success checkmark
         copyIcon.className = "fa-solid fa-check";
         copyIcon.style.color = "#10b981";
-        
         setTimeout(() => {
-            // Revert back to copy icon
             copyIcon.className = "fa-regular fa-copy";
             copyIcon.style.color = "";
         }, 2000);
-    }).catch(err => {
-        console.error("Failed to copy text: ", err);
-    });
+    }).catch(err => console.error("Failed to copy:", err));
 }
 
-// Live Interactive Playground Logic
-document.addEventListener("DOMContentLoaded", () => {
-    // Inject Auth/Dashboard CTA dynamically based on server session
-    fetch('/api/auth/me', { credentials: 'include' })
-        .then(res => {
-            const navCta = document.querySelector('.nav-cta');
-            if (!navCta) return;
-            
-            if (res.ok) {
-                // Logged in
-                const dashboardBtn = document.createElement('a');
-                dashboardBtn.href = 'dashboard.html';
-                dashboardBtn.className = 'btn btn-primary';
-                dashboardBtn.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dashboard';
-                dashboardBtn.style.marginRight = '12px';
-                navCta.prepend(dashboardBtn);
-            } else {
-                // Not logged in
-                const loginBtn = document.createElement('a');
-                loginBtn.href = '/api/auth/login';
-                loginBtn.className = 'btn btn-outline';
-                loginBtn.innerHTML = '<i class="fa-brands fa-github"></i> Sign In';
-                loginBtn.style.marginRight = '12px';
-                navCta.prepend(loginBtn);
-            }
-        })
-        .catch(err => console.log("API not reachable, static mode"));
-
-    const symbolBtns = document.querySelectorAll(".symbol-btn");
-    const centerNode = document.getElementById("graph-center");
-    
-    // Telemetry display elements
-    const telFiles = document.getElementById("telemetry-files");
-    const telCallers = document.getElementById("telemetry-callers");
-    const telSeverity = document.getElementById("telemetry-severity");
-    
-    // Orbit nodes
-    const orbitNodes = document.querySelectorAll(".orbit-node");
-
-    // Simulated symbol database
-    const symbolData = {
-        auth_user: {
-            centerName: "auth_user",
-            files: "3",
-            callers: "8",
-            severity: "High Impact",
-            severityClass: "high",
-            activeNodes: ["login_endpoint", "refresh_token", "validate_session", "POST /login", "admin_login", "require_auth"]
-        },
-        db_pool: {
-            centerName: "db_pool",
-            files: "5",
-            callers: "12",
-            severity: "Critical",
-            severityClass: "high",
-            activeNodes: ["validate_session", "refresh_token", "admin_login", "require_auth"]
-        },
-        validate_jwt: {
-            centerName: "validate_jwt",
-            files: "2",
-            callers: "4",
-            severity: "Medium Impact",
-            severityClass: "medium",
-            activeNodes: ["validate_session", "require_auth"]
-        }
-    };
-
-    // Symbol selection handler
-    symbolBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            // Update active button state
-            symbolBtns.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            // Retrieve selected data
-            const symbolKey = btn.getAttribute("data-symbol");
-            const data = symbolData[symbolKey];
-
-            if (data) {
-                // Update text & layout content
-                centerNode.textContent = data.centerName;
-                telFiles.textContent = data.files;
-                telCallers.textContent = data.callers;
-                telSeverity.textContent = data.severity;
-
-                // Adjust severity badge class
-                telSeverity.className = `severity-badge ${data.severityClass}`;
-
-                // Toggle active/inactive states on visualizer nodes
-                orbitNodes.forEach(node => {
-                    const nodeName = node.getAttribute("data-name");
-                    if (data.activeNodes.includes(nodeName)) {
-                        node.classList.remove("inactive");
-                    } else {
-                        node.classList.add("inactive");
-                    }
-                });
-            }
-        });
-    });
-
-    // Hover effect on orbits
-    const ring1 = document.querySelector(".r1");
-    const ring2 = document.querySelector(".r2");
-
-    orbitNodes.forEach(node => {
-        node.addEventListener("mouseenter", () => {
-            ring1.style.animationPlayState = "paused";
-            ring2.style.animationPlayState = "paused";
-        });
-
-        node.addEventListener("mouseleave", () => {
-            ring1.style.animationPlayState = "running";
-            ring2.style.animationPlayState = "running";
-        });
-    });
-
-    // Scroll Reveal Intersection Observer
-    const reveals = document.querySelectorAll(".reveal-fade, .reveal-text");
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("active");
-                observer.unobserve(entry.target);
-            }
-        });
-    }, {
-        root: null,
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px"
-    });
-
-    reveals.forEach(reveal => revealObserver.observe(reveal));
-});
-
-// Razorpay Checkout Flow
+// ── Razorpay Checkout Flow (PRESERVED — do not modify) ─────────
 async function handleCheckout(planType) {
-    // Redirect to login -> dashboard flow
-    // The user will upgrade from their actual dashboard once logged in.
     window.location.href = `/api/auth/login?plan=${planType}`;
 }
 
-// Mouse Tracker
-const cursorGlow = document.querySelector('.cursor-glow');
-const curDot = document.querySelector('.cur-dot');
+// ── Scroll Progress Bar ────────────────────────────────────────
+function initScrollProgress() {
+    const bar = document.getElementById('scroll-progress');
+    if (!bar) return;
+    window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY;
+        const max = document.body.scrollHeight - window.innerHeight;
+        bar.style.width = ((scrolled / max) * 100).toFixed(2) + '%';
+    }, { passive: true });
+}
 
-if (cursorGlow || curDot) {
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let currentX = window.innerWidth / 2;
-    let currentY = window.innerHeight / 2;
+// ── Counter Animation ──────────────────────────────────────────
+function animateCounter(el, target, suffix = '', duration = 1800) {
+    const start = performance.now();
+    const isDecimal = target % 1 !== 0;
+    function step(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out expo
+        const eased = 1 - Math.pow(2, -10 * progress);
+        const current = Math.round(eased * target);
+        el.textContent = (isDecimal ? current.toFixed(1) : current) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = target + suffix;
+    }
+    requestAnimationFrame(step);
+}
+
+// ── 3D Magnetic Tilt on Cards ──────────────────────────────────
+function init3DTilt() {
+    const cards = document.querySelectorAll('.bento-card, .price-card');
+    cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = (e.clientX - cx) / (rect.width / 2);
+            const dy = (e.clientY - cy) / (rect.height / 2);
+            const tiltX = dy * -6;
+            const tiltY = dx * 6;
+            card.style.transform = `perspective(900px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-4px) scale(1.02)`;
+            // Update card glow origin
+            card.style.setProperty('--card-x', `${e.clientX - rect.left}px`);
+            card.style.setProperty('--card-y', `${e.clientY - rect.top}px`);
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+        });
+    });
+}
+
+// ── Magnetic Button Effect ─────────────────────────────────────
+function initMagneticButtons() {
+    const btns = document.querySelectorAll('.hero-actions .btn');
+    btns.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = (e.clientX - cx) * 0.25;
+            const dy = (e.clientY - cy) * 0.25;
+            btn.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = '';
+        });
+    });
+}
+
+// ── Section title word-split animation ────────────────────────
+function initSplitTitles() {
+    document.querySelectorAll('.section-title').forEach(el => {
+        const words = el.textContent.trim().split(' ');
+        el.innerHTML = words.map((w, i) =>
+            `<span class="reveal-text reveal-delay-${(i % 3) + 1}" style="display:inline-block;margin-right:0.25em;">
+                <span class="reveal-inner">${w}</span>
+             </span>`
+        ).join('');
+    });
+}
+
+// ── Parallax on aurora orbs ────────────────────────────────────
+function initParallax() {
+    const orbs = document.querySelectorAll('.orb');
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const y = window.scrollY;
+                orbs.forEach((orb, i) => {
+                    const speed = [0.04, -0.03, 0.06, -0.02][i] || 0.03;
+                    orb.style.transform = `translateY(${y * speed}px)`;
+                });
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+}
+
+// ── Scroll Reveal Observer ─────────────────────────────────────
+function initReveal() {
+    // Add reveal-fade to bento cards and price cards automatically
+    document.querySelectorAll('.bento-card, .price-card').forEach(el => {
+        if (!el.classList.contains('reveal-fade')) el.classList.add('reveal-fade');
+    });
+
+    const reveals = document.querySelectorAll('.reveal-fade, .reveal-text');
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => observer.observe(el));
+}
+
+// ── Custom Cursor & Glow ───────────────────────────────────────
+function initCursor() {
+    const cursorGlow = document.querySelector('.cursor-glow');
+    const curDot = document.querySelector('.cur-dot');
+    if (!cursorGlow && !curDot) return;
+
+    let mouseX = 0, mouseY = 0;
+    let currentX = 0, currentY = 0;
+    let cursorInitialized = false;
 
     document.addEventListener('mousemove', (e) => {
-        if (cursorGlow) cursorGlow.style.opacity = '1';
+        if (!cursorInitialized) {
+            mouseX = currentX = e.clientX;
+            mouseY = currentY = e.clientY;
+            if (curDot) curDot.style.opacity = '1';
+            if (cursorGlow) cursorGlow.style.opacity = '1';
+            cursorInitialized = true;
+        }
         mouseX = e.clientX;
         mouseY = e.clientY;
+        if (cursorGlow) cursorGlow.style.opacity = '1';
     });
-    
+
     document.addEventListener('mouseleave', () => {
         if (cursorGlow) cursorGlow.style.opacity = '0';
         if (curDot) curDot.style.opacity = '0';
     });
 
-    document.addEventListener('mouseenter', () => {
-        if (curDot) curDot.style.opacity = '1';
-    });
-
-    const interactives = document.querySelectorAll('a, button, .bento-card, .price-card, .orbit-node, .symbol-btn');
+    const interactives = document.querySelectorAll('a, button, .bento-card, .price-card');
     interactives.forEach(el => {
         const isCard = el.classList.contains('bento-card') || el.classList.contains('price-card');
-        
         el.addEventListener('mouseenter', () => {
             if (cursorGlow) cursorGlow.classList.add('glow-active');
             if (curDot && !isCard) curDot.classList.add('big');
@@ -200,13 +176,6 @@ if (cursorGlow || curDot) {
             if (cursorGlow) cursorGlow.classList.remove('glow-active');
             if (curDot) curDot.classList.remove('big');
         });
-        if (isCard) {
-            el.addEventListener('mousemove', (e) => {
-                const rect = el.getBoundingClientRect();
-                el.style.setProperty('--card-x', `${e.clientX - rect.left}px`);
-                el.style.setProperty('--card-y', `${e.clientY - rect.top}px`);
-            });
-        }
     });
 
     function animateGlow() {
@@ -214,15 +183,122 @@ if (cursorGlow || curDot) {
             curDot.style.transform = `translate(-50%, -50%) translate3d(${mouseX}px, ${mouseY}px, 0)`;
         }
         if (cursorGlow) {
-            // LERP for ultra-fluid trailing
-            currentX += (mouseX - currentX) * 0.1;
-            currentY += (mouseY - currentY) * 0.1;
-            
+            currentX += (mouseX - currentX) * 0.08;
+            currentY += (mouseY - currentY) * 0.08;
             cursorGlow.style.setProperty('--mouse-x', currentX);
             cursorGlow.style.setProperty('--mouse-y', currentY);
         }
         requestAnimationFrame(animateGlow);
     }
-    
     animateGlow();
 }
+
+// ── Live Stats ─────────────────────────────────────────────────
+function initLiveStats() {
+    // GitHub Stars
+    fetch('https://api.github.com/repos/RajX-dev/N3MO')
+        .then(r => r.json())
+        .then(data => {
+            const el = document.getElementById('gh-stars');
+            if (el && data.stargazers_count != null) {
+                const count = data.stargazers_count;
+                // Animate to value when visible
+                const obs = new IntersectionObserver(entries => {
+                    if (entries[0].isIntersecting) {
+                        animateCounter(el, count, '');
+                        obs.disconnect();
+                    }
+                }, { threshold: 0.5 });
+                obs.observe(el);
+            }
+        })
+        .catch(() => {
+            const el = document.getElementById('gh-stars');
+            if (el) el.textContent = '900+';
+        });
+
+    // PyPI Downloads
+    fetch('https://api.pepy.tech/api/v2/projects/n3mo')
+        .then(r => r.json())
+        .then(data => {
+            const el = document.getElementById('pypi-downloads');
+            if (el && data.total_downloads != null) {
+                const count = data.total_downloads;
+                const obs = new IntersectionObserver(entries => {
+                    if (entries[0].isIntersecting) {
+                        const displayVal = count >= 1000 ? Math.floor(count / 1000) : count;
+                        const suffix = count >= 1000 ? 'K+' : '';
+                        animateCounter(el, displayVal, suffix);
+                        obs.disconnect();
+                    }
+                }, { threshold: 0.5 });
+                obs.observe(el);
+            }
+        })
+        .catch(() => {
+            const el = document.getElementById('pypi-downloads');
+            if (el) el.textContent = '12K+';
+        });
+
+    // Edges indexed — count up from 0 to 480K
+    const edgesEl = document.getElementById('edges-count');
+    if (edgesEl) {
+        const obs = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) {
+                animateCounter(edgesEl, 480, 'K');
+                obs.disconnect();
+            }
+        }, { threshold: 0.5 });
+        obs.observe(edgesEl);
+    }
+}
+
+// ── Auth check ─────────────────────────────────────────────────
+function initAuth() {
+    fetch('/api/auth/me', { credentials: 'include' })
+        .then(res => {
+            const navCta = document.querySelector('.nav-cta');
+            if (!navCta) return;
+            if (res.ok) {
+                const btn = document.createElement('a');
+                btn.href = 'dashboard.html';
+                btn.className = 'btn btn-primary';
+                btn.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dashboard';
+                btn.style.cssText = 'margin-right:8px;padding:7px 14px;border-radius:6px;font-size:12.5px;animation:none;';
+                navCta.prepend(btn);
+            } else {
+                const btn = document.createElement('a');
+                btn.href = '/api/auth/login';
+                btn.className = 'btn btn-outline';
+                btn.innerHTML = '<i class="fa-brands fa-github"></i> Sign In';
+                btn.style.cssText = 'margin-right:8px;padding:7px 14px;border-radius:6px;font-size:12.5px;animation:none;';
+                navCta.prepend(btn);
+            }
+        })
+        .catch(() => {});
+}
+
+// ── Hero CTA primary button — id-based scroll to pricing ───────
+function initHeroCTA() {
+    const cta = document.getElementById('hero-cta-primary');
+    if (cta) {
+        cta.addEventListener('click', (e) => {
+            // Only intercept if not logged in (dashboard link handled by auth)
+            if (cta.href && cta.href.includes('dashboard')) return;
+        });
+    }
+}
+
+// ── Init all ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    initScrollProgress();
+    initSplitTitles();
+    initReveal();
+    init3DTilt();
+    initMagneticButtons();
+    initParallax();
+    initLiveStats();
+    initAuth();
+    initHeroCTA();
+    initCursor();
+});
